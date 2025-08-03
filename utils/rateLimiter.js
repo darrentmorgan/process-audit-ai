@@ -86,6 +86,6 @@ export const rateLimiters = {
   // Strict limit for file uploads
   upload: rateLimit({ maxRequests: 10, interval: 10 * 60 * 1000 }), // 10 uploads per 10 minutes
   
-  // Very strict limit for expensive operations
-  expensive: rateLimit({ maxRequests: 5, interval: 5 * 60 * 1000 }) // 5 requests per 5 minutes
+  // More generous limit for expensive operations during development
+  expensive: rateLimit({ maxRequests: 20, interval: 5 * 60 * 1000 }) // 20 requests per 5 minutes
 };
