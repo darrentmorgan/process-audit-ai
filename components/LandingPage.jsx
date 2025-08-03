@@ -44,6 +44,7 @@ const LandingPage = ({ onSignUp }) => {
   }
 
   const openAuthModal = (mode = 'signin') => {
+    console.log('🔑 LandingPage: Opening auth modal with mode:', mode)
     setAuthModal({ isOpen: true, mode })
   }
 
@@ -164,7 +165,7 @@ const LandingPage = ({ onSignUp }) => {
                 </div>
                 
                 <p className="text-blue-200 text-sm text-center">
-                  <strong>Free to try</strong> • No credit card required • 5-minute setup
+                  <strong>Free to start</strong> • Save your results • No credit card required
                 </p>
               </div>
             </div>

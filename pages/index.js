@@ -18,6 +18,9 @@ export default function Home() {
     setIsLoading(false)
   }, [router.query.access, user])
 
+  // Check if user is in demo mode (has access but not authenticated)
+  const isDemoMode = router.query.access === 'granted' && !user
+
   const handleSignUp = async (email) => {
     try {
       const response = await fetch('/api/waitlist', {
@@ -51,7 +54,7 @@ export default function Home() {
 
   // Show the app if user has access
   if (showApp) {
-    return <ProcessAuditApp />
+    return <ProcessAuditApp isDemoMode={isDemoMode} />
   }
 
   // Show landing page by default

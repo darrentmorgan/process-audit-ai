@@ -1,12 +1,25 @@
 import { analyzeProcess } from '../../utils/aiPrompts'
+import { rateLimiters } from '../../utils/rateLimiter'
+import { sanitizeInput, validateRequestBody } from '../../utils/validation'
+import { withCSRF } from '../../utils/csrf'
 
-export default async function handler(req, res) {
+async function handler(req, res) {
+  // Apply rate limiting
+  if (!await rateLimiters.expensive(req, res)) return;
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
   try {
-    const { processDescription, fileContent, answers } = req.body
+    // Validate and sanitize input
+    const validatedBody = validateRequestBody(req.body, {
+      processDescription: { type: 'string', maxLength: 10000 },
+      fileContent: { type: 'string', maxLength: 50000 },
+      answers: { type: 'object', required: true }
+    });
+
+    const { processDescription, fileContent, answers } = validatedBody;
 
     if (!processDescription && !fileContent) {
       return res.status(400).json({ error: 'Process description or file content is required' })
@@ -15,6 +28,10 @@ export default async function handler(req, res) {
     if (!answers || Object.keys(answers).length === 0) {
       return res.status(400).json({ error: 'Answers are required' })
     }
+    
+    // Sanitize text inputs
+    const sanitizedDescription = processDescription ? sanitizeInput.processDescription(processDescription) : '';
+    const sanitizedFileContent = fileContent ? sanitizeInput.text(fileContent) : '';
 
     // Simulate processing time
     await new Promise(resolve => setTimeout(resolve, 3000))
@@ -191,7 +208,7 @@ export default async function handler(req, res) {
     }
 
     // Try to analyze using Claude API first
-    const aiReport = await analyzeProcess(processDescription, fileContent, answers)
+    const aiReport = await analyzeProcess(sanitizedDescription, sanitizedFileContent, answers)
     
     if (aiReport) {
       res.status(200).json({ report: aiReport })
@@ -201,6 +218,15 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     console.error('Error analyzing process:', error)
+    
+    // Don't expose internal error details
+    if (error.message && error.message.includes('validation')) {
+      return res.status(400).json({ error: error.message })
+    }
+    
     res.status(500).json({ error: 'Failed to analyze process' })
   }
 }
+
+// Export with CSRF protection
+export default withCSRF(handler)

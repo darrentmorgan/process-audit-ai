@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -14,6 +14,19 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'signin' }) => {
   const [message, setMessage] = useState('')
 
   const { signIn, signUp, resetPassword } = useAuth()
+
+  // Update mode when defaultMode prop changes
+  useEffect(() => {
+    console.log('🔄 AuthModal: defaultMode changed to:', defaultMode)
+    setMode(defaultMode)
+  }, [defaultMode])
+
+  // Log when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      console.log('🔑 AuthModal opened with mode:', mode)
+    }
+  }, [isOpen, mode])
 
   const clearForm = () => {
     setEmail('')
@@ -250,15 +263,30 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'signin' }) => {
           )}
 
           {mode === 'signup' && (
-            <p className="text-gray-600">
-              Already have an account?{' '}
-              <button
-                onClick={() => setMode('signin')}
-                className="text-primary hover:underline font-medium"
-              >
-                Sign in
-              </button>
-            </p>
+            <div className="space-y-3">
+              <p className="text-gray-600">
+                Already have an account?{' '}
+                <button
+                  onClick={() => setMode('signin')}
+                  className="text-primary hover:underline font-medium"
+                >
+                  Sign in
+                </button>
+              </p>
+              <p className="text-gray-500 text-sm text-center">
+                Or{' '}
+                <button
+                  onClick={() => {
+                    handleClose()
+                    window.location.href = '/?access=granted'
+                  }}
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  try demo mode
+                </button>
+                {' '}without signing up
+              </p>
+            </div>
           )}
 
           {mode === 'reset' && (

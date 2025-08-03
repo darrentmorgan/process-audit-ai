@@ -1,14 +1,35 @@
 import { useState } from 'react'
+import { useRouter } from 'next/router'
 import { User, LogOut, Settings, Save, ChevronDown, Database } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 const UserMenu = ({ onOpenAuth, onOpenSavedReports, onOpenCleanup }) => {
   const { user, signOut, isConfigured } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
+  const router = useRouter()
 
   const handleSignOut = async () => {
-    await signOut()
-    setIsOpen(false)
+    console.log('🔄 UserMenu: Sign out initiated')
+    console.log('📍 Current router path:', router.asPath)
+    console.log('👤 Current user before signout:', user?.email)
+    
+    try {
+      const result = await signOut()
+      console.log('✅ SignOut result:', result)
+      
+      setIsOpen(false)
+      console.log('🔄 Dropdown closed')
+      
+      if (!result?.error) {
+        console.log('🚀 No error, attempting redirect to /')
+        await router.push('/')
+        console.log('✅ Redirect completed')
+      } else {
+        console.error('❌ SignOut error:', result.error)
+      }
+    } catch (error) {
+      console.error('💥 SignOut exception:', error)
+    }
   }
 
   // If Supabase is not configured, show a disabled state
@@ -109,7 +130,12 @@ const UserMenu = ({ onOpenAuth, onOpenSavedReports, onOpenCleanup }) => {
             
             <div className="border-t border-gray-100 mt-1 pt-1">
               <button
-                onClick={handleSignOut}
+                onClick={(e) => {
+                  console.log('🖱️ Sign Out button clicked!', e)
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleSignOut()
+                }}
                 className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
               >
                 <LogOut className="w-4 h-4 mr-3" />

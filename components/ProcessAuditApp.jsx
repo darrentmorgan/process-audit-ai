@@ -11,7 +11,7 @@ import DatabaseCleanup from './DatabaseCleanup'
 import Logo from './Logo'
 import { Zap, Target, BarChart3 } from 'lucide-react'
 
-const ProcessAuditApp = () => {
+const ProcessAuditApp = ({ isDemoMode = false }) => {
   const [currentStep, setCurrentStep] = useState(1)
   const [processData, setProcessData] = useState({
     processDescription: '',
@@ -130,6 +130,7 @@ const ProcessAuditApp = () => {
   }
 
   const openAuthModal = (mode = 'signin') => {
+    console.log('🔑 ProcessAuditApp: Opening auth modal with mode:', mode)
     setAuthModal({ isOpen: true, mode })
   }
 
@@ -187,6 +188,25 @@ const ProcessAuditApp = () => {
             />
           </div>
         </div>
+
+        {/* Demo Mode Banner */}
+        {isDemoMode && (
+          <div className="bg-yellow-500 bg-opacity-90 text-yellow-900 px-6 py-3 rounded-lg mb-8 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <Zap className="w-5 h-5" />
+              <span className="font-semibold">Demo Mode</span>
+              <span>•</span>
+              <span>Try the tool freely</span>
+              <span>•</span>
+              <button 
+                onClick={() => openAuthModal('signup')}
+                className="underline font-semibold hover:no-underline"
+              >
+                Sign up to save your results
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Features Banner */}
         {currentStep === 1 && (
