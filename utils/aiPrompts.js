@@ -544,14 +544,14 @@ export async function generateFollowUpQuestions(previousQuestion, userResponse, 
   }
 }
 
-// Helper function for Claude API calls using Haiku for cost-effective testing
+// Helper function for Claude API calls using Sonnet for better performance and higher token limits
 async function callClaudeAPI(prompt, retryWithMoreTokens = false) {
-  // Significantly increased token limits to handle rich, detailed prompts
-  const maxTokens = retryWithMoreTokens ? 12000 : 8000
+  // Sonnet has much higher token limits (8192 max output) and better quality for complex prompts
+  const maxTokens = retryWithMoreTokens ? 8000 : 4000
   
   console.log('🔗 callClaudeAPI: Making request to Claude API')
   console.log('📊 callClaudeAPI: Request details:', {
-    model: 'claude-3-haiku-20240307',
+    model: 'claude-3-5-sonnet-20241022',
     maxTokens: maxTokens,
     isRetry: retryWithMoreTokens,
     promptLength: prompt.length,
@@ -559,8 +559,8 @@ async function callClaudeAPI(prompt, retryWithMoreTokens = false) {
   })
 
   const requestBody = {
-    model: 'claude-3-haiku-20240307', // Using Haiku for cost-effective testing
-    max_tokens: maxTokens, // Optimized token limit for cost efficiency
+    model: 'claude-3-5-sonnet-20241022', // Using Sonnet for better performance and higher token limits
+    max_tokens: maxTokens, // Within Sonnet's capabilities
     messages: [
       {
         role: 'user',
@@ -608,9 +608,9 @@ async function callClaudeAPI(prompt, retryWithMoreTokens = false) {
       utilizationPercent: Math.round((usage.output_tokens / requestBody.max_tokens) * 100)
     })
     
-    if (usage.output_tokens >= requestBody.max_tokens * 0.95) {
-      console.warn('⚠️ LIKELY TOKEN LIMIT HIT! Response may be truncated.')
-      console.warn('💡 Consider increasing max_tokens or simplifying the prompt.')
+    if (usage.output_tokens >= requestBody.max_tokens * 0.90) {
+      console.warn('⚠️ APPROACHING TOKEN LIMIT! Response may be truncated.')
+      console.warn('💡 Using 90% of available tokens for Sonnet model.')
     }
   }
   
@@ -697,7 +697,7 @@ async function callClaudeAPI(prompt, retryWithMoreTokens = false) {
     }
     
     // If parsing failed and we haven't retried with more tokens yet, try again
-    if (!retryWithMoreTokens && usage && usage.output_tokens >= requestBody.max_tokens * 0.95) {
+    if (!retryWithMoreTokens && usage && usage.output_tokens >= requestBody.max_tokens * 0.90) {
       console.log('🔄 callClaudeAPI: Retrying with increased token limit due to likely truncation')
       return await callClaudeAPI(prompt, true)
     }
