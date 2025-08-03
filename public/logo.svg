@@ -1,0 +1,50 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Brain outline with circuit pattern -->
+  <defs>
+    <style>
+      .brain-outline { fill: none; stroke: currentColor; stroke-width: 1.5; }
+      .circuit-line { fill: none; stroke: currentColor; stroke-width: 1; }
+      .circuit-node { fill: currentColor; }
+    </style>
+  </defs>
+  
+  <!-- Left brain hemisphere with circuit pattern -->
+  <path class="brain-outline" d="M15 35 C15 25, 25 15, 35 15 C40 15, 45 17, 48 20 L48 25 C48 30, 45 35, 40 35 L35 40 C30 45, 25 50, 25 55 C25 65, 30 75, 35 80 C40 85, 45 85, 48 80 L48 75 C48 70, 45 65, 40 65 L35 60 C30 55, 25 50, 25 45 C25 40, 30 35, 35 35 L40 30 C45 25, 48 20, 48 15"/>
+  
+  <!-- Right brain hemisphere -->
+  <path class="brain-outline" d="M52 15 C55 17, 60 15, 65 15 C75 15, 85 25, 85 35 C85 40, 82 45, 78 50 C82 55, 85 60, 85 65 C85 75, 75 85, 65 85 C60 85, 55 83, 52 80 L52 75 C52 70, 55 65, 60 65 L65 60 C70 55, 75 50, 75 45 C75 40, 70 35, 65 35 L60 30 C55 25, 52 20, 52 15"/>
+  
+  <!-- Circuit elements on left side -->
+  <g class="circuit-elements">
+    <!-- Vertical connection line -->
+    <line class="circuit-line" x1="48" y1="15" x2="48" y2="85"/>
+    
+    <!-- Circuit nodes and connections on left -->
+    <circle class="circuit-node" cx="30" cy="25" r="2"/>
+    <circle class="circuit-node" cx="25" cy="35" r="2"/>
+    <circle class="circuit-node" cx="35" cy="45" r="2"/>
+    <circle class="circuit-node" cx="30" cy="55" r="2"/>
+    <circle class="circuit-node" cx="40" cy="65" r="2"/>
+    
+    <!-- Connection lines on left -->
+    <line class="circuit-line" x1="30" y1="25" x2="40" y2="30"/>
+    <line class="circuit-line" x1="25" y1="35" x2="35" y2="35"/>
+    <line class="circuit-line" x1="35" y1="45" x2="45" y2="50"/>
+    <line class="circuit-line" x1="30" y1="55" x2="40" y2="60"/>
+    <line class="circuit-line" x1="40" y1="65" x2="48" y2="70"/>
+    
+    <!-- Horizontal connections to center -->
+    <line class="circuit-line" x1="40" y1="30" x2="48" y2="30"/>
+    <line class="circuit-line" x1="35" y1="35" x2="48" y2="35"/>
+    <line class="circuit-line" x1="45" y1="50" x2="48" y2="50"/>
+    <line class="circuit-line" x1="40" y1="60" x2="48" y2="60"/>
+  </g>
+  
+  <!-- Organic curves on right side -->
+  <g class="organic-curves">
+    <path class="brain-outline" d="M60 30 C65 32, 70 35, 68 40"/>
+    <path class="brain-outline" d="M65 45 C70 48, 72 52, 68 55"/>
+    <path class="brain-outline" d="M62 60 C67 62, 70 65, 68 70"/>
+    <path class="brain-outline" d="M58 75 C63 77, 68 80, 65 82"/>
+  </g>
+</svg>

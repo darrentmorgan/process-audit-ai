@@ -1,0 +1,28 @@
+{
+  "name": "process-audit-ai",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "setup:supabase": "./scripts/setup-supabase.sh",
+    "setup:quick": "./scripts/quick-supabase.sh",
+    "validate": "./scripts/validate-setup.sh"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.53.0",
+    "lucide-react": "^0.294.0",
+    "next": "14.0.0",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.0",
+    "postcss": "^8",
+    "tailwindcss": "^3"
+  }
+}
