@@ -167,8 +167,8 @@ const ProcessAuditApp = () => {
     <div className="min-h-screen gradient-bg">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex justify-between items-start mb-12">
-          <div className="text-center flex-1">
+        <div className="relative mb-12">
+          <div className="text-center">
             <div className="flex items-center justify-center mb-4">
               <Logo className="w-16 h-16 text-white mr-4" color="currentColor" />
               <h1 className="text-4xl font-bold text-white">ProcessAudit AI</h1>
@@ -178,8 +178,8 @@ const ProcessAuditApp = () => {
             </p>
           </div>
           
-          {/* User Menu */}
-          <div className="ml-8">
+          {/* User Menu - positioned absolutely in top right */}
+          <div className="absolute top-0 right-0">
             <UserMenu 
               onOpenAuth={openAuthModal} 
               onOpenSavedReports={openSavedReports}
