@@ -291,6 +291,23 @@ Return a comprehensive JSON object with this exact structure:
     "implementationRisks": ["risk 1", "risk 2"],
     "mitigationStrategies": ["strategy 1", "strategy 2"],
     "rollbackPlans": ["plan 1", "plan 2"]
+  },
+  "implementationGuidance": {
+    "gettingStarted": [
+      "First concrete step to begin implementation",
+      "Second practical action item",
+      "Third foundational step"
+    ],
+    "successMetrics": [
+      "Key performance indicator 1",
+      "Measurable outcome 2",
+      "Success metric 3"
+    ],
+    "riskConsiderations": [
+      "Primary implementation risk",
+      "Potential challenge to plan for",
+      "Critical consideration"
+    ]
   }
 }
 

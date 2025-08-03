@@ -545,7 +545,7 @@ const AuditReport = ({ report, onRestart, processData }) => {
                       <div>
                         <h4 className="font-semibold text-gray-900 mb-3">Key Benefits</h4>
                         <ul className="space-y-1 text-sm text-gray-600">
-                          {phase.keyBenefits.map((benefit, benefitIndex) => (
+                          {(phase.keyBenefits || []).map((benefit, benefitIndex) => (
                             <li key={benefitIndex} className="flex items-start">
                               <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 mr-2 flex-shrink-0"></div>
                               <span>{benefit}</span>
@@ -567,7 +567,7 @@ const AuditReport = ({ report, onRestart, processData }) => {
             <div className="card">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Getting Started</h3>
               <ul className="space-y-3">
-                {implementationGuidance.gettingStarted.map((item, index) => (
+                {(implementationGuidance.gettingStarted || []).map((item, index) => (
                   <li key={index} className="flex items-start">
                     <div className="w-6 h-6 rounded-full bg-primary text-white text-sm font-medium flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
                       {index + 1}
@@ -582,7 +582,7 @@ const AuditReport = ({ report, onRestart, processData }) => {
               <div className="card">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Success Metrics</h3>
                 <ul className="space-y-2">
-                  {implementationGuidance.successMetrics.map((metric, index) => (
+                  {(implementationGuidance.successMetrics || []).map((metric, index) => (
                     <li key={index} className="flex items-center">
                       <BarChart3 className="w-4 h-4 text-secondary mr-3" />
                       <span className="text-gray-700">{metric}</span>
@@ -594,7 +594,7 @@ const AuditReport = ({ report, onRestart, processData }) => {
               <div className="card">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Risk Considerations</h3>
                 <ul className="space-y-2">
-                  {implementationGuidance.riskConsiderations.map((risk, index) => (
+                  {(implementationGuidance.riskConsiderations || []).map((risk, index) => (
                     <li key={index} className="flex items-start">
                       <AlertTriangle className="w-4 h-4 text-warning mr-3 mt-0.5 flex-shrink-0" />
                       <span className="text-gray-700">{risk}</span>

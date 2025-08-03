@@ -9,14 +9,18 @@ import {
   ArrowRight,
   Bot,
   Cog,
-  DollarSign
+  DollarSign,
+  LogIn,
+  UserPlus
 } from 'lucide-react'
 import Logo from './Logo'
+import AuthModal from './AuthModal'
 
 const LandingPage = ({ onSignUp }) => {
   const [email, setEmail] = useState('')
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [authModal, setAuthModal] = useState({ isOpen: false, mode: 'signin' })
 
   const handleSignUp = async (e) => {
     e.preventDefault()
@@ -39,15 +43,41 @@ const LandingPage = ({ onSignUp }) => {
     }
   }
 
+  const openAuthModal = (mode = 'signin') => {
+    setAuthModal({ isOpen: true, mode })
+  }
+
+  const closeAuthModal = () => {
+    setAuthModal({ isOpen: false, mode: 'signin' })
+  }
+
   return (
     <div className="min-h-screen gradient-bg overflow-hidden">
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex justify-center items-center mb-16">
+        <div className="flex justify-between items-center mb-16">
           <div className="flex items-center">
             <Logo className="w-12 h-12 text-white mr-3" />
             <h1 className="text-2xl font-bold text-white">ProcessAudit AI</h1>
+          </div>
+          
+          {/* Auth Buttons */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => openAuthModal('signin')}
+              className="flex items-center px-4 py-2 text-white hover:text-blue-200 transition-colors duration-200"
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              Sign In
+            </button>
+            <button
+              onClick={() => openAuthModal('signup')}
+              className="flex items-center px-6 py-2 bg-white bg-opacity-20 backdrop-blur-md rounded-lg border border-white border-opacity-30 text-white hover:bg-opacity-30 transition-all duration-200"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Try It Now
+            </button>
           </div>
         </div>
 
@@ -86,45 +116,57 @@ const LandingPage = ({ onSignUp }) => {
                 </div>
               </div>
 
-              {/* Signup Form */}
-              {!isSubmitted ? (
-                <form onSubmit={handleSignUp} className="max-w-md mx-auto lg:mx-0">
-                  <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-6 border border-white border-opacity-20">
-                    <h3 className="text-lg font-semibold text-white mb-4">Get Early Access</h3>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Enter your email"
-                        className="flex-1 px-4 py-3 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
-                        required
-                      />
-                      <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50 flex items-center justify-center min-w-[120px]"
-                      >
-                        {isLoading ? (
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                        ) : (
-                          <>
-                            Join Waitlist
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </>
-                        )}
-                      </button>
+              {/* Call to Action Options */}
+              <div className="max-w-md mx-auto lg:mx-0">
+                <div className="flex flex-col gap-4 mb-6">
+                  {/* Primary CTA - Try It Now */}
+                  <button
+                    onClick={() => openAuthModal('signup')}
+                    className="w-full px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200 text-lg flex items-center justify-center shadow-lg"
+                  >
+                    <UserPlus className="mr-3 h-6 w-6" />
+                    Start Free Analysis Now
+                    <ArrowRight className="ml-3 h-6 w-6" />
+                  </button>
+                  
+                  {/* Secondary CTA - Join Waitlist */}
+                  {!isSubmitted ? (
+                    <div className="text-center">
+                      <p className="text-blue-200 text-sm mb-3">Or join our waitlist for updates</p>
+                      <form onSubmit={handleSignUp} className="flex gap-2">
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="Enter your email"
+                          className="flex-1 px-4 py-3 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+                          required
+                        />
+                        <button
+                          type="submit"
+                          disabled={isLoading}
+                          className="px-6 py-3 bg-white bg-opacity-20 backdrop-blur-md border border-white border-opacity-30 text-white font-semibold rounded-lg hover:bg-opacity-30 transition-all duration-200 disabled:opacity-50 flex items-center justify-center min-w-[100px]"
+                        >
+                          {isLoading ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          ) : (
+                            'Join'
+                          )}
+                        </button>
+                      </form>
                     </div>
-                    <p className="text-blue-200 text-sm mt-3">Join 1,000+ founders optimizing their operations</p>
-                  </div>
-                </form>
-              ) : (
-                <div className="max-w-md mx-auto lg:mx-0 bg-green-500 bg-opacity-20 border border-green-400 rounded-2xl p-6 text-center">
-                  <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold text-white mb-2">You're on the list!</h3>
-                  <p className="text-green-200">We'll notify you when ProcessAudit AI is ready to transform your business.</p>
+                  ) : (
+                    <div className="text-center bg-green-500 bg-opacity-20 border border-green-400 rounded-lg p-4">
+                      <CheckCircle className="w-6 h-6 text-green-400 mx-auto mb-2" />
+                      <p className="text-green-200">You're on the waitlist!</p>
+                    </div>
+                  )}
                 </div>
-              )}
+                
+                <p className="text-blue-200 text-sm text-center">
+                  <strong>Free to try</strong> • No credit card required • 5-minute setup
+                </p>
+              </div>
             </div>
 
             {/* Right Column - Visual Demo */}
@@ -317,18 +359,29 @@ const LandingPage = ({ onSignUp }) => {
             Ready to Transform Your Business?
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Join the waitlist and be among the first to experience AI-powered process optimization.
+            Start your free automation analysis now or join our waitlist for updates.
           </p>
           
-          {!isSubmitted && (
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => document.querySelector('input[type="email"]').scrollIntoView({ behavior: 'smooth' })}
-              className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all duration-200 text-lg flex items-center mx-auto"
+              onClick={() => openAuthModal('signup')}
+              className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200 text-lg flex items-center justify-center shadow-lg"
             >
-              Get Early Access
+              <UserPlus className="mr-2 h-5 w-5" />
+              Start Free Analysis
               <ArrowRight className="ml-2 h-5 w-5" />
             </button>
-          )}
+            
+            {!isSubmitted && (
+              <button
+                onClick={() => document.querySelector('input[type="email"]').scrollIntoView({ behavior: 'smooth' })}
+                className="px-8 py-4 bg-white bg-opacity-20 backdrop-blur-md border border-white border-opacity-30 text-white font-semibold rounded-xl hover:bg-opacity-30 transition-all duration-200 text-lg flex items-center justify-center"
+              >
+                Join Waitlist
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
@@ -338,6 +391,13 @@ const LandingPage = ({ onSignUp }) => {
           </p>
         </div>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={authModal.isOpen}
+        onClose={closeAuthModal}
+        defaultMode={authModal.mode}
+      />
     </div>
   )
 }
