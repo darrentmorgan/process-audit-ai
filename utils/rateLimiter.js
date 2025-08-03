@@ -2,7 +2,7 @@
 import { LRUCache } from 'lru-cache';
 
 // Create a map to store different rate limiters
-const rateLimiters = new Map();
+const limiterCache = new Map();
 
 /**
  * Create a rate limiter middleware
@@ -22,15 +22,15 @@ export function rateLimit(options = {}) {
   // Create or get existing cache for this limiter
   const key = `${interval}-${maxRequests}`;
   
-  if (!rateLimiters.has(key)) {
+  if (!limiterCache.has(key)) {
     const tokenCache = new LRUCache({
       max: uniqueTokenPerInterval,
       ttl: interval,
     });
-    rateLimiters.set(key, tokenCache);
+    limiterCache.set(key, tokenCache);
   }
   
-  const tokenCache = rateLimiters.get(key);
+  const tokenCache = limiterCache.get(key);
 
   return async (req, res) => {
     try {
