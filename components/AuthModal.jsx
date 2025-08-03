@@ -17,16 +17,8 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'signin' }) => {
 
   // Update mode when defaultMode prop changes
   useEffect(() => {
-    console.log('🔄 AuthModal: defaultMode changed to:', defaultMode)
     setMode(defaultMode)
   }, [defaultMode])
-
-  // Log when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      console.log('🔑 AuthModal opened with mode:', mode)
-    }
-  }, [isOpen, mode])
 
   const clearForm = () => {
     setEmail('')

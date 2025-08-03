@@ -9,26 +9,15 @@ const UserMenu = ({ onOpenAuth, onOpenSavedReports, onOpenCleanup }) => {
   const router = useRouter()
 
   const handleSignOut = async () => {
-    console.log('🔄 UserMenu: Sign out initiated')
-    console.log('📍 Current router path:', router.asPath)
-    console.log('👤 Current user before signout:', user?.email)
-    
     try {
       const result = await signOut()
-      console.log('✅ SignOut result:', result)
-      
       setIsOpen(false)
-      console.log('🔄 Dropdown closed')
       
       if (!result?.error) {
-        console.log('🚀 No error, attempting redirect to /')
         await router.push('/')
-        console.log('✅ Redirect completed')
-      } else {
-        console.error('❌ SignOut error:', result.error)
       }
     } catch (error) {
-      console.error('💥 SignOut exception:', error)
+      console.error('Sign out error:', error)
     }
   }
 
@@ -131,7 +120,6 @@ const UserMenu = ({ onOpenAuth, onOpenSavedReports, onOpenCleanup }) => {
             <div className="border-t border-gray-100 mt-1 pt-1">
               <button
                 onClick={(e) => {
-                  console.log('🖱️ Sign Out button clicked!', e)
                   e.preventDefault()
                   e.stopPropagation()
                   handleSignOut()

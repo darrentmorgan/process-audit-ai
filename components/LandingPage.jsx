@@ -44,7 +44,6 @@ const LandingPage = ({ onSignUp }) => {
   }
 
   const openAuthModal = (mode = 'signin') => {
-    console.log('🔑 LandingPage: Opening auth modal with mode:', mode)
     setAuthModal({ isOpen: true, mode })
   }
 

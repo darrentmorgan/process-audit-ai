@@ -446,12 +446,6 @@ CRITICAL JSON FORMATTING REQUIREMENTS:
 IMPORTANT: Generate follow-up questions that feel like a smart consultant who listened carefully to their answer and wants to understand the automation potential at a deeper level, while staying within the 4,000 token output limit.`
 
 export async function generateQuestions(processDescription, fileContent = '') {
-  console.log('🚀 generateQuestions: Starting question generation')
-  console.log('📝 Input data:', {
-    processDescriptionLength: processDescription.length,
-    fileContentLength: fileContent.length,
-    hasApiKey: !!process.env.CLAUDE_API_KEY
-  })
 
   try {
     if (process.env.CLAUDE_API_KEY) {

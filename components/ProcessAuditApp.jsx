@@ -130,7 +130,6 @@ const ProcessAuditApp = ({ isDemoMode = false }) => {
   }
 
   const openAuthModal = (mode = 'signin') => {
-    console.log('🔑 ProcessAuditApp: Opening auth modal with mode:', mode)
     setAuthModal({ isOpen: true, mode })
   }
 
