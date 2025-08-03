@@ -1,17 +1,5 @@
 {
   "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install",
-  "devCommand": "npm run dev",
-  "env": {
-    "NEXT_PUBLIC_APP_URL": "@next_public_app_url"
-  },
-  "build": {
-    "env": {
-      "CLAUDE_API_KEY": "@claude_api_key"
-    }
-  },
   "functions": {
     "pages/api/analyze-process.js": {
       "maxDuration": 30
