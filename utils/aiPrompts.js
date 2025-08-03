@@ -126,6 +126,12 @@ QUALITY CRITERIA:
 ✅ **Technical Implementation Ready**: Questions gather info needed for actual implementation
 ✅ **Progressive Disclosure**: Start broad, then enable deep dives based on answers
 
+CRITICAL OUTPUT REQUIREMENTS:
+⚠️ **TOKEN LIMIT CONSTRAINT**: You have a maximum of 4,000 output tokens. Your response must fit within this limit.
+- Generate 6-8 concise but comprehensive questions (not more to stay within token limits)
+- Keep automationFocus explanations brief but informative
+- Prioritize the most important automation opportunities
+
 CRITICAL JSON FORMATTING REQUIREMENTS:
 - Respond with ONLY valid JSON - no explanations, no markdown, no additional text
 - Start with [ and end with ]
@@ -133,8 +139,9 @@ CRITICAL JSON FORMATTING REQUIREMENTS:
 - Do not include any text before or after the JSON array
 - Double-check that all brackets and braces are properly closed
 - Include followUpTriggers for intelligent question customization
+- Keep JSON structure compact to respect token limits
 
-IMPORTANT: Your response must be valid JSON that can be parsed directly and enable dynamic follow-up question generation.`
+IMPORTANT: Your response must be valid JSON that can be parsed directly, enable dynamic follow-up question generation, and fit within the 4,000 token output limit.`
 
 export const PROCESS_ANALYSIS_PROMPT = `You are ProcessAudit AI, an expert automation consultant specializing in SaaS workflow optimization for technical founders. You excel at identifying high-impact automation opportunities with precise ROI calculations and actionable implementation roadmaps.
 
@@ -304,6 +311,19 @@ Focus on practical, implementable solutions using readily available tools and AP
 
 Provide technical founders with the specific information they need to make informed decisions and begin implementation immediately.
 
+CRITICAL OUTPUT REQUIREMENTS:
+⚠️ **TOKEN LIMIT CONSTRAINT**: You have a maximum of 4,000 output tokens. Your response must fit within this limit.
+- Focus on the TOP 3-5 highest-impact automation opportunities (quality over quantity)
+- Keep descriptions concise but actionable
+- Prioritize quick wins and strategic opportunities
+- Include essential technical details but be concise
+
+RESPONSE OPTIMIZATION FOR TOKEN LIMITS:
+- Limit automationOpportunities array to 3-5 items maximum
+- Keep implementationSteps to 3-4 key steps per opportunity
+- Use concise but specific language
+- Focus on the most valuable information for technical founders
+
 CRITICAL JSON FORMATTING REQUIREMENTS:
 - Respond with ONLY valid JSON - no explanations, no markdown, no additional text
 - Start with { and end with }
@@ -311,8 +331,9 @@ CRITICAL JSON FORMATTING REQUIREMENTS:
 - Do not include any text before or after the JSON object
 - Double-check that all brackets and braces are properly closed
 - Ensure all JSON keys are in double quotes
+- Keep JSON structure efficient to respect token limits
 
-IMPORTANT: Your response must be valid JSON that can be parsed directly and provide comprehensive, actionable automation recommendations.`
+IMPORTANT: Your response must be valid JSON that can be parsed directly, provide comprehensive but concise automation recommendations, and fit within the 4,000 token output limit.`
 
 export const DYNAMIC_FOLLOWUP_PROMPT = `You are ProcessAudit AI. Based on the user's response, generate 2-3 intelligent, personalized follow-up questions that dive deeper into specific automation opportunities revealed by their answer.
 
@@ -391,14 +412,21 @@ If they mentioned "multiple times per day":
 - "What triggers each iteration - is it scheduled, event-driven, or on-demand?"
 - "Are there peak times when you're doing this process more frequently?"
 
+CRITICAL OUTPUT REQUIREMENTS:
+⚠️ **TOKEN LIMIT CONSTRAINT**: You have a maximum of 4,000 output tokens. Your response must fit within this limit.
+- Generate exactly 2-3 focused follow-up questions (not more)
+- Keep questions concise but insightful
+- Focus on the highest-value automation opportunities revealed by their answer
+
 CRITICAL JSON FORMATTING REQUIREMENTS:
 - Respond with ONLY valid JSON - no explanations, no markdown, no additional text
 - Start with [ and end with ]
 - Ensure all strings are properly quoted and JSON-escaped
 - Do not include any text before or after the JSON array
 - Make questions highly specific to the user's actual response
+- Keep JSON structure compact to respect token limits
 
-IMPORTANT: Generate follow-up questions that feel like a smart consultant who listened carefully to their answer and wants to understand the automation potential at a deeper level.`
+IMPORTANT: Generate follow-up questions that feel like a smart consultant who listened carefully to their answer and wants to understand the automation potential at a deeper level, while staying within the 4,000 token output limit.`
 
 export async function generateQuestions(processDescription, fileContent = '') {
   console.log('🚀 generateQuestions: Starting question generation')
@@ -555,7 +583,8 @@ async function callClaudeAPI(prompt, retryWithMoreTokens = false) {
     maxTokens: maxTokens,
     isRetry: retryWithMoreTokens,
     promptLength: prompt.length,
-    promptPreview: prompt.substring(0, 200) + '...'
+    promptPreview: prompt.substring(0, 200) + '...',
+    tokenLimitInformed: 'Prompt includes explicit 4000 token limit instruction'
   })
 
   const requestBody = {
