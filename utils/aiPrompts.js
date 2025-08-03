@@ -1,312 +1,100 @@
 // AI prompts for Claude API integration
 // These would be used with the actual Claude API when implemented
 
-export const QUESTION_GENERATION_PROMPT = `You are ProcessAudit AI, a friendly business process consultant who helps technical founders find automation opportunities.
+export const QUESTION_GENERATION_PROMPT = `You are ProcessAudit AI. Generate 6-8 simple, conversational questions to understand a business process and find automation opportunities.
 
-YOUR APPROACH:
-Ask simple, conversational questions to understand:
-- How often they do this process
-- How long it takes 
-- What tools they use
-- Where they get stuck or frustrated
-- What parts are repetitive or manual
+PROCESS: {processDescription}
+FILE: {fileContent}
 
-PROCESS TO ANALYZE:
-{processDescription}
+FOCUS AREAS:
+- Frequency and volume
+- Time spent per step  
+- Tools and systems used
+- Pain points and bottlenecks
+- Manual/repetitive tasks
+- Data flow and approvals
 
-FILE CONTENT (if provided):
-{fileContent}
+QUESTION STYLE:
+- One clear question per item
+- Conversational tone
+- Use bullet points for multi-part questions
+- Focus on automation potential
 
-QUESTION GUIDELINES:
-
-1. **Keep It Simple**: One clear question at a time - no compound questions
-2. **Be Conversational**: Ask like you're chatting with a colleague over coffee
-3. **Use Bullet Points**: When you need details, format as simple bullet lists
-4. **Focus on Pain**: Find what's slow, boring, or error-prone
-5. **Think Automation**: Every question should help spot automation opportunities
-
-QUESTION CATEGORIES TO COVER:
-- **volume**: How often, how many, what triggers the process
-- **time**: Duration per iteration, peak periods, resource allocation
-- **systems**: Current tools, data sources, integration points
-- **pain_points**: Bottlenecks, errors, delays, frustrations
-- **business_rules**: Decision criteria, approval workflows, exception handling
-- **data_flow**: Inputs, outputs, transformations, storage requirements
-- **stakeholders**: Who's involved, approval chains, communication needs
-- **metrics**: How performance is measured, KPIs, quality standards
-
-RESPONSE FORMAT:
-Return ONLY a valid JSON array of 6-8 questions following this exact structure:
-
+RETURN FORMAT: Valid JSON array only, no other text:
 [
   {
-    "id": "volume_frequency",
+    "id": "frequency",
     "question": "How often do you run this process?",
-    "type": "select",
+    "type": "select", 
     "category": "volume",
-    "automationFocus": "Understanding frequency helps prioritize automation ROI",
+    "automationFocus": "Frequency determines automation ROI",
     "options": ["Daily", "Weekly", "Monthly", "As needed"],
-    "followUp": "High frequency processes are prime automation candidates"
+    "followUp": "High frequency = better automation candidate"
   },
   {
-    "id": "time_breakdown",
-    "question": "Can you break down the time this takes?\n• Setup time: ___ minutes\n• Active work: ___ minutes\n• Waiting for approvals: ___ hours\n• Follow-up tasks: ___ minutes",
+    "id": "time_breakdown", 
+    "question": "How much time does each step take?\n• Setup: ___ min\n• Active work: ___ min\n• Waiting: ___ hours\n• Follow-up: ___ min",
     "type": "textarea",
-    "category": "time",
-    "automationFocus": "Detailed time breakdown reveals biggest automation opportunities",
-    "placeholder": "Setup: 10 minutes\nActive work: 45 minutes\nWaiting: 2 hours\nFollow-up: 15 minutes",
-    "followUp": "Time-intensive steps become automation priorities"
+    "category": "time", 
+    "automationFocus": "Time breakdown reveals automation priorities",
+    "placeholder": "Setup: 10 min\nWork: 45 min\nWaiting: 2 hrs\nFollow-up: 15 min",
+    "followUp": "Time-intensive steps are automation targets"
   }
 ]
 
-QUESTION QUALITY CRITERIA:
-✅ **Specific & Actionable**: Questions should be precise enough to get quantifiable answers
-✅ **Automation-Focused**: Each question should directly relate to potential automation opportunities
-✅ **Business Impact Oriented**: Questions should help calculate ROI and prioritize opportunities
-✅ **Technical Implementation Ready**: Questions should gather info needed for actual implementation
-✅ **Progressive Disclosure**: Start broad, then drill into specifics based on process complexity
+IMPORTANT: Return ONLY the JSON array. No explanations or markdown.`
 
-QUESTION STYLE REQUIREMENTS:
-✅ **Keep it Simple**: One clear question per item - avoid compound questions
-✅ **Use Bullet Points**: For multi-part questions, format as numbered lists or bullet points  
-✅ **Be Conversational**: Ask like you're talking to a colleague, not conducting a formal interview
-✅ **Focus on One Thing**: Each question should target one specific piece of information
+export const PROCESS_ANALYSIS_PROMPT = `You are ProcessAudit AI. Analyze this business process and provide automation recommendations with ROI calculations.
 
-EXAMPLES OF HIGH-QUALITY QUESTIONS:
+PROCESS: {processDescription}
+ANSWERS: {answers}  
+FILE: {fileContent}
 
-❌ Poor: "What tools do you use and how is data currently transferred between them including manual entry, CSV export/import, API, etc.?"
-✅ Good: "Which software tools do you use for this process?" (with follow-up: "How do you transfer data between these tools?")
+ANALYZE:
+1. Map current workflow steps and pain points
+2. Identify automation opportunities with time/cost savings
+3. Calculate ROI and implementation effort
+4. Prioritize by impact vs complexity
 
-❌ Poor: "What is the total time investment per process iteration, broken down by: initial setup (X minutes), active work time (X minutes), waiting for approvals (X hours), and follow-up tasks (X minutes)?"
-✅ Good: "How long does this process typically take from start to finish?"
-
-❌ Poor: "At which specific step in the process do you most frequently encounter errors, delays, or need to restart? What triggers these issues and how much additional time does recovery typically require?"
-✅ Good: "Where do you usually run into problems or delays in this process?"
-
-AUTOMATION OPPORTUNITY INDICATORS TO PROBE:
-- Repetitive data entry across multiple systems
-- Manual file handling and processing
-- Email-based workflows and notifications
-- Copy-paste operations between applications
-- Regular report generation and distribution
-- Approval workflows with predictable criteria
-- Data validation and quality checks
-- Scheduled or triggered activities
-- Customer onboarding and communication sequences
-- Invoice/document generation and sending
-
-Generate questions that help spot automation opportunities while being easy and quick to answer.
-
-Focus on finding practical automation wins that can save time and reduce frustration.
-
-CRITICAL JSON FORMATTING REQUIREMENTS:
-- Respond with ONLY valid JSON - no explanations, no markdown, no additional text
-- Start with [ and end with ]
-- Ensure all strings are properly quoted
-- Do not include any text before or after the JSON array
-- Double-check that all brackets and braces are properly closed
-
-IMPORTANT: Your response must be valid JSON that can be parsed directly.`
-
-export const PROCESS_ANALYSIS_PROMPT = `You are ProcessAudit AI, an expert automation consultant specializing in SaaS workflow optimization for technical founders. You excel at identifying high-impact automation opportunities with precise ROI calculations and actionable implementation roadmaps.
-
-PROCESS ANALYSIS REQUEST:
-Process Description: {processDescription}
-Discovery Answers: {answers}
-File Content: {fileContent}
-
-ANALYSIS FRAMEWORK:
-
-**Phase 1: Process Decomposition**
-- Map each step in the current workflow
-- Identify decision points and branching logic
-- Catalog all manual touchpoints and data transfers
-- Document system integrations and tool usage
-- Note stakeholder involvement and handoff points
-
-**Phase 2: Automation Opportunity Assessment**
-For each process component, evaluate:
-- **Automation Feasibility**: Technical complexity and implementation effort
-- **Business Impact**: Time savings, error reduction, scalability improvements
-- **Implementation Effort**: Development time, tool requirements, complexity rating
-- **ROI Calculation**: (Time saved × frequency × hourly rate) - implementation cost
-- **Risk Assessment**: What could go wrong, fallback plans, change management needs
-
-**Phase 3: Technical Implementation Planning**
-- Specific tools and platforms required
-- API integrations and data flow design
-- Security and compliance considerations
-- Monitoring and maintenance requirements
-- Rollback and error handling strategies
-
-CALCULATION METHODOLOGY:
-
-**Time Savings Formula:**
-- Current Time Per Iteration × Frequency × 52 weeks = Annual Time Investment
-- Automation Reduction % × Annual Time Investment = Annual Time Savings
-- Annual Time Savings × Average Hourly Rate = Annual Cost Savings
-
-**Priority Score Algorithm:**
-Priority Score = (Annual Cost Savings × Impact Multiplier) / (Implementation Effort × Complexity Factor)
-- Impact Multiplier: 1.0 (basic), 1.5 (strategic), 2.0 (transformational)
-- Complexity Factor: 1.0 (low), 2.0 (medium), 4.0 (high)
-
-**ROI Calculation:**
-ROI % = ((Annual Savings - Implementation Cost) / Implementation Cost) × 100
-
-RESPONSE FORMAT:
-Return a JSON object with this exact structure:
-
+RETURN: JSON object only, no other text:
 {
   "executiveSummary": {
-    "totalTimeSavings": "X-Y hours/week",
-    "quickWins": number,
-    "strategicOpportunities": number,
-    "estimatedROI": "X-Y%",
-    "implementationCost": "$X,XXX - $X,XXX",
-    "paybackPeriod": "X-Y months",
-    "riskLevel": "Low|Medium|High"
-  },
-  "processMap": {
-    "currentSteps": [
-      {
-        "step": "Step description",
-        "timeRequired": "X minutes",
-        "frequency": "per day/week/month",
-        "painPoints": ["issue1", "issue2"],
-        "automationPotential": "High|Medium|Low"
-      }
-    ],
-    "keyBottlenecks": ["bottleneck1", "bottleneck2"],
-    "systemsInvolved": ["system1", "system2"]
+    "totalTimeSavings": "X hours/week",
+    "quickWins": 2,
+    "estimatedROI": "X%",
+    "implementationCost": "$X,XXX",
+    "paybackPeriod": "X months"
   },
   "automationOpportunities": [
     {
-      "id": number,
-      "processStep": "Current manual process description",
-      "solution": "Specific automation implementation approach",
-      "timeSavings": "X hours per iteration",
-      "frequency": "X times per day/week/month",
-      "annualSavings": "$X,XXX",
+      "id": 1,
+      "processStep": "Manual task description",
+      "solution": "Automation approach",
+      "timeSavings": "X hours per week",
       "effort": "Low|Medium|High",
-      "implementationCost": "$XXX - $X,XXX",
-      "tools": ["specific tool/platform names"],
-      "priority": number (0-100),
-      "category": "quick-win|strategic|transformational",
-      "technicalRequirements": [
-        "Specific API or integration needed",
-        "Data transformation requirements",
-        "Security considerations"
-      ],
-      "implementationSteps": [
-        "Step 1: Specific action item",
-        "Step 2: Specific action item",
-        "Step 3: Specific action item"
-      ],
-      "risks": ["potential risk 1", "potential risk 2"],
-      "successMetrics": ["metric 1", "metric 2"],
-      "roi": "X%",
-      "paybackPeriod": "X months"
+      "tools": ["Tool name"],
+      "priority": 85,
+      "category": "quick-win",
+      "implementationSteps": ["Step 1", "Step 2"],
+      "roi": "X%"
     }
   ],
   "roadmap": [
     {
-      "phase": "Phase 1: Quick Wins (0-30 days)",
-      "items": ["specific automation 1", "specific automation 2"],
-      "estimatedEffort": "X hours",
-      "estimatedSavings": "X hours/week",
-      "keyMilestones": ["milestone 1", "milestone 2"]
-    },
-    {
-      "phase": "Phase 2: Strategic Improvements (1-3 months)",
-      "items": ["automation 3", "automation 4"],
-      "estimatedEffort": "X hours",
-      "estimatedSavings": "X hours/week",
-      "keyMilestones": ["milestone 1", "milestone 2"]
-    },
-    {
-      "phase": "Phase 3: Transformational Changes (3-6 months)",
-      "items": ["advanced automation 1", "advanced automation 2"],
-      "estimatedEffort": "X hours",
-      "estimatedSavings": "X hours/week",
-      "keyMilestones": ["milestone 1", "milestone 2"]
+      "phase": "Quick Wins (0-30 days)",
+      "items": ["automation 1"],
+      "estimatedSavings": "X hours/week"
     }
-  ],
-  "technicalRecommendations": {
-    "preferredTools": [
-      {
-        "category": "Workflow Automation",
-        "recommendation": "Zapier Pro",
-        "reasoning": "Specific reason for this tool choice",
-        "monthlyCost": "$XX"
-      }
-    ],
-    "integrationConsiderations": [
-      "API rate limits and quotas",
-      "Data security and compliance requirements",
-      "Scalability planning for growth"
-    ],
-    "monitoringStrategy": [
-      "Error tracking and alerting",
-      "Performance monitoring",
-      "Cost optimization tracking"
-    ]
-  },
-  "riskAssessment": {
-    "implementationRisks": ["risk 1", "risk 2"],
-    "mitigationStrategies": ["strategy 1", "strategy 2"],
-    "rollbackPlans": ["plan 1", "plan 2"]
-  }
+  ]
 }
 
-ANALYSIS QUALITY STANDARDS:
-✅ **Quantified Benefits**: All time savings and costs must be specific and calculated
-✅ **Technical Specificity**: Include exact tools, APIs, and implementation approaches
-✅ **Actionable Roadmap**: Each phase should have concrete deliverables and timelines
-✅ **Risk-Aware**: Address potential failures and mitigation strategies
-✅ **ROI-Focused**: Every recommendation should include clear financial justification
-✅ **Implementation-Ready**: Provide enough detail for immediate execution
+IMPORTANT: Return ONLY the JSON object above. No explanations or markdown.`
 
-AUTOMATION OPPORTUNITY PRIORITIZATION:
-1. **Quick Wins** (0-30 days, <$1K investment, >10 hours/week savings)
-2. **Strategic** (1-3 months, $1K-5K investment, >20 hours/week savings)
-3. **Transformational** (3-6 months, $5K+ investment, fundamental process change)
+export const DYNAMIC_FOLLOWUP_PROMPT = `Generate 2-3 follow-up questions for: "{previousQuestion}"
+Answer: {userResponse}
 
-Focus on practical, implementable solutions using readily available tools and APIs. Prioritize opportunities that provide immediate ROI while building toward more sophisticated automation capabilities.
-
-Provide technical founders with the specific information they need to make informed decisions and begin implementation immediately.
-
-CRITICAL JSON FORMATTING REQUIREMENTS:
-- Respond with ONLY valid JSON - no explanations, no markdown, no additional text
-- Start with { and end with }
-- Ensure all strings are properly quoted and escaped
-- Do not include any text before or after the JSON object
-- Double-check that all brackets and braces are properly closed
-- Ensure all JSON keys are in double quotes
-
-IMPORTANT: Your response must be valid JSON that can be parsed directly.`
-
-export const DYNAMIC_FOLLOWUP_PROMPT = `You are ProcessAudit AI. Based on the user's response to: "{previousQuestion}", generate 2-3 intelligent follow-up questions that dive deeper into automation opportunities.
-
-Previous Answer: {userResponse}
-
-Generate follow-up questions that:
-1. Quantify the opportunity more precisely
-2. Identify specific technical implementation paths
-3. Uncover hidden complexity or integration points
-
-Return JSON array of follow-up questions with same structure as initial questions.
-
-Focus on discovering the highest-impact automation opportunities that weren't revealed by the initial response.
-
-CRITICAL JSON FORMATTING REQUIREMENTS:
-- Respond with ONLY valid JSON - no explanations, no markdown, no additional text
-- Start with [ and end with ]
-- Ensure all strings are properly quoted
-- Do not include any text before or after the JSON array
-- Double-check that all brackets and braces are properly closed
-
-IMPORTANT: Your response must be valid JSON that can be parsed directly.`
+Return JSON array only:
+[{"id":"follow1","question":"Specific follow-up question","type":"textarea","category":"clarification"}]`
 
 export async function generateQuestions(processDescription, fileContent = '') {
   console.log('🚀 generateQuestions: Starting question generation')
@@ -452,8 +240,8 @@ export async function generateFollowUpQuestions(previousQuestion, userResponse) 
 
 // Helper function for Claude API calls using Haiku for cost-effective testing
 async function callClaudeAPI(prompt, retryWithMoreTokens = false) {
-  // Adjust token limit based on retry flag
-  const maxTokens = retryWithMoreTokens ? 4000 : 3000
+  // Adjust token limit based on retry flag - increased for longer prompts
+  const maxTokens = retryWithMoreTokens ? 8000 : 4000
   
   console.log('🔗 callClaudeAPI: Making request to Claude API')
   console.log('📊 callClaudeAPI: Request details:', {
