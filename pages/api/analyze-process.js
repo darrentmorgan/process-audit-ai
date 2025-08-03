@@ -12,24 +12,23 @@ async function handler(req, res) {
   }
 
   try {
-    // Validate and sanitize input
-    const validatedBody = validateRequestBody(req.body, {
-      processDescription: { type: 'string', maxLength: 10000 },
-      fileContent: { type: 'string', maxLength: 50000 },
-      answers: { type: 'object', required: true }
-    });
-
-    const { processDescription, fileContent, answers } = validatedBody;
+    // Basic input validation without overly strict schema
+    const { processDescription, fileContent, answers } = req.body;
+    
+    // Validate required fields
+    if (!answers || typeof answers !== 'object') {
+      return res.status(400).json({ error: 'Answers object is required' })
+    }
 
     if (!processDescription && !fileContent) {
       return res.status(400).json({ error: 'Process description or file content is required' })
     }
 
-    if (!answers || Object.keys(answers).length === 0) {
+    if (Object.keys(answers).length === 0) {
       return res.status(400).json({ error: 'Answers are required' })
     }
     
-    // Sanitize text inputs
+    // Sanitize text inputs if they exist
     const sanitizedDescription = processDescription ? sanitizeInput.processDescription(processDescription) : '';
     const sanitizedFileContent = fileContent ? sanitizeInput.text(fileContent) : '';
 
