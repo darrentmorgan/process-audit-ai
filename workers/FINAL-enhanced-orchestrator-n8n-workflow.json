@@ -1,0 +1,284 @@
+{
+  "name": "Email-Sheets-Airtable Integration Workflow",
+  "nodes": [
+    {
+      "id": "trigger-gmail-0",
+      "name": "New Email Trigger",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "from": "",
+          "to": "support@company.com",
+          "subject": "",
+          "query": "has:attachment OR subject:(inquiry OR support)"
+        },
+        "format": "resolved",
+        "download": false
+      }
+    },
+    {
+      "id": "email_analysis",
+      "name": "AI Email Analysis",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ],
+      "parameters": {
+        "operation": "text",
+        "options": {
+          "temperature": 0.1,
+          "maxTokens": 150
+        },
+        "prompt": "=Analyze this email and classify it. Extract: priority (high/medium/low), category (billing/technical/general), customer_sentiment (positive/neutral/negative), main_issue (brief description).\n\nEmail Subject: {{ $json.subject }}\nEmail Body: {{ $json.snippet || $json.body }}\nFrom: {{ $json.from }}\n\nReturn as JSON format."
+      }
+    },
+    {
+      "id": "data_processing",
+      "name": "Data Processing & Validation",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        680,
+        300
+      ],
+      "parameters": {
+        "functionCode": "const analysis = JSON.parse($json.choices[0].message.content); return [{ json: analysis }];"
+      }
+    },
+    {
+      "id": "priority_check",
+      "name": "Priority Routing",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ai_classification.priority }}",
+              "rightValue": "high",
+              "operator": {
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "sheets_update",
+      "name": "Update Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1120,
+        300
+      ],
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "{{ $env.GOOGLE_SHEETS_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.timestamp }}",
+            "From": "={{ $json.from }}",
+            "Subject": "={{ $json.subject }}",
+            "Priority": "={{ $json.ai_classification.priority }}",
+            "Category": "={{ $json.ai_classification.category }}"
+          }
+        }
+      }
+    },
+    {
+      "id": "airtable_record",
+      "name": "Create Airtable Record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        300
+      ],
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "{{ $env.AIRTABLE_BASE_ID }}",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Customer_Inquiries",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $json.from }}",
+            "Subject": "={{ $json.subject }}",
+            "Priority": "={{ $json.ai_classification.priority }}",
+            "Category": "={{ $json.ai_classification.category }}",
+            "Status": "Processing",
+            "Received_At": "={{ $json.timestamp }}"
+          }
+        }
+      }
+    },
+    {
+      "id": "ai_response",
+      "name": "Generate AI Response",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        300
+      ],
+      "parameters": {
+        "operation": "text",
+        "options": {
+          "temperature": 0.3,
+          "maxTokens": 150
+        },
+        "prompt": "=Analyze this email and classify it. Extract: priority (high/medium/low), category (billing/technical/general), customer_sentiment (positive/neutral/negative), main_issue (brief description).\n\nEmail Subject: {{ $json.subject }}\nEmail Body: {{ $json.snippet || $json.body }}\nFrom: {{ $json.from }}\n\nReturn as JSON format."
+      }
+    },
+    {
+      "id": "send_reply",
+      "name": "Send Email Reply",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        300
+      ],
+      "parameters": {
+        "operation": "send",
+        "emailType": "text",
+        "toList": "={{ $json.from }}",
+        "subject": "=Re: {{ $json.subject }}",
+        "message": "={{ $json.choices[0].message.content }}\n\nBest regards,\nCustomer Support Team"
+      }
+    }
+  ],
+  "connections": {
+    "New Email Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Email Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Email Analysis": {
+      "main": [
+        [
+          {
+            "node": "Data Processing & Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Processing & Validation": {
+      "main": [
+        [
+          {
+            "node": "Priority Routing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Priority Routing": {
+      "main": [
+        [
+          {
+            "node": "Update Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Create Airtable Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Airtable Record": {
+      "main": [
+        [
+          {
+            "node": "Generate AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate AI Response": {
+      "main": [
+        [
+          {
+            "node": "Send Email Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "1234567890abcdef"
+  },
+  "id": "1",
+  "tags": []
+}

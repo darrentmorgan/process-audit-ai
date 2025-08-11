@@ -1,0 +1,53 @@
+{
+  "jobType": "n8n",
+  "orchestrationPlan": {
+    "description": "Simple HTTP API workflow - fetch data from external API and process it",
+    "triggers": [
+      {
+        "type": "webhook",
+        "source": "external",
+        "frequency": "on-demand"
+      }
+    ],
+    "steps": [
+      {
+        "type": "http",
+        "action": "fetch_data",
+        "description": "Fetch data from external REST API"
+      },
+      {
+        "type": "data_processing",
+        "action": "transform",
+        "description": "Transform and validate the received data"
+      },
+      {
+        "type": "storage",
+        "action": "save",
+        "description": "Save processed data to database"
+      }
+    ],
+    "integrations": ["rest_api", "database"],
+    "complexity": "simple",
+    "estimatedTime": "2-5 minutes per execution",
+    "volumeExpected": "50 requests daily"
+  },
+  "requirements": {
+    "compliance": [],
+    "integrations": [],
+    "constraints": {
+      "budget": "$10K",
+      "timeline": "1 month",
+      "technical": "Standard REST API integration",
+      "team": "Basic technical knowledge"
+    },
+    "successMetrics": ["Execution speed", "Error rate reduction"],
+    "priority": "Simple automation for testing"
+  },
+  "testMetadata": {
+    "testName": "Simple HTTP Workflow",
+    "expectedNodes": ["Webhook", "HTTP Request", "Set", "HTTP Request"],
+    "expectedConnections": 3,
+    "shouldUseIntelligentPath": false,
+    "description": "This fixture tests basic blueprint-based workflow generation"
+  }
+}

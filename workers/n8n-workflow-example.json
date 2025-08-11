@@ -1,0 +1,338 @@
+{
+  "name": "AI-Powered Customer Support Automation",
+  "nodes": [
+    {
+      "id": "gmail-trigger-1",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "from": "",
+          "to": "support@company.com",
+          "subject": "",
+          "query": "has:attachment OR subject:(inquiry OR support)"
+        },
+        "format": "resolved",
+        "download": false
+      }
+    },
+    {
+      "id": "openai-classify-1", 
+      "name": "AI Email Classification",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "parameters": {
+        "operation": "text",
+        "options": {
+          "temperature": 0.1,
+          "maxTokens": 150
+        },
+        "prompt": "=Analyze this email and classify it. Extract: priority (high/medium/low), category (billing/technical/general), customer_sentiment (positive/neutral/negative), main_issue (brief description).\n\nEmail Subject: {{ $json.subject }}\nEmail Body: {{ $json.snippet }}\nFrom: {{ $json.from }}\n\nReturn as JSON format."
+      }
+    },
+    {
+      "id": "function-parser-1",
+      "name": "Parse AI Response", 
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "parameters": {
+        "functionCode": "// Parse the AI classification response\nconst aiResponse = items[0].json.choices[0].message.content;\ntry {\n  const classification = JSON.parse(aiResponse);\n  return [{\n    json: {\n      ...items[0].json,\n      ai_classification: classification,\n      timestamp: new Date().toISOString()\n    }\n  }];\n} catch (e) {\n  // Fallback if JSON parsing fails\n  return [{\n    json: {\n      ...items[0].json,\n      ai_classification: {\n        priority: 'medium',\n        category: 'general', \n        customer_sentiment: 'neutral',\n        main_issue: 'Customer inquiry'\n      },\n      timestamp: new Date().toISOString()\n    }\n  }];\n}"
+      }
+    },
+    {
+      "id": "sheets-update-1",
+      "name": "Update Google Sheets",
+      "type": "n8n-nodes-base.googleSheets", 
+      "typeVersion": 4,
+      "position": [900, 200],
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "{{ $env.GOOGLE_SHEETS_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.timestamp }}",
+            "From": "={{ $json.from }}",
+            "Subject": "={{ $json.subject }}",
+            "Priority": "={{ $json.ai_classification.priority }}",
+            "Category": "={{ $json.ai_classification.category }}",
+            "Sentiment": "={{ $json.ai_classification.customer_sentiment }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "From", 
+              "displayName": "From",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject", 
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "airtable-create-1",
+      "name": "Create Airtable Record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [900, 400],
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "{{ $env.AIRTABLE_BASE_ID }}",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Customer_Inquiries",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow", 
+          "value": {
+            "Email": "={{ $json.from }}",
+            "Subject": "={{ $json.subject }}",
+            "Priority": "={{ $json.ai_classification.priority }}",
+            "Category": "={{ $json.ai_classification.category }}",
+            "Sentiment": "={{ $json.ai_classification.customer_sentiment }}",
+            "Main_Issue": "={{ $json.ai_classification.main_issue }}",
+            "Status": "Processing",
+            "Received_At": "={{ $json.timestamp }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject", 
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Sentiment", 
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Main_Issue",
+              "displayName": "Main_Issue",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Received_At",
+              "displayName": "Received_At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "openai-response-1",
+      "name": "Generate AI Response",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [1120, 300],
+      "parameters": {
+        "operation": "text",
+        "options": {
+          "temperature": 0.3,
+          "maxTokens": 300
+        },
+        "prompt": "=Generate a professional, helpful email response for a {{ $json.ai_classification.priority }} priority {{ $json.ai_classification.category }} inquiry.\n\nCustomer sentiment: {{ $json.ai_classification.customer_sentiment }}\nMain issue: {{ $json.ai_classification.main_issue }}\nOriginal subject: {{ $json.subject }}\n\nBe empathetic and provide actionable next steps. Write only the email body content, no subject line."
+      }
+    },
+    {
+      "id": "gmail-send-1",
+      "name": "Send Reply Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [1340, 300],
+      "parameters": {
+        "operation": "send",
+        "emailType": "text",
+        "toList": "={{ $json.from }}",
+        "subject": "=Re: {{ $json.subject }}",
+        "message": "={{ $json.choices[0].message.content }}\n\nBest regards,\nCustomer Support Team"
+      }
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Email Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Email Classification": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main", 
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "Update Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create Airtable Record", 
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Generate AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Airtable Record": {
+      "main": [
+        [
+          {
+            "node": "Generate AI Response", 
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate AI Response": {
+      "main": [
+        [
+          {
+            "node": "Send Reply Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1234567890abcdef"
+  },
+  "id": "1",
+  "tags": []
+}

@@ -1,0 +1,63 @@
+{
+  "jobType": "n8n",
+  "orchestrationPlan": {
+    "description": "Customer support email handling process automation - categorize emails, research customer history, draft responses, and route for approval",
+    "triggers": [
+      {
+        "type": "email",
+        "source": "support@company.com",
+        "frequency": "immediate"
+      }
+    ],
+    "steps": [
+      {
+        "type": "email",
+        "action": "categorize",
+        "description": "Automatically categorize incoming emails as billing, technical, or general inquiry"
+      },
+      {
+        "type": "data_lookup",
+        "action": "customer_research",
+        "description": "Look up customer account history and previous interactions"
+      },
+      {
+        "type": "ai_processing",
+        "action": "draft_response",
+        "description": "Generate appropriate response based on category and customer history"
+      },
+      {
+        "type": "conditional",
+        "action": "approval_routing",
+        "description": "Route complex issues to manager for approval, send simple responses directly"
+      },
+      {
+        "type": "email",
+        "action": "send_response",
+        "description": "Send the final response to the customer"
+      }
+    ],
+    "integrations": ["gmail", "crm", "knowledge_base"],
+    "complexity": "medium",
+    "estimatedTime": "15-30 minutes per email currently, target: 5 minutes",
+    "volumeExpected": "200+ emails daily"
+  },
+  "requirements": {
+    "compliance": ["GDPR"],
+    "integrations": ["CRM system", "Email management platform", "Knowledge base"],
+    "constraints": {
+      "budget": "$50K for automation tools and implementation",
+      "timeline": "3 months for busy season",
+      "technical": "Must integrate with Gmail and CRM",
+      "team": "Limited technical expertise, need user-friendly solutions"
+    },
+    "successMetrics": ["Response time reduction", "SLA compliance"],
+    "priority": "Efficiency improvements for immediate ROI"
+  },
+  "testMetadata": {
+    "testName": "Email Support Automation",
+    "expectedNodes": ["Gmail Trigger", "OpenAI", "HTTP Request", "Switch", "Gmail"],
+    "expectedConnections": 4,
+    "shouldUseIntelligentPath": true,
+    "description": "This fixture tests the intelligent email workflow generation with customer support automation"
+  }
+}

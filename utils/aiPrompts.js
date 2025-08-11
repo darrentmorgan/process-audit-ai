@@ -445,6 +445,312 @@ CRITICAL JSON FORMATTING REQUIREMENTS:
 
 IMPORTANT: Generate follow-up questions that feel like a smart consultant who listened carefully to their answer and wants to understand the automation potential at a deeper level, while staying within the 4,000 token output limit.`
 
+// SOP-Specific Prompts
+export const SOP_ANALYSIS_PROMPT = `You are ProcessAudit AI, an expert SOP optimization consultant specializing in Standard Operating Procedure analysis, improvement, and automation for SMEs.
+
+ANALYSIS REQUEST:
+SOP Content: {sopContent}
+SOP Structure Analysis: {sopStructure}
+Additional Context: {processDescription}
+
+YOUR MISSION:
+Analyze this Standard Operating Procedure and provide comprehensive feedback covering:
+1. **SOP Quality Assessment** - Structure, clarity, completeness, compliance readiness
+2. **Improvement Opportunities** - Missing elements, unclear steps, inefficient sequences
+3. **Automation Potential** - Which steps can be automated and how
+4. **Risk Analysis** - Potential failure points, compliance gaps, safety concerns
+
+ANALYSIS FRAMEWORK:
+
+**Phase 1: SOP Structure Evaluation**
+- Assess completeness of standard SOP elements (Purpose, Scope, Responsibilities, Procedures, Records)
+- Evaluate step clarity and sequence logic
+- Identify missing information or unclear instructions
+- Check for compliance and safety considerations
+
+**Phase 2: Process Optimization**
+- Identify redundant or inefficient steps
+- Suggest process improvements and best practices
+- Recommend standardization opportunities
+- Highlight potential bottlenecks and solutions
+
+**Phase 3: Automation Assessment**
+- Catalog automatable steps with feasibility ratings
+- Identify integration opportunities between systems
+- Evaluate data flow and decision point automation potential
+- Calculate time savings and ROI for each automation
+
+RESPONSE FORMAT:
+Return a comprehensive JSON object with this exact structure:
+
+{
+  "sopAssessment": {
+    "overallScore": number (0-100),
+    "completenessScore": number (0-100),
+    "clarityScore": number (0-100),
+    "efficiencyScore": number (0-100),
+    "complianceReadiness": "Excellent|Good|Fair|Poor",
+    "keyStrengths": ["strength1", "strength2"],
+    "criticalGaps": ["gap1", "gap2"]
+  },
+  "improvementAreas": [
+    {
+      "category": "Structure|Clarity|Efficiency|Compliance",
+      "issue": "Specific issue description",
+      "impact": "High|Medium|Low",
+      "recommendation": "Specific improvement suggestion",
+      "effort": "Low|Medium|High"
+    }
+  ],
+  "automationOpportunities": [
+    {
+      "stepDescription": "Current manual step",
+      "automationSolution": "Specific automation approach",
+      "feasibility": "High|Medium|Low",
+      "timeSavings": "X minutes per execution",
+      "frequency": "per day/week/month", 
+      "annualSavings": "$X,XXX",
+      "tools": ["tool1", "tool2"],
+      "implementationSteps": ["step1", "step2", "step3"],
+      "priority": number (1-100)
+    }
+  ],
+  "revisedSOPSuggestions": {
+    "structuralImprovements": [
+      "Add missing Purpose section with clear objectives",
+      "Include Scope definition with boundaries",
+      "Define clear Responsibilities for each role"
+    ],
+    "processOptimizations": [
+      "Combine steps 3 and 4 for efficiency",
+      "Add decision criteria for step 7",
+      "Include quality check at step 12"
+    ],
+    "clarificationNeeded": [
+      "Define specific approval criteria for step 5",
+      "Clarify data validation requirements",
+      "Specify exception handling procedures"
+    ]
+  }
+}
+
+ANALYSIS QUALITY STANDARDS:
+✅ **SOP-Focused**: Evaluate against standard SOP best practices
+✅ **Actionable Feedback**: Every suggestion should be implementable
+✅ **Automation-Ready**: Identify concrete automation opportunities with ROI
+✅ **Risk-Aware**: Address compliance, safety, and operational risks
+✅ **Improvement-Oriented**: Focus on enhancing effectiveness and efficiency
+
+CRITICAL OUTPUT REQUIREMENTS:
+⚠️ **TOKEN LIMIT CONSTRAINT**: You have a maximum of 4,000 output tokens. Your response must fit within this limit.
+- Focus on the TOP 3-5 highest-impact improvements per category
+- Keep descriptions actionable but concise
+- Prioritize critical gaps and automation opportunities
+
+RESPONSE OPTIMIZATION:
+- Limit arrays to essential items only
+- Use concise but specific language
+- Focus on implementable recommendations
+- Include quantifiable benefits where possible
+
+CRITICAL JSON FORMATTING REQUIREMENTS:
+- Respond with ONLY valid JSON - no explanations, no markdown, no additional text
+- Start with { and end with }
+- Ensure all strings are properly quoted and escaped
+- Do not include any text before or after the JSON object
+- Double-check that all brackets and braces are properly closed
+
+IMPORTANT: Your response must be valid JSON that provides comprehensive SOP analysis while fitting within the 4,000 token output limit.`
+
+export const SOP_REVISION_PROMPT = `You are ProcessAudit AI, an expert SOP writer specializing in creating optimized Standard Operating Procedures.
+
+REVISION REQUEST:
+Original SOP: {originalSOP}
+Analysis Results: {analysis}  
+Improvement Areas: {improvements}
+User Preferences: {preferences}
+
+YOUR MISSION:
+Create a revised, optimized version of the SOP that addresses all identified issues while maintaining clarity and usability.
+
+REVISION PRINCIPLES:
+1. **Structure**: Follow standard SOP format (Purpose, Scope, Responsibilities, Procedures, Records, References)
+2. **Clarity**: Use clear, actionable language with specific instructions
+3. **Efficiency**: Optimize process flow and eliminate redundancies  
+4. **Automation-Ready**: Structure steps to facilitate future automation
+5. **Compliance**: Ensure regulatory and safety considerations are addressed
+
+SOP FORMAT REQUIREMENTS:
+
+**HEADER SECTION:**
+- SOP Title and Number
+- Version and Date
+- Approval signatures section
+- Distribution list
+
+**CONTENT SECTIONS:**
+1. **Purpose**: Clear objective and scope
+2. **Responsibilities**: Who does what
+3. **Materials/Equipment**: Required resources
+4. **Procedure**: Numbered, detailed steps
+5. **Quality Control**: Verification points
+6. **Records**: Documentation requirements
+7. **References**: Related documents
+
+**PROCEDURE STEPS FORMAT:**
+- Use numbered steps (1, 2, 3...)
+- Include decision points clearly
+- Specify timing and quality criteria
+- Note automation opportunities
+- Include safety/compliance checkpoints
+
+RESPONSE FORMAT:
+Return the complete revised SOP as a JSON object:
+
+{
+  "revisedSOP": {
+    "header": {
+      "title": "SOP Title",
+      "sopNumber": "SOP-XXX",
+      "version": "1.0",
+      "effectiveDate": "YYYY-MM-DD",
+      "approvedBy": "[Approval Line]",
+      "preparedBy": "ProcessAudit AI Optimization"
+    },
+    "purpose": "Clear, concise purpose statement...",
+    "scope": "Defines boundaries and applicability...",
+    "responsibilities": {
+      "role1": "Specific responsibilities...",
+      "role2": "Specific responsibilities..."
+    },
+    "materialsEquipment": ["item1", "item2", "item3"],
+    "procedure": [
+      {
+        "step": 1,
+        "action": "Specific action to take",
+        "responsibility": "Who performs this step",
+        "timing": "How long this should take",
+        "qualityCriteria": "How to verify success",
+        "automationNote": "Future automation opportunity",
+        "safetyNote": "Safety consideration if applicable"
+      }
+    ],
+    "qualityControl": [
+      {
+        "checkpoint": "Description of check",
+        "frequency": "When to perform",
+        "acceptanceCriteria": "Pass/fail criteria",
+        "corrective_action": "What to do if failed"
+      }
+    ],
+    "records": [
+      {
+        "document": "Document name",
+        "retention": "How long to keep",
+        "location": "Where stored"
+      }
+    ]
+  },
+  "revisionSummary": {
+    "majorChanges": ["change1", "change2", "change3"],
+    "automationReadiness": "Description of automation preparations",
+    "improvementMetrics": {
+      "estimatedTimeReduction": "X minutes per execution",
+      "qualityImprovement": "Specific quality enhancement",
+      "complianceEnhancement": "Compliance improvements"
+    }
+  }
+}
+
+CRITICAL FORMATTING REQUIREMENTS:
+- Use consistent numbering for procedures
+- Include timing estimates where relevant  
+- Note automation opportunities within steps
+- Maintain professional SOP language
+- Ensure all sections are complete and actionable
+
+CRITICAL OUTPUT REQUIREMENTS:
+⚠️ **TOKEN LIMIT CONSTRAINT**: You have a maximum of 6,000 output tokens for comprehensive SOP revision.
+- Focus on essential improvements that address critical gaps
+- Keep procedure steps detailed but concise
+- Prioritize clarity and usability
+- Include automation preparation notes
+
+CRITICAL JSON FORMATTING REQUIREMENTS:
+- Respond with ONLY valid JSON - no explanations, no markdown, no additional text
+- Start with { and end with }
+- Ensure all strings are properly quoted and escaped
+- Do not include any text before or after the JSON object
+- Use consistent formatting throughout
+
+IMPORTANT: Create a complete, professional SOP that addresses all identified improvements while remaining practical and implementable.`
+
+// SOP Analysis Functions
+export async function analyzeSOPStructure(sopContent, sopStructure, processDescription = '') {
+  try {
+    if (process.env.CLAUDE_API_KEY) {
+      console.log('🤖 analyzeSOPStructure: Using Claude API for SOP analysis')
+      
+      const prompt = SOP_ANALYSIS_PROMPT
+        .replace('{sopContent}', sopContent)
+        .replace('{sopStructure}', JSON.stringify(sopStructure, null, 2))
+        .replace('{processDescription}', processDescription)
+      
+      console.log('📋 analyzeSOPStructure: Generated prompt length:', prompt.length)
+      console.log('📤 analyzeSOPStructure: Calling Claude API...')
+      
+      const response = await callClaudeAPI(prompt)
+      
+      if (response.error) {
+        console.error('❌ analyzeSOPStructure: Claude API error:', response.error)
+        return null
+      }
+      
+      console.log('✅ analyzeSOPStructure: Successfully analyzed SOP')
+      return response
+    }
+    
+    console.log('⚠️ analyzeSOPStructure: No Claude API key found, using sample data')
+    return null
+  } catch (error) {
+    console.error('❌ analyzeSOPStructure: Error analyzing SOP:', error)
+    return null
+  }
+}
+
+export async function generateSOPRevision(originalSOP, analysis, improvements = [], preferences = '') {
+  try {
+    if (process.env.CLAUDE_API_KEY) {
+      console.log('🤖 generateSOPRevision: Using Claude API for SOP revision')
+      
+      const prompt = SOP_REVISION_PROMPT
+        .replace('{originalSOP}', originalSOP)
+        .replace('{analysis}', JSON.stringify(analysis, null, 2))
+        .replace('{improvements}', JSON.stringify(improvements, null, 2))
+        .replace('{preferences}', preferences)
+      
+      console.log('📋 generateSOPRevision: Generated prompt length:', prompt.length)
+      console.log('📤 generateSOPRevision: Calling Claude API...')
+      
+      const response = await callClaudeAPI(prompt, false, 6000) // Higher token limit for SOP revision
+      
+      if (response.error) {
+        console.error('❌ generateSOPRevision: Claude API error:', response.error)
+        return null
+      }
+      
+      console.log('✅ generateSOPRevision: Successfully generated SOP revision')
+      return response
+    }
+    
+    console.log('⚠️ generateSOPRevision: No Claude API key found, using sample data')
+    return null
+  } catch (error) {
+    console.error('❌ generateSOPRevision: Error generating SOP revision:', error)
+    return null
+  }
+}
+
 export async function generateQuestions(processDescription, fileContent = '') {
 
   try {
@@ -584,9 +890,9 @@ export async function generateFollowUpQuestions(previousQuestion, userResponse, 
 }
 
 // Helper function for Claude API calls using Sonnet for better performance and higher token limits
-async function callClaudeAPI(prompt, retryWithMoreTokens = false) {
+async function callClaudeAPI(prompt, retryWithMoreTokens = false, customMaxTokens = null) {
   // Sonnet has much higher token limits (8192 max output) and better quality for complex prompts
-  const maxTokens = retryWithMoreTokens ? 8000 : 4000
+  const maxTokens = customMaxTokens || (retryWithMoreTokens ? 8000 : 4000)
   
   console.log('🔗 callClaudeAPI: Making request to Claude API')
   console.log('📊 callClaudeAPI: Request details:', {
@@ -800,3 +1106,133 @@ export const SAMPLE_QUESTIONS = [
     category: 'workflow'
   }
 ]
+
+// Generate targeted SOP improvement questions using Haiku model
+export async function generateSOPQuestions(sopAnalysis, focusAreas = []) {
+  console.log('🎯 generateSOPQuestions: Starting generation with focus areas:', focusAreas)
+  
+  if (!process.env.CLAUDE_API_KEY) {
+    console.log('⚠️ generateSOPQuestions: No Claude API key found, returning fallback questions')
+    return getFallbackSOPQuestions()
+  }
+
+  const prompt = `You are an expert business process consultant specializing in SOP (Standard Operating Procedure) optimization.
+
+CONTEXT:
+Based on this SOP analysis, generate 5-6 targeted discovery questions to better understand the user's specific needs, constraints, and priorities for improvement.
+
+SOP ANALYSIS:
+${JSON.stringify(sopAnalysis, null, 2)}
+
+FOCUS AREAS: ${focusAreas.join(', ')}
+
+INSTRUCTIONS:
+Generate questions that will help understand:
+- Business context and constraints
+- Improvement priorities
+- Available resources and tools
+- Compliance requirements
+- Success metrics and goals
+- Process frequency and users
+
+REQUIREMENTS:
+- Each question should gather specific, actionable information
+- Mix different question types (text, single-choice, multiple-choice)
+- Focus on the most impactful areas based on the SOP analysis
+- Keep questions clear and conversational
+- Include helpful placeholders for text inputs
+
+RESPONSE FORMAT:
+Return a JSON array of question objects with this structure:
+[
+  {
+    "id": "unique_id",
+    "question": "Question text",
+    "type": "textarea|single_choice|multiple_choice|text",
+    "placeholder": "placeholder text (for text/textarea)",
+    "options": ["option1", "option2"] // for choice types
+  }
+]
+
+Generate exactly 5-6 questions that will provide the most value for improving this specific SOP.`
+
+  try {
+    const response = await callClaudeAPI(prompt)
+    
+    if (response.error) {
+      console.warn('⚠️ generateSOPQuestions: API error, using fallback:', response.error)
+      return getFallbackSOPQuestions()
+    }
+
+    // If response is an array, return it directly
+    if (Array.isArray(response)) {
+      return response
+    }
+
+    // If response has a questions property, return that
+    if (response.questions && Array.isArray(response.questions)) {
+      return response.questions
+    }
+
+    console.warn('⚠️ generateSOPQuestions: Unexpected response format, using fallback')
+    return getFallbackSOPQuestions()
+    
+  } catch (error) {
+    console.error('❌ generateSOPQuestions: Error generating questions:', error)
+    return getFallbackSOPQuestions()
+  }
+}
+
+function getFallbackSOPQuestions() {
+  return [
+    {
+      id: '1',
+      question: 'What specific business context or constraints should we consider when improving this SOP?',
+      type: 'textarea',
+      placeholder: 'e.g., regulatory requirements, budget limitations, team size, timeline constraints'
+    },
+    {
+      id: '2', 
+      question: 'Which improvement areas are most critical for your organization right now?',
+      type: 'multiple_choice',
+      options: [
+        'Process efficiency and speed',
+        'Documentation clarity and completeness', 
+        'Compliance and risk management',
+        'Automation and technology integration',
+        'Training and knowledge transfer',
+        'Quality control and consistency'
+      ]
+    },
+    {
+      id: '3',
+      question: 'What tools, systems, or resources are currently available to implement improvements?',
+      type: 'textarea',
+      placeholder: 'e.g., software systems, budget allocation, team expertise, external vendors'
+    },
+    {
+      id: '4',
+      question: 'Are there any specific compliance requirements or industry standards this SOP must adhere to?',
+      type: 'textarea',
+      placeholder: 'e.g., ISO standards, regulatory compliance, company policies, industry best practices'
+    },
+    {
+      id: '5',
+      question: 'How frequently is this process executed, and by how many people?',
+      type: 'single_choice',
+      options: [
+        'Daily - Multiple team members',
+        'Weekly - 2-5 team members',
+        'Monthly - 1-2 team members', 
+        'Quarterly or less - Single person',
+        'Ad-hoc - Various team members'
+      ]
+    },
+    {
+      id: '6',
+      question: 'What would success look like for the improved SOP? What metrics would you use to measure improvement?',
+      type: 'textarea',
+      placeholder: 'e.g., reduced processing time, fewer errors, improved compliance, better user adoption'
+    }
+  ]
+}

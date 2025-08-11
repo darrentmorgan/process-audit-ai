@@ -1,0 +1,229 @@
+{
+  "name": "AI-Powered Customer Inquiry Management",
+  "nodes": [
+    {
+      "id": "node-trigger-email-a1b2c3",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ],
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": true,
+        "filters": {}
+      },
+      "credentials": {
+        "gmailOAuth2Api": {
+          "id": "1",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "id": "node-function-analyze-d4e5f6",
+      "name": "Analyze Email Content",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        300,
+        300
+      ],
+      "parameters": {
+        "functionCode": "const email = items[0].json;\nconst subject = (email.subject || '').toLowerCase();\nconst body = (email.body || '').toLowerCase();\n\nlet category, urgency;\n\nif (body.includes('urgent') || subject.includes('urgent')) {\n  urgency = 'high';\n} else if (body.includes('asap') || subject.includes('asap')) {\n  urgency = 'medium';\n} else {\n  urgency = 'normal';\n}\n\nif (body.includes('support') || body.includes('help')) {\n  category = 'Support';\n} else if (body.includes('purchase') || body.includes('buy')) {\n  category = 'Sales';\n} else if (body.includes('feature') || body.includes('suggestion')) {\n  category = 'Feature Request';\n} else {\n  category = 'Other';\n}\n\nreturn {\n  json: {\n    ...email,\n    analysis: {\n      category,\n      urgency,\n      timestamp: new Date().toISOString()\n    }\n  }\n};"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "node-sheets-log-g7h8i9",
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        500,
+        200
+      ],
+      "parameters": {
+        "operation": "append",
+        "sheetId": "{{ $env.SHEET_ID }}",
+        "range": "A:E",
+        "options": {
+          "valueInputMode": "RAW"
+        },
+        "values": {
+          "value": "={{ [$json.analysis.timestamp, $json.from, $json.analysis.category, $json.analysis.urgency, 'New'] }}"
+        }
+      },
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxRetries": 3,
+      "typeVersion": 1
+    },
+    {
+      "id": "node-airtable-store-j0k1l2",
+      "name": "Store in Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "position": [
+        500,
+        400
+      ],
+      "parameters": {
+        "operation": "create",
+        "application": "{{ $env.AIRTABLE_BASE }}",
+        "table": "Customer Inquiries",
+        "options": {
+          "typecast": true
+        },
+        "fields": {
+          "Email": "={{ $json.from }}",
+          "Subject": "={{ $json.subject }}",
+          "Category": "={{ $json.analysis.category }}",
+          "Urgency": "={{ $json.analysis.urgency }}",
+          "Status": "New",
+          "Received": "={{ $json.analysis.timestamp }}"
+        }
+      },
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxRetries": 3,
+      "typeVersion": 1
+    },
+    {
+      "id": "node-openai-response-m3n4p5",
+      "name": "Generate Response",
+      "type": "n8n-nodes-base.openAi",
+      "position": [
+        700,
+        300
+      ],
+      "parameters": {
+        "model": "gpt-4",
+        "prompt": "={{ \"Generate a professional and empathetic response to this customer email.\\n\\nCustomer Email: \" + $json.body + \"\\n\\nCategory: \" + $json.analysis.category + \"\\nUrgency: \" + $json.analysis.urgency + \"\\n\\nRequirements:\\n- Use their name if available\\n- Reference specific points from their email\\n- Keep tone professional but warm\\n- Include next steps or resolution timeline\\n- Sign off appropriately\" }}",
+        "temperature": 0.7,
+        "maxTokens": 500
+      },
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxRetries": 2,
+      "typeVersion": 1
+    },
+    {
+      "id": "node-email-send-q6r7s8",
+      "name": "Send Response",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ],
+      "parameters": {
+        "operation": "send",
+        "resource": "message",
+        "to": "={{ $json.from }}",
+        "subject": "={{ \"Re: \" + $json.subject }}",
+        "message": "={{ $node[\"Generate Response\"].json.response }}",
+        "options": {
+          "priority": "={{ $json.analysis.urgency === \"high\" ? \"high\" : \"normal\" }}"
+        }
+      },
+      "credentials": {
+        "gmailOAuth2Api": {
+          "id": "1",
+          "name": "Gmail account"
+        }
+      },
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxRetries": 3
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Analyze Email Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Email Content": {
+      "main": [
+        [
+          {
+            "node": "Log to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Store in Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store in Airtable": {
+      "main": [
+        [
+          {
+            "node": "Generate Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Response": {
+      "main": [
+        [
+          {
+            "node": "Send Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowCredentialUser",
+    "errorWorkflow": "error-handler"
+  },
+  "staticData": {},
+  "pinData": {},
+  "versionId": "1",
+  "meta": {
+    "instanceId": "production",
+    "workflowId": "ai-customer-inquiry-management",
+    "generatedAt": "2025-08-11T00:04:05.047Z",
+    "generatedBy": "ProcessAudit AI",
+    "version": "1.1.0",
+    "planHash": "h6173249",
+    "mcpEnhanced": false,
+    "fallbackUsed": true,
+    "fallbackReason": "Intelligent workflow building failed: Tool call failed: MCP tool error: Error executing tool get_node_for_task: keyword.toLowerCase is not a function",
+    "generationMethod": "legacy-fallback"
+  },
+  "description": "Automated workflow for processing customer emails, categorizing them with AI, storing in multiple platforms, and generating personalized responses",
+  "tags": [
+    "automated",
+    "process-audit-ai"
+  ]
+}

@@ -6,9 +6,9 @@ const StepIndicator = ({ currentStep, steps }) => {
       <div className="flex items-center justify-between">
         {steps.map((step, index) => {
           const stepNumber = index + 1
-          const isCompleted = stepNumber < currentStep
-          const isCurrent = stepNumber === currentStep
-          const isUpcoming = stepNumber > currentStep
+          const isCompleted = stepNumber < Math.ceil(currentStep)
+          const isCurrent = stepNumber === Math.ceil(currentStep)
+          const isUpcoming = stepNumber > Math.ceil(currentStep)
 
           return (
             <div key={step.id} className="flex items-center flex-1">
@@ -65,23 +65,23 @@ const StepIndicator = ({ currentStep, steps }) => {
       {/* Mobile Step Labels */}
       <div className="sm:hidden mt-4">
         <p className="text-sm font-medium text-white">
-          {steps[currentStep - 1]?.title}
+          {steps[Math.ceil(currentStep) - 1]?.title}
         </p>
         <p className="text-xs text-blue-200">
-          {steps[currentStep - 1]?.description}
+          {steps[Math.ceil(currentStep) - 1]?.description}
         </p>
       </div>
 
       {/* Progress Bar */}
       <div className="mt-6">
         <div className="flex justify-between text-xs text-blue-200 mb-2">
-          <span>Step {currentStep} of {steps.length}</span>
-          <span>{Math.round((currentStep / steps.length) * 100)}% Complete</span>
+          <span>Step {Math.ceil(currentStep)} of {steps.length}</span>
+          <span>{Math.round((Math.ceil(currentStep) / steps.length) * 100)}% Complete</span>
         </div>
         <div className="progress-bar">
           <div 
             className="progress-fill" 
-            style={{ width: `${(currentStep / steps.length) * 100}%` }}
+            style={{ width: `${(Math.ceil(currentStep) / steps.length) * 100}%` }}
           />
         </div>
       </div>

@@ -1,0 +1,208 @@
+{
+  "name": "Email to Sheets & Airtable Workflow",
+  "description": "Advanced customer inquiry processing: Parse emails, extract data, update Google Sheets tracking, create Airtable records, and send intelligent responses",
+  "businessContext": {
+    "industry": "Customer Support",
+    "department": "Operations",
+    "volume": "50-100 emails per day",
+    "complexity": "High - requires email parsing, data extraction, multi-platform integration, and AI-powered responses",
+    "slaRequirements": "< 15 minutes response time",
+    "integrations": ["Gmail", "Google Sheets", "Airtable", "OpenAI"]
+  },
+  "processData": {
+    "processDescription": "Customer inquiries arrive via email, need to be categorized, tracked in Google Sheets, stored in Airtable with enriched data, and responded to with personalized AI-generated responses",
+    "currentPainPoints": [
+      "Manual email categorization takes 5-10 minutes per email",
+      "Data entry into Google Sheets is error-prone", 
+      "Airtable records are inconsistent",
+      "Response time varies from 30 minutes to 4 hours",
+      "No centralized tracking of inquiry patterns"
+    ]
+  },
+  "orchestrationPlan": {
+    "workflowName": "Intelligent Customer Email Processing",
+    "description": "Automated email processing with AI categorization, dual-platform data storage, and intelligent response generation",
+    "expectedNodes": [
+      "Gmail Trigger",
+      "OpenAI (Text Classification)",
+      "Function (Data Parsing)", 
+      "IF (Conditional Logic)",
+      "Google Sheets (Add Row)",
+      "Airtable (Create Record)",
+      "OpenAI (Response Generation)",
+      "Gmail (Send Reply)",
+      "Slack (Notification)",
+      "Error Trigger"
+    ],
+    "sophisticatedFlow": {
+      "triggers": [
+        {
+          "type": "gmail",
+          "configuration": {
+            "folder": "INBOX",
+            "filter": "has:attachment OR subject:(inquiry OR support OR help)",
+            "markAsRead": false
+          }
+        }
+      ],
+      "steps": [
+        {
+          "id": "email_analysis",
+          "name": "AI Email Classification & Extraction",
+          "type": "openai",
+          "description": "Analyze email content, extract key information, categorize urgency and topic",
+          "configuration": {
+            "model": "gpt-3.5-turbo",
+            "prompt": "Analyze this customer email and extract: priority (low/medium/high), category (technical/billing/general), customer_type (new/existing), main_issue, sentiment (positive/neutral/negative), requires_attachment (yes/no). Return as JSON.",
+            "temperature": 0.1
+          }
+        },
+        {
+          "id": "data_parsing",
+          "name": "Data Structure & Validation",
+          "type": "function",
+          "description": "Parse AI response, validate data, prepare for multi-platform storage",
+          "configuration": {
+            "code": "// Parse OpenAI response and structure data\nconst analysis = JSON.parse($json.choices[0].message.content);\nconst emailData = {\n  timestamp: new Date().toISOString(),\n  from: $json.from,\n  subject: $json.subject,\n  priority: analysis.priority,\n  category: analysis.category,\n  customer_type: analysis.customer_type,\n  main_issue: analysis.main_issue,\n  sentiment: analysis.sentiment,\n  requires_attachment: analysis.requires_attachment,\n  response_due: new Date(Date.now() + (analysis.priority === 'high' ? 3600000 : 14400000)).toISOString()\n};\nreturn [{ json: emailData }];"
+          }
+        },
+        {
+          "id": "priority_routing",
+          "name": "Priority-Based Routing",
+          "type": "if",
+          "description": "Route high-priority emails for immediate processing",
+          "configuration": {
+            "conditions": {
+              "options": {
+                "caseSensitive": true,
+                "leftValue": "={{$json.priority}}",
+                "operation": "equal",
+                "rightValue": "high"
+              }
+            }
+          }
+        },
+        {
+          "id": "sheets_tracking",
+          "name": "Google Sheets: Customer Inquiry Log",
+          "type": "googleSheets",
+          "description": "Add comprehensive tracking row to customer inquiry spreadsheet",
+          "configuration": {
+            "operation": "append",
+            "sheetId": "{{CUSTOMER_INQUIRY_SHEET_ID}}",
+            "range": "A:J",
+            "values": [
+              "={{$json.timestamp}}",
+              "={{$json.from}}",
+              "={{$json.subject}}", 
+              "={{$json.priority}}",
+              "={{$json.category}}",
+              "={{$json.customer_type}}",
+              "={{$json.main_issue}}",
+              "={{$json.sentiment}}",
+              "={{$json.response_due}}",
+              "processing"
+            ]
+          }
+        },
+        {
+          "id": "airtable_record",
+          "name": "Airtable: Customer Database",
+          "type": "airtable",
+          "description": "Create enriched customer record with relational data",
+          "configuration": {
+            "operation": "create",
+            "base": "{{AIRTABLE_BASE_ID}}",
+            "table": "Customer_Inquiries",
+            "fields": {
+              "Email": "={{$json.from}}",
+              "Subject": "={{$json.subject}}",
+              "Priority": "={{$json.priority}}",
+              "Category": "={{$json.category}}",
+              "Customer_Type": "={{$json.customer_type}}",
+              "Issue_Description": "={{$json.main_issue}}",
+              "Sentiment_Score": "={{$json.sentiment}}",
+              "Response_Due": "={{$json.response_due}}",
+              "Status": "In Progress",
+              "Requires_Attachment": "={{$json.requires_attachment}}"
+            }
+          }
+        },
+        {
+          "id": "ai_response_generation",
+          "name": "AI Response Generation",
+          "type": "openai",
+          "description": "Generate personalized, contextual response based on issue analysis",
+          "configuration": {
+            "model": "gpt-3.5-turbo",
+            "prompt": "Based on this customer inquiry analysis: Priority: {{$json.priority}}, Category: {{$json.category}}, Issue: {{$json.main_issue}}, Sentiment: {{$json.sentiment}}, Customer Type: {{$json.customer_type}} - Generate a professional, empathetic email response that addresses their concern and provides next steps. Keep it concise but thorough.",
+            "temperature": 0.3
+          }
+        },
+        {
+          "id": "send_reply",
+          "name": "Gmail: Send Personalized Reply",
+          "type": "gmail",
+          "description": "Send AI-generated response with appropriate tone and urgency",
+          "configuration": {
+            "operation": "send",
+            "to": "={{$json.from}}",
+            "subject": "Re: {{$json.subject}}",
+            "body": "={{$json.choices[0].message.content}}\n\nBest regards,\nCustomer Support Team\n\nTicket ID: {{$json.airtable_record_id}}",
+            "type": "text"
+          }
+        },
+        {
+          "id": "slack_notification",
+          "name": "Slack: High-Priority Alert",
+          "type": "slack",
+          "description": "Notify support team of high-priority inquiries",
+          "configuration": {
+            "channel": "#customer-support",
+            "message": "🚨 High Priority Customer Inquiry:\n• From: {{$json.from}}\n• Subject: {{$json.subject}}\n• Category: {{$json.category}}\n• Issue: {{$json.main_issue}}\n• Airtable: [View Record]({{$json.airtable_url}})"
+          },
+          "conditions": "={{$json.priority === 'high'}}"
+        },
+        {
+          "id": "update_status",
+          "name": "Update Records: Mark Completed",
+          "type": "function",
+          "description": "Update both Google Sheets and Airtable to reflect completion",
+          "configuration": {
+            "code": "// Update completion status\nreturn [{\n  json: {\n    sheets_update: true,\n    airtable_update: true,\n    completion_time: new Date().toISOString(),\n    total_processing_time: Date.now() - new Date($json.timestamp).getTime()\n  }\n}];"
+          }
+        }
+      ],
+      "errorHandling": {
+        "strategy": "retry-with-fallback",
+        "notifications": [
+          {
+            "type": "slack",
+            "channel": "#alerts",
+            "message": "Email processing workflow failed: {{$json.error}}"
+          }
+        ],
+        "fallbackActions": [
+          "Forward original email to support team",
+          "Create manual processing task in Airtable",
+          "Log error details in Google Sheets"
+        ]
+      }
+    },
+    "testMetadata": {
+      "testName": "Advanced Email-Sheets-Airtable Integration",
+      "expectedNodes": ["Gmail Trigger", "OpenAI", "Function", "IF", "Google Sheets", "Airtable", "Gmail Send", "Slack"],
+      "expectedConnections": 8,
+      "shouldUseIntelligentPath": true,
+      "expectedComplexity": "high",
+      "description": "This fixture tests sophisticated multi-platform integration with AI-powered email processing, demonstrating real-world business automation capabilities"
+    }
+  },
+  "expectedOutcomes": {
+    "timeReduction": "From 30-240 minutes to 2-5 minutes per email",
+    "accuracyImprovement": "95%+ consistent data entry vs 70-80% manual accuracy",
+    "responseTimeImprovement": "< 15 minutes vs 30-240 minutes currently",
+    "dataConsistency": "100% structured data vs inconsistent manual entry",
+    "scalabilityGain": "Can handle 10x volume without additional staff"
+  }
+}

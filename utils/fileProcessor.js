@@ -1,11 +1,8 @@
 export async function processFile(fileData, fileType) {
   try {
-    // Decode base64 file data
-    const binaryString = atob(fileData)
-    const bytes = new Uint8Array(binaryString.length)
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i)
-    }
+    // Decode base64 file data in Node environment
+    const buffer = Buffer.from(fileData, 'base64')
+    const bytes = new Uint8Array(buffer)
 
     // Process based on file type
     switch (fileType) {
@@ -17,7 +14,7 @@ export async function processFile(fileData, fileType) {
       
       case 'application/msword':
       case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-        return processDocFile(bytes)
+        return await processDocFile(buffer)
       
       default:
         throw new Error('Unsupported file type')
@@ -40,36 +37,63 @@ function processTextFile(bytes) {
 }
 
 function processPdfFile(bytes) {
-  // For now, return a placeholder since PDF parsing requires additional libraries
-  // In a real implementation, you would use libraries like pdf-parse or PDF.js
-  return `[PDF Content Extracted]
-  
-This is a placeholder for PDF content extraction. In a production environment, this would contain the actual text content extracted from the PDF file using libraries like pdf-parse, PDF.js, or similar PDF processing tools.
+  // PDF parsing requires additional libraries like pdf-parse
+  console.log('⚠️ PDF processing not yet implemented - returning placeholder')
+  return `[PDF Processing Not Available]
 
-The system would extract:
-- Text content from all pages
-- Table data where applicable
-- Document structure and formatting
-- Embedded text from images (with OCR if needed)
+PDF document parsing is not yet implemented. 
 
-For demonstration purposes, assume this contains your process documentation from the uploaded PDF file.`
+To use your PDF SOP content:
+1. Open the PDF file
+2. Copy the text content
+3. Paste it directly into the text input field below
+4. Select "Standard Operating Procedure" mode
+5. Continue with analysis
+
+This will provide the same functionality while we work on PDF parsing capabilities.
+
+Sample SOP Content Format:
+---
+STANDARD OPERATING PROCEDURE
+Title: [Your SOP Title]
+Purpose: [Objective of the procedure]
+Scope: [What this covers]
+
+PROCEDURE:
+1. [First step]
+2. [Second step]
+3. [Third step]
+...`
 }
 
-function processDocFile(bytes) {
-  // For now, return a placeholder since DOC/DOCX parsing requires additional libraries
-  // In a real implementation, you would use libraries like mammoth.js or docx-parser
-  return `[Word Document Content Extracted]
-  
-This is a placeholder for Word document content extraction. In a production environment, this would contain the actual text content extracted from the DOC/DOCX file using libraries like mammoth.js, docx-parser, or similar document processing tools.
+async function processDocFile(buffer) {
+  try {
+    const mammoth = require('mammoth')
+    
+    // Extract text from the document
+    const result = await mammoth.extractRawText({ buffer })
+    
+    if (result.value && result.value.trim()) {
+      console.log('✅ Successfully extracted Word document content:', result.value.length, 'characters')
+      return result.value.trim()
+    } else {
+      console.log('⚠️ No text content found in Word document')
+      return '[Empty Word Document]\n\nThe uploaded Word document appears to be empty or contains no extractable text content.'
+    }
+  } catch (error) {
+    console.error('❌ Error processing Word document:', error)
+    // Fallback to placeholder if extraction fails
+    return `[Word Document Processing Error]
+    
+Failed to extract content from the uploaded Word document. Error: ${error.message}
 
-The system would extract:
-- Main document text and formatting
-- Headers, footers, and document structure
-- Table content and data
-- List items and bullet points
-- Comments and tracked changes (if needed)
+Please try:
+1. Re-uploading the document
+2. Saving the document in a different format
+3. Copy-pasting the content directly into the text area
 
-For demonstration purposes, assume this contains your process documentation from the uploaded Word document.`
+For demonstration purposes, you can paste your SOP content directly into the text input field.`
+  }
 }
 
 export function validateFileType(file) {

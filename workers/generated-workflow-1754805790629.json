@@ -1,0 +1,105 @@
+{
+  "name": "HTTP API Workflow",
+  "nodes": [
+    {
+      "id": "node-webhook-abc123",
+      "type": "n8n-nodes-base.webhook",
+      "name": "Webhook Trigger",
+      "position": [
+        100,
+        100
+      ],
+      "webhookId": "my_webhook",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook_path",
+        "options": {
+          "responseCode": 200,
+          "responseMode": "lastNode",
+          "responseData": "firstEntryJson"
+        },
+        "headerParametersUi": {
+          "headerParametersValues": [
+            {
+              "name": "Authorization",
+              "value": "{{ $env.AUTHORIZATION_HEADER }}"
+            }
+          ]
+        },
+        "responseMode": "onReceived",
+        "responseCode": 200,
+        "authentication": "none"
+      }
+    },
+    {
+      "id": "node-http-abc123",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Fetch Data",
+      "position": [
+        300,
+        100
+      ],
+      "parameters": {
+        "url": "https://api.example.com/data",
+        "options": {
+          "timeout": 30000,
+          "retryOnFail": true,
+          "maxRetries": 3
+        },
+        "retryOnFail": true,
+        "maxRetries": 3,
+        "retryInterval": 1000
+      }
+    },
+    {
+      "id": "node-transform-abc123",
+      "type": "n8n-nodes-base.function",
+      "name": "Transform Data",
+      "position": [
+        500,
+        100
+      ],
+      "parameters": {
+        "functionCode": "return items.map(item => ({ json: { transformedData: item.json.data.toUpperCase() } }));"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Data": {
+      "main": [
+        [
+          {
+            "node": "Transform Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1",
+  "description": "Simple HTTP API workflow - fetch data and process it",
+  "meta": {
+    "generatedAt": "2025-08-10T06:03:10.627Z",
+    "generatedBy": "ProcessAudit AI",
+    "version": "1.1.0",
+    "planHash": "h675060158"
+  },
+  "tags": [
+    "automated",
+    "process-audit-ai"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "name": "Candidate Workflow",
+  "nodes": [
+    {
+      "id": "node-webhook-1",
+      "name": "Webhook - Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "parameters": { "path": "appeals/ingest", "httpMethod": "POST", "responseMode": "onReceived", "responseCode": 200 }
+    },
+    {
+      "id": "node-http-1",
+      "name": "HTTP - Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [500, 300],
+      "parameters": { "url": "{{API_URL}}", "method": "POST", "sendBody": true, "jsonParameters": true, "options": { "retryOnFail": true, "maxRetries": 3 } }
+    },
+    {
+      "id": "node-set-1",
+      "name": "Transform - Set",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "parameters": { "keepOnlySet": true, "values": { "string": [{ "name": "status", "value": "submitted" }] } }
+    },
+    {
+      "id": "node-email-1",
+      "name": "Email - Send",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [850, 300],
+      "parameters": { "to": "{{managerEmail}}", "subject": "Appeal Submitted", "text": "We have submitted an appeal.", "terminal": true }
+    }
+  ],
+  "connections": {
+    "Webhook - Trigger": { "main": [[{ "node": "HTTP - Request", "type": "main", "index": 0 }]] },
+    "HTTP - Request": { "main": [[{ "node": "Transform - Set", "type": "main", "index": 0 }]] },
+    "Transform - Set": { "main": [[{ "node": "Email - Send", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1"
+}

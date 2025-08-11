@@ -1,0 +1,57 @@
+
+> workers@1.0.0 dev
+> wrangler dev
+
+
+ ⛅️ wrangler 4.28.0
+───────────────────
+Your Worker has access to the following bindings:
+Binding                                                                    Resource                  Mode
+env.AUTOMATION_QUEUE (automation-jobs)                                     Queue                     local
+env.SUPABASE_URL ("https://khodniyhethjyomscyjw.supabase...")              Environment Variable      local
+env.SUPABASE_SERVICE_KEY ("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9....")      Environment Variable      local
+env.CLAUDE_API_KEY ("sk-ant-api03-KTxYl2Wk7XSSXu-m6KzA2gn1...")            Environment Variable      local
+
+⎔ Starting local server...
+[wrangler:info] Ready on http://localhost:8787
+[wrangler:info] GET /health 200 OK (2ms)
+[wrangler:info] POST /submit 200 OK (5ms)
+Processing job: test-job-456
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mError processing job test-job-456: Error: Failed to update job progress: Bad Request[0m
+
+      at updateJobProgress (file:///Users/darrenmorgan/AI_Projects/process-audit-ai/workers/src/database.js:31:11)
+      at async processAutomationJob (file:///Users/darrenmorgan/AI_Projects/process-audit-ai/workers/src/processor.js:13:5)
+      at async Object.queue (file:///Users/darrenmorgan/AI_Projects/process-audit-ai/workers/src/index.js:82:9)
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mError processing job: Failed to update job progress: Bad Request[0m
+
+
+[wrangler:info] QUEUE automation-jobs 0/1 (580ms)
+Processing job: test-job-456
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mError processing job test-job-456: Error: Failed to update job progress: Bad Request[0m
+
+      at updateJobProgress (file:///Users/darrenmorgan/AI_Projects/process-audit-ai/workers/src/database.js:31:11)
+      at async processAutomationJob (file:///Users/darrenmorgan/AI_Projects/process-audit-ai/workers/src/processor.js:13:5)
+      at async Object.queue (file:///Users/darrenmorgan/AI_Projects/process-audit-ai/workers/src/index.js:82:9)
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mError processing job: Failed to update job progress: Bad Request[0m
+
+
+[wrangler:info] QUEUE automation-jobs 0/1 (1571ms)
+Processing job: test-job-456
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mError processing job test-job-456: Error: Failed to update job progress: Bad Request[0m
+
+      at updateJobProgress (file:///Users/darrenmorgan/AI_Projects/process-audit-ai/workers/src/database.js:31:11)
+      at async processAutomationJob (file:///Users/darrenmorgan/AI_Projects/process-audit-ai/workers/src/processor.js:13:5)
+      at async Object.queue (file:///Users/darrenmorgan/AI_Projects/process-audit-ai/workers/src/index.js:82:9)
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mError processing job: Failed to update job progress: Bad Request[0m
+
+
+[wrangler:warn] Dropped message "492571dcb739060e099ed476633d8120" on queue "automation-jobs" after 3 failed attempts!
+[wrangler:info] QUEUE automation-jobs 0/1 (630ms)
+[wrangler:info] GET /status/test-job-456 500 Internal Server Error (281ms)
+🪵  Logs were written to "/Users/darrenmorgan/Library/Preferences/.wrangler/logs/wrangler-2025-08-07_08-02-23_371.log"

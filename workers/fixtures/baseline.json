@@ -1,0 +1,36 @@
+{
+  "name": "Baseline Workflow",
+  "nodes": [
+    {
+      "id": "node-webhook-1",
+      "name": "Webhook - Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "parameters": { "path": "appeals/ingest", "httpMethod": "POST", "responseMode": "onReceived", "responseCode": 200 }
+    },
+    {
+      "id": "node-http-1",
+      "name": "HTTP - Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [500, 300],
+      "parameters": { "url": "{{API_URL}}", "method": "POST", "sendBody": true, "jsonParameters": true, "options": { "retryOnFail": true, "maxRetries": 2 } }
+    },
+    {
+      "id": "node-email-1",
+      "name": "Email - Send",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [750, 300],
+      "parameters": { "to": "{{managerEmail}}", "subject": "Appeal Submitted", "text": "We have submitted an appeal.", "terminal": true }
+    }
+  ],
+  "connections": {
+    "Webhook - Trigger": { "main": [[{ "node": "HTTP - Request", "type": "main", "index": 0 }]] },
+    "HTTP - Request": { "main": [[{ "node": "Email - Send", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1"
+}

@@ -1,5 +1,46 @@
 import { useState, useRef } from 'react'
-import { Upload, FileText, AlertCircle, X } from 'lucide-react'
+import { Upload, FileText, AlertCircle, X, FileCheck } from 'lucide-react'
+
+// SOP Structure Detection
+const detectSOPStructure = (content) => {
+  if (!content) return { isSOP: false }
+  
+  const text = content.toLowerCase()
+  const sopIndicators = [
+    'standard operating procedure',
+    'sop',
+    'procedure',
+    'step 1',
+    'step 2', 
+    'step:',
+    'objective:',
+    'purpose:',
+    'scope:',
+    'responsibility',
+    'responsibilities:',
+    'materials needed',
+    'equipment needed',
+    'safety precautions',
+    'process steps',
+    'procedure steps'
+  ]
+  
+  const foundIndicators = sopIndicators.filter(indicator => text.includes(indicator))
+  const stepPattern = /step\s*\d+/gi
+  const steps = content.match(stepPattern) || []
+  
+  const isSOP = foundIndicators.length >= 3 || steps.length >= 3
+  
+  return {
+    isSOP,
+    confidence: isSOP ? Math.min(100, (foundIndicators.length * 20) + (steps.length * 10)) : 0,
+    indicators: foundIndicators,
+    stepCount: steps.length,
+    hasObjective: text.includes('objective') || text.includes('purpose'),
+    hasResponsibilities: text.includes('responsibility') || text.includes('responsibilities'),
+    hasSteps: steps.length > 0
+  }
+}
 
 const ProcessInput = ({ onNext, onFileUpload }) => {
   const [processDescription, setProcessDescription] = useState('')
@@ -8,7 +49,19 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const [dragActive, setDragActive] = useState(false)
+  const [sopStructure, setSopStructure] = useState(null)
   const fileInputRef = useRef(null)
+
+  // Automatically detect if content is an SOP when content changes
+  const detectAndSetSOPStructure = (content) => {
+    if (content && content.length > 50) { // Only detect if meaningful content
+      const structure = detectSOPStructure(content)
+      setSopStructure(structure)
+      console.log('🔍 Auto-detected content type:', structure.isSOP ? 'SOP' : 'General Process', structure)
+    } else {
+      setSopStructure(null)
+    }
+  }
 
   const handleFileUpload = async (file) => {
     if (!file) return
@@ -77,6 +130,9 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
           content: result.content
         })
 
+        // Auto-detect if this is an SOP based on content structure
+        detectAndSetSOPStructure(result.content)
+
         if (onFileUpload) {
           onFileUpload(result.content)
         }
@@ -144,9 +200,24 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
       await new Promise(resolve => setTimeout(resolve, 500))
       
       console.log('✅ ProcessInput: Calling onNext with data')
+      
+      // Auto-detect content type if not already detected
+      let finalSopStructure = sopStructure
+      const content = uploadedFile?.content || processDescription.trim()
+      
+      if (!finalSopStructure && content) {
+        finalSopStructure = detectSOPStructure(content)
+        console.log('🔍 ProcessInput: Final SOP auto-detection:', finalSopStructure)
+      }
+      
+      const isSOPContent = finalSopStructure && finalSopStructure.isSOP
+      
       onNext({
         processDescription: processDescription.trim(),
-        fileContent: uploadedFile?.content || ''
+        fileContent: uploadedFile?.content || '',
+        inputType: isSOPContent ? 'sop' : 'process',
+        sopStructure: finalSopStructure,
+        isSOPAnalysis: isSOPContent
       })
     } catch (error) {
       console.error('❌ ProcessInput: Error during submission:', error)
@@ -162,7 +233,8 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
           Describe Your Process
         </h2>
         <p className="text-lg text-gray-600">
-          Tell us about the business process you'd like to optimize. You can describe it manually or upload a document.
+          Tell us about the business process you'd like to optimize. You can describe it manually or upload a document. 
+          We'll automatically detect if it's a Standard Operating Procedure or general process.
         </p>
       </div>
 
@@ -240,6 +312,22 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
               <span className="text-sm">{uploadError}</span>
             </div>
           )}
+          
+          {/* SOP Structure Detection Feedback */}
+          {sopStructure && sopStructure.isSOP && (
+            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
+              <div className="flex items-center text-green-800 mb-2">
+                <FileCheck className="w-4 h-4 mr-2" />
+                <span className="text-sm font-medium">SOP Structure Detected</span>
+              </div>
+              <div className="text-xs text-green-700 space-y-1">
+                <p>• {sopStructure.stepCount} procedure steps identified</p>
+                {sopStructure.hasObjective && <p>• Objective/Purpose section found</p>}
+                {sopStructure.hasResponsibilities && <p>• Responsibilities section found</p>}
+                <p>• Confidence: {sopStructure.confidence}%</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Manual Description Section */}
@@ -250,13 +338,45 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
           <textarea
             className="textarea-field"
             rows={6}
-            placeholder="Describe your business process in detail. Include what steps are involved, who does what, what tools you use, and any pain points you experience..."
+            placeholder="Describe your business process in detail. Include what steps are involved, who does what, what tools you use, and any pain points you experience. If it's a Standard Operating Procedure, we'll automatically detect it!"
             value={processDescription}
-            onChange={(e) => setProcessDescription(e.target.value)}
+            onChange={(e) => {
+              setProcessDescription(e.target.value)
+              // Auto-detect content type as user types
+              detectAndSetSOPStructure(e.target.value)
+            }}
           />
           <p className="mt-2 text-sm text-gray-500">
             The more detail you provide, the better we can analyze your process and identify automation opportunities.
           </p>
+          
+          {/* SOP Detection Indicator */}
+          {sopStructure && processDescription.length > 50 && (
+            <div className={`mt-3 p-3 rounded-lg border ${
+              sopStructure.isSOP 
+                ? 'bg-blue-50 border-blue-200' 
+                : 'bg-gray-50 border-gray-200'
+            }`}>
+              <div className="flex items-center">
+                <FileCheck className={`w-5 h-5 mr-2 ${
+                  sopStructure.isSOP ? 'text-blue-600' : 'text-gray-600'
+                }`} />
+                <span className={`font-medium ${
+                  sopStructure.isSOP ? 'text-blue-800' : 'text-gray-700'
+                }`}>
+                  {sopStructure.isSOP ? 'SOP Structure Detected' : 'General Process Detected'}
+                </span>
+              </div>
+              {sopStructure.isSOP && (
+                <div className="mt-2 text-sm text-blue-700">
+                  <p>• {sopStructure.stepCount || 0} procedure steps identified</p>
+                  <p>• {sopStructure.hasObjective ? 'Objective/Purpose section found' : 'No clear purpose section'}</p>
+                  <p>• {sopStructure.hasResponsibilities ? 'Responsibilities section found' : 'No responsibilities section'}</p>
+                  <p>• Confidence: {sopStructure.confidence}%</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}

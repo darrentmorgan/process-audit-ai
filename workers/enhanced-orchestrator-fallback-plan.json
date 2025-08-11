@@ -1,0 +1,161 @@
+{
+  "workflowName": "Email-Sheets-Airtable Integration Workflow",
+  "description": "Sophisticated automation combining email processing, Google Sheets tracking, and Airtable data management",
+  "complexity": "high",
+  "estimatedProcessingTime": "2-5 minutes",
+  "triggers": [
+    {
+      "type": "gmail",
+      "name": "New Email Trigger",
+      "configuration": {
+        "folder": "INBOX",
+        "filter": "has:attachment OR subject:(inquiry OR support)",
+        "markAsRead": false
+      }
+    }
+  ],
+  "steps": [
+    {
+      "id": "email_analysis",
+      "name": "AI Email Analysis",
+      "type": "openai",
+      "description": "Analyze email content and extract structured data",
+      "configuration": {
+        "model": "gpt-3.5-turbo",
+        "prompt": "Analyze this email and extract key information as JSON",
+        "temperature": 0.1
+      }
+    },
+    {
+      "id": "data_processing",
+      "name": "Data Processing & Validation",
+      "type": "function",
+      "description": "Process AI response and prepare data for storage",
+      "configuration": {
+        "functionCode": "const analysis = JSON.parse($json.choices[0].message.content); return [{ json: analysis }];"
+      }
+    },
+    {
+      "id": "priority_check",
+      "name": "Priority Routing",
+      "type": "if",
+      "description": "Route high-priority emails for immediate attention",
+      "configuration": {
+        "conditions": {
+          "leftValue": "={{ $json.priority }}",
+          "operation": "equal",
+          "rightValue": "high"
+        }
+      }
+    },
+    {
+      "id": "sheets_update",
+      "name": "Update Google Sheets",
+      "type": "googleSheets",
+      "description": "Log email data to tracking spreadsheet",
+      "configuration": {
+        "operation": "append",
+        "sheetId": "{{ $env.SHEET_ID }}",
+        "values": [
+          "{{ $json.timestamp }}",
+          "{{ $json.from }}",
+          "{{ $json.subject }}",
+          "{{ $json.priority }}"
+        ]
+      }
+    },
+    {
+      "id": "airtable_record",
+      "name": "Create Airtable Record",
+      "type": "airtable",
+      "description": "Create comprehensive customer record",
+      "configuration": {
+        "operation": "create",
+        "base": "{{ $env.AIRTABLE_BASE }}",
+        "table": "Customer_Inquiries",
+        "fields": {
+          "Email": "{{ $json.from }}",
+          "Subject": "{{ $json.subject }}",
+          "Priority": "{{ $json.priority }}",
+          "Status": "Processing"
+        }
+      }
+    },
+    {
+      "id": "ai_response",
+      "name": "Generate AI Response",
+      "type": "openai",
+      "description": "Create personalized response based on analysis",
+      "configuration": {
+        "model": "gpt-3.5-turbo",
+        "prompt": "Generate a professional email response for: {{ $json.main_issue }}",
+        "temperature": 0.3
+      }
+    },
+    {
+      "id": "send_reply",
+      "name": "Send Email Reply",
+      "type": "gmail",
+      "description": "Send automated response to customer",
+      "configuration": {
+        "operation": "send",
+        "to": "{{ $json.from }}",
+        "subject": "Re: {{ $json.subject }}",
+        "body": "{{ $json.choices[0].message.content }}"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "New Email Trigger",
+      "to": "email_analysis"
+    },
+    {
+      "from": "email_analysis",
+      "to": "data_processing"
+    },
+    {
+      "from": "data_processing",
+      "to": "priority_check"
+    },
+    {
+      "from": "priority_check",
+      "to": "sheets_update"
+    },
+    {
+      "from": "sheets_update",
+      "to": "airtable_record"
+    },
+    {
+      "from": "airtable_record",
+      "to": "ai_response"
+    },
+    {
+      "from": "ai_response",
+      "to": "send_reply"
+    }
+  ],
+  "errorHandling": {
+    "strategy": "retry-with-notification",
+    "notifications": [
+      "slack"
+    ],
+    "fallbackActions": [
+      "Forward to support team",
+      "Log in error sheet"
+    ]
+  },
+  "expectedOutcomes": {
+    "timeReduction": "From 30+ minutes to 2-5 minutes per email",
+    "accuracyImprovement": "95%+ consistent data vs 70-80% manual",
+    "scalabilityBenefit": "Handle 10x volume without additional staff"
+  },
+  "meta": {
+    "generatedAt": "2025-08-10T06:50:06.340Z",
+    "generatedBy": "Enhanced Orchestrator Fallback",
+    "jobId": "test-fallback",
+    "mcpEnhanced": true,
+    "sophisticatedPlanning": true,
+    "fallbackUsed": true
+  }
+}

@@ -1,0 +1,26 @@
+name = "process-audit-automation"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[[queues.producers]]
+queue = "automation-jobs"
+binding = "AUTOMATION_QUEUE"
+
+[[queues.consumers]]
+queue = "automation-jobs"
+max_batch_size = 1
+max_batch_timeout = 30
+
+# Supabase binding for database access
+[vars]
+# These are now expected to be provided via Wrangler secrets
+# Run:
+#   wrangler secret put SUPABASE_URL
+#   wrangler secret put SUPABASE_SERVICE_KEY
+#   wrangler secret put CLAUDE_API_KEY
+#   wrangler secret put N8N_MCP_AUTH_TOKEN
+#   wrangler secret put N8N_MCP_SERVER_URL
+# See Cloudflare Wrangler docs for managing secrets.
+
+# n8n MCP server configuration
+N8N_MCP_SERVER_URL = "https://czlonkowskin8n-mcp-railwaylatest-production-a820.up.railway.app"

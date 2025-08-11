@@ -1,0 +1,99 @@
+{
+  "name": "Generated Automation Workflow",
+  "nodes": [
+    {
+      "id": "node-webhook-3uwl1z",
+      "name": "Webhook - Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ],
+      "parameters": {
+        "path": "process-audit/demo-job-1754805113870",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "responseCode": 200,
+        "authentication": "none"
+      }
+    },
+    {
+      "id": "node-http-5qxxhi",
+      "name": "HTTP - Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        300
+      ],
+      "parameters": {
+        "url": "{{API_URL}}",
+        "method": "POST",
+        "sendBody": true,
+        "jsonParameters": true,
+        "options": {
+          "retryOnFail": true,
+          "maxRetries": 3,
+          "allowUnauthorizedCerts": false
+        },
+        "headerParametersJson": "{\"Authorization\":\"Bearer {{API_TOKEN}}\"}",
+        "jsonBody": "{\"message\":\"{{message}}\"}"
+      }
+    },
+    {
+      "id": "node-set-1pmkbx",
+      "name": "Transform - Set",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ],
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "message",
+              "value": "{{message}}"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook - Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Request": {
+      "main": [
+        [
+          {
+            "node": "Transform - Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1",
+  "meta": {
+    "generatedAt": "2025-08-10T05:51:53.871Z",
+    "generatedBy": "ProcessAudit AI",
+    "version": "1.1.0",
+    "planHash": "h675060158"
+  }
+}

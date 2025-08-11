@@ -14,13 +14,16 @@ import {
   Settings,
   BarChart3,
   Save,
-  Heart
+  Heart,
+  Cpu
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useAuditReports } from '../hooks/useSupabase'
 import AutoSaveNotification from './AutoSaveNotification'
+import AutomationTemplates from './AutomationTemplates'
+import AutomationGenerator from './AutomationGenerator'
 
-const AuditReport = ({ report, onRestart, processData }) => {
+const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopData }) => {
   const [activeTab, setActiveTab] = useState('overview')
   const [expandedOpportunity, setExpandedOpportunity] = useState(null)
   const [saveTitle, setSaveTitle] = useState('')
@@ -32,9 +35,121 @@ const AuditReport = ({ report, onRestart, processData }) => {
   const [showNotification, setShowNotification] = useState(false)
   const [notificationMessage, setNotificationMessage] = useState('')
   const [notificationType, setNotificationType] = useState('success')
+  const [showAutomationGenerator, setShowAutomationGenerator] = useState(false)
   
   const { user, isConfigured } = useAuth()
   const { saveReport } = useAuditReports()
+  
+  // Normalize report data early to use throughout the component
+  // Handle both direct report objects and nested structures
+  const getReportData = () => {
+    // Handle SOP mode
+    if (isSOPMode && !report) {
+      const analysis = sopData?.analysis || processData?.sopAnalysis
+      
+      return {
+        executiveSummary: {
+          totalTimeSavings: analysis?.potentialTimeSavings || "2-4 hours/week",
+          quickWins: analysis?.automationOpportunities?.filter(opp => opp.priority >= 80).length || 2,
+          strategicOpportunities: analysis?.automationOpportunities?.filter(opp => opp.priority < 80).length || 3,
+          estimatedROI: "300%",
+          frequency: "Weekly",
+          currentTimeSpent: "8 hours/week"
+        },
+        automationOpportunities: analysis?.automationOpportunities || [
+          {
+            id: 'mock-1',
+            stepDescription: 'Email ticket intake and categorization',
+            solution: 'Implement automated ticket routing with AI categorization',
+            category: 'quick-win',
+            priority: 90,
+            effort: 'Medium',
+            timeSavings: '8 minutes per ticket',
+            estimatedCost: '$500-1000',
+            tools: ['Zendesk', 'Freshdesk', 'ServiceNow'],
+            implementationSteps: [
+              'Select help desk platform',
+              'Configure automated categorization rules',
+              'Set up team assignment logic',
+              'Train team on new system'
+            ],
+            technicalRequirements: 'Help desk software with API integration and AI categorization capabilities'
+          },
+          {
+            id: 'mock-2', 
+            stepDescription: 'Manual ticket tracking and logging',
+            solution: 'Replace spreadsheet with automated ticket management',
+            category: 'strategic',
+            priority: 75,
+            effort: 'Medium',
+            timeSavings: '5 minutes per ticket',
+            estimatedCost: '$200-500',
+            tools: ['Jira Service Desk', 'HubSpot Service Hub'],
+            implementationSteps: [
+              'Define workflow states',
+              'Set up automated reporting', 
+              'Configure SLA tracking',
+              'Enable automated notifications'
+            ],
+            technicalRequirements: 'Ticket management system with workflow automation'
+          }
+        ],
+        roadmap: [
+          {
+            phase: "Phase 1: Quick Wins (Weeks 1-4)",
+            items: [
+              "Set up help desk software",
+              "Configure automated categorization", 
+              "Implement basic ticket routing"
+            ],
+            estimatedSavings: "8-10 hours/week",
+            estimatedCost: "$500-1000",
+            keyBenefits: ["Immediate time savings", "Reduced human error", "Better ticket organization"]
+          },
+          {
+            phase: "Phase 2: Process Optimization (Weeks 5-8)",
+            items: [
+              "Advanced workflow automation",
+              "SLA tracking and alerts",
+              "Customer satisfaction surveys"
+            ],
+            estimatedSavings: "12-15 hours/week", 
+            estimatedCost: "$200-500",
+            keyBenefits: ["Improved response times", "Better customer experience", "Performance insights"]
+          }
+        ],
+        implementationGuidance: {
+          gettingStarted: [
+            "Evaluate help desk software options (Zendesk, Freshdesk, ServiceNow)",
+            "Define ticket categorization rules and priority levels",
+            "Set up team access and permissions",
+            "Plan migration from current spreadsheet system"
+          ],
+          successMetrics: [
+            "Average ticket resolution time reduced by 50%",
+            "Ticket categorization accuracy above 90%",
+            "Customer satisfaction score improvement",
+            "Team productivity increase of 25%"
+          ],
+          riskConsiderations: [
+            "Ensure proper team training on new system",
+            "Plan for initial productivity dip during transition",
+            "Monitor data migration accuracy carefully",
+            "Have rollback plan if system issues occur"
+          ]
+        }
+      }
+    }
+    
+    // Handle regular report
+    if (report && report.report) {
+      return report.report
+    }
+    
+    return report || {}
+  }
+  
+  const normalizedReport = getReportData()
 
   // Check if this is a loaded report (has an ID in processData)
   useEffect(() => {
@@ -73,12 +188,15 @@ const AuditReport = ({ report, onRestart, processData }) => {
         
         const reportTitle = `Process Audit - ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`
         
+        // Use the normalized report data that we already computed
+        const reportToSave = getReportData()
+        
         const { error } = await saveReport({
           title: reportTitle,
           processDescription: processData?.processDescription || '',
           fileContent: processData?.fileContent || '',
           answers: processData?.answers || {},
-          report: report
+          report: reportToSave
         })
 
         if (error) {
@@ -111,7 +229,20 @@ const AuditReport = ({ report, onRestart, processData }) => {
     return () => clearTimeout(saveTimer)
   }, [user, isConfigured, report, autoSaved, reportId]) // Removed processData and saveReport to prevent infinite loops
 
-  if (!report) {
+  // Extract data from normalized report
+  const executiveSummary = normalizedReport.executiveSummary || {}
+  const automationOpportunities = Array.isArray(normalizedReport.automationOpportunities)
+    ? normalizedReport.automationOpportunities
+    : []
+  const roadmap = Array.isArray(normalizedReport.roadmap)
+    ? normalizedReport.roadmap
+    : []
+  const implementationGuidance = normalizedReport.implementationGuidance
+    || normalizedReport.technicalRecommendations
+    || null
+
+  // For regular process analysis mode, ensure we have a report
+  if (!normalizedReport || Object.keys(normalizedReport).length === 0) {
     return (
       <div className="card max-w-2xl mx-auto text-center">
         <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
@@ -127,8 +258,6 @@ const AuditReport = ({ report, onRestart, processData }) => {
       </div>
     )
   }
-
-  const { executiveSummary, automationOpportunities, roadmap, implementationGuidance } = report
 
   const getPriorityColor = (priority) => {
     if (priority >= 90) return 'bg-red-100 text-red-800 border-red-200'
@@ -155,12 +284,26 @@ const AuditReport = ({ report, onRestart, processData }) => {
     return icons[category] || CheckCircle
   }
 
-  const tabs = [
-    { id: 'overview', label: 'Executive Summary', icon: BarChart3 },
-    { id: 'opportunities', label: 'Opportunities', icon: Zap },
-    { id: 'roadmap', label: 'Implementation', icon: Target },
-    { id: 'guidance', label: 'Guidance', icon: Users }
-  ]
+  // Define tabs based on mode
+  const getTabs = () => {
+    if (isSOPMode && sopData?.analysis) {
+      return [
+        { id: 'overview', label: 'SOP Summary', icon: BarChart3 },
+        { id: 'opportunities', label: 'Improvements', icon: Zap },
+        { id: 'automations', label: 'Automations', icon: Target },
+        { id: 'guidance', label: 'Implementation', icon: Users }
+      ]
+    } else {
+      return [
+        { id: 'overview', label: 'Executive Summary', icon: BarChart3 },
+        { id: 'opportunities', label: 'Opportunities', icon: Zap },
+        { id: 'roadmap', label: 'Implementation', icon: Target },
+        { id: 'guidance', label: 'Guidance', icon: Users }
+      ]
+    }
+  }
+
+  const tabs = getTabs()
 
   const handleSaveReport = async () => {
     if (!user || !isConfigured) {
@@ -185,7 +328,7 @@ const AuditReport = ({ report, onRestart, processData }) => {
         processDescription: processData?.processDescription || '',
         fileContent: processData?.fileContent || '',
         answers: processData?.answers || {},
-        report: report
+        report: normalizedReport
       })
 
       if (error) {
@@ -204,13 +347,13 @@ const AuditReport = ({ report, onRestart, processData }) => {
 
   const exportReport = () => {
     // In a real implementation, this would generate a PDF
-    const reportData = {
-      title: 'ProcessAudit AI - Automation Analysis Report',
-      generatedAt: new Date().toISOString(),
-      ...report
-    }
+          const reportDataToExport = {
+        title: 'ProcessAudit AI - Automation Analysis Report',
+        generatedAt: new Date().toISOString(),
+        ...normalizedReport
+      }
     
-    const dataStr = JSON.stringify(reportData, null, 2)
+    const dataStr = JSON.stringify(reportDataToExport, null, 2)
     const dataBlob = new Blob([dataStr], { type: 'application/json' })
     const url = URL.createObjectURL(dataBlob)
     const link = document.createElement('a')
@@ -286,28 +429,28 @@ const AuditReport = ({ report, onRestart, processData }) => {
           <div className="text-center p-4 bg-blue-50 rounded-lg">
             <Clock className="w-8 h-8 text-primary mx-auto mb-2" />
             <div className="text-2xl font-bold text-gray-900">
-              {executiveSummary.totalTimeSavings}
+              {executiveSummary?.totalTimeSavings || 'N/A'}
             </div>
             <div className="text-sm text-gray-600">Potential Savings</div>
           </div>
           <div className="text-center p-4 bg-green-50 rounded-lg">
             <Zap className="w-8 h-8 text-secondary mx-auto mb-2" />
             <div className="text-2xl font-bold text-gray-900">
-              {executiveSummary.quickWins}
+              {executiveSummary?.quickWins || 'N/A'}
             </div>
             <div className="text-sm text-gray-600">Quick Wins</div>
           </div>
           <div className="text-center p-4 bg-purple-50 rounded-lg">
             <Target className="w-8 h-8 text-purple-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-gray-900">
-              {executiveSummary.strategicOpportunities}
+              {executiveSummary?.strategicOpportunities || 'N/A'}
             </div>
             <div className="text-sm text-gray-600">Strategic Items</div>
           </div>
           <div className="text-center p-4 bg-orange-50 rounded-lg">
             <TrendingUp className="w-8 h-8 text-warning mx-auto mb-2" />
             <div className="text-2xl font-bold text-gray-900">
-              {executiveSummary.estimatedROI}
+              {executiveSummary?.estimatedROI || 'N/A'}
             </div>
             <div className="text-sm text-gray-600">Est. ROI</div>
           </div>
@@ -350,11 +493,11 @@ const AuditReport = ({ report, onRestart, processData }) => {
                 <div className="space-y-2 text-sm text-gray-600">
                   <div className="flex justify-between">
                     <span>Process Frequency:</span>
-                    <span className="font-medium">{executiveSummary.frequency}</span>
+                    <span className="font-medium">{executiveSummary?.frequency || 'Unknown'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Time per Iteration:</span>
-                    <span className="font-medium">{executiveSummary.currentTimeSpent}</span>
+                    <span className="font-medium">{executiveSummary?.currentTimeSpent || 'Unknown'}</span>
                   </div>
                 </div>
               </div>
@@ -364,7 +507,7 @@ const AuditReport = ({ report, onRestart, processData }) => {
                 <div className="space-y-2 text-sm text-gray-600">
                   <div className="flex justify-between">
                     <span>Automation Opportunities:</span>
-                    <span className="font-medium">{automationOpportunities.length}</span>
+                    <span className="font-medium">{automationOpportunities?.length || 0}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Est. Implementation Time:</span>
@@ -380,7 +523,7 @@ const AuditReport = ({ report, onRestart, processData }) => {
                 <li className="flex items-start">
                   <CheckCircle className="w-5 h-5 text-secondary mt-0.5 mr-3 flex-shrink-0" />
                   <span className="text-gray-700">
-                    Start with {executiveSummary.quickWins} quick-win opportunities for immediate impact
+                    Start with {executiveSummary?.quickWins || 'available'} quick-win opportunities for immediate impact
                   </span>
                 </li>
                 <li className="flex items-start">
@@ -392,7 +535,7 @@ const AuditReport = ({ report, onRestart, processData }) => {
                 <li className="flex items-start">
                   <CheckCircle className="w-5 h-5 text-secondary mt-0.5 mr-3 flex-shrink-0" />
                   <span className="text-gray-700">
-                    Expect {executiveSummary.estimatedROI} return on investment within 6-12 months
+                    Expect {executiveSummary?.estimatedROI || 'significant'} return on investment within 6-12 months
                   </span>
                 </li>
               </ul>
@@ -403,15 +546,41 @@ const AuditReport = ({ report, onRestart, processData }) => {
         {/* Opportunities Tab */}
         {activeTab === 'opportunities' && (
           <div className="space-y-4">
-            {automationOpportunities.map((opportunity) => {
-              const isExpanded = expandedOpportunity === opportunity.id
+            {/* Advanced Automation Button */}
+            <div className="card bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-blue-600 rounded-lg">
+                    <Cpu className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Generate n8n Workflow</h3>
+                    <p className="text-sm text-gray-600">
+                      Create a complete automation workflow that you can import into n8n
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAutomationGenerator(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+                >
+                  <Zap className="w-4 h-4" />
+                  Generate Workflow
+                </button>
+              </div>
+            </div>
+            
+            {(automationOpportunities || []).map((opportunity, index) => {
+              // Ensure each opportunity has a unique identifier
+              const opportunityId = opportunity.id || `opportunity-${index}`
+              const isExpanded = expandedOpportunity === opportunityId
               const CategoryIcon = getCategoryIcon(opportunity.category)
 
               return (
-                <div key={opportunity.id} className="card">
+                <div key={opportunityId} className="card">
                   <div
                     className="flex items-center justify-between cursor-pointer"
-                    onClick={() => setExpandedOpportunity(isExpanded ? null : opportunity.id)}
+                    onClick={() => setExpandedOpportunity(isExpanded ? null : opportunityId)}
                   >
                     <div className="flex items-center flex-1">
                       <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary text-white mr-4">
@@ -420,10 +589,10 @@ const AuditReport = ({ report, onRestart, processData }) => {
                       
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-900">
-                          {opportunity.processStep}
+                          {opportunity.processStep || opportunity.stepDescription}
                         </h3>
                         <p className="text-gray-600 text-sm">
-                          {opportunity.solution}
+                          {opportunity.solution || opportunity.automationSolution}
                         </p>
                       </div>
                     </div>
@@ -454,7 +623,7 @@ const AuditReport = ({ report, onRestart, processData }) => {
                         <div>
                           <h4 className="font-semibold text-gray-900 mb-3">Implementation Steps</h4>
                           <ol className="space-y-2">
-                            {opportunity.implementationSteps.map((step, index) => (
+                            {(opportunity.implementationSteps || []).map((step, index) => (
                               <li key={index} className="flex items-start">
                                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-medium mr-3 mt-0.5 flex-shrink-0">
                                   {index + 1}
@@ -469,7 +638,7 @@ const AuditReport = ({ report, onRestart, processData }) => {
                           <div>
                             <h4 className="font-semibold text-gray-900 mb-2">Recommended Tools</h4>
                             <div className="flex flex-wrap gap-2">
-                              {opportunity.tools.map((tool, index) => (
+                              {(opportunity.tools || []).map((tool, index) => (
                                 <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
                                   {tool}
                                 </span>
@@ -480,14 +649,14 @@ const AuditReport = ({ report, onRestart, processData }) => {
                           <div>
                             <h4 className="font-semibold text-gray-900 mb-2">Technical Requirements</h4>
                             <p className="text-gray-700 text-sm">
-                              {opportunity.technicalRequirements}
+                              {opportunity.technicalRequirements || 'Basic automation tools and API access'}
                             </p>
                           </div>
 
                           <div>
                             <h4 className="font-semibold text-gray-900 mb-2">Estimated Cost</h4>
                             <p className="text-gray-700 font-medium">
-                              {opportunity.estimatedCost}
+                              {opportunity.estimatedCost || 'Contact for pricing'}
                             </p>
                           </div>
                         </div>
@@ -503,7 +672,7 @@ const AuditReport = ({ report, onRestart, processData }) => {
         {/* Roadmap Tab */}
         {activeTab === 'roadmap' && (
           <div className="space-y-6">
-            {roadmap.map((phase, index) => (
+            {(roadmap || []).map((phase, index) => (
               <div key={index} className="card">
                 <div className="flex items-start">
                   <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary text-white font-bold text-lg mr-4 flex-shrink-0">
@@ -559,6 +728,17 @@ const AuditReport = ({ report, onRestart, processData }) => {
               </div>
             ))}
           </div>
+        )}
+
+        {/* SOP Automations Tab */}
+        {isSOPMode && activeTab === 'automations' && sopData?.analysis?.automationOpportunities && (
+          <AutomationTemplates 
+            automationOpportunities={sopData.analysis.automationOpportunities}
+            sopData={sopData.revision?.revisedSOP || {}}
+            processData={processData}
+            auditReportId={reportId}
+            userId={user?.id}
+          />
         )}
 
         {/* Guidance Tab */}
@@ -670,6 +850,17 @@ const AuditReport = ({ report, onRestart, processData }) => {
         type={notificationType}
         onClose={() => setShowNotification(false)}
       />
+
+      {/* Automation Generator Modal */}
+      {showAutomationGenerator && (
+        <AutomationGenerator
+          auditReportId={reportId}
+          processData={processData}
+          automationOpportunities={automationOpportunities}
+          userId={user?.id}
+          onClose={() => setShowAutomationGenerator(false)}
+        />
+      )}
     </div>
   )
 }
