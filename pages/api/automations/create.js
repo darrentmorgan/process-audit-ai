@@ -152,9 +152,18 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Error in create automation:', error);
     console.error('Error stack:', error.stack);
+    console.error('Request body:', JSON.stringify(req.body, null, 2));
+    console.error('Environment check:', {
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      hasWorkerUrl: !!process.env.CLOUDFLARE_WORKER_URL,
+      nodeEnv: process.env.NODE_ENV
+    });
+    
     res.status(500).json({ 
       error: 'Internal server error',
       details: error.message,
+      timestamp: new Date().toISOString(),
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
