@@ -72,6 +72,7 @@ export default async function handler(req, res) {
     
     console.log('Worker URL from env:', process.env.CLOUDFLARE_WORKER_URL);
     console.log('Using worker URL:', workerUrl);
+    console.log('Production deployment timestamp:', new Date().toISOString());
     
     if (!workerUrl) {
       return res.status(500).json({ 
