@@ -37,14 +37,23 @@ export async function callModel(env, prompt, opts = {}) {
   // Use Claude if available, otherwise try OpenAI
   if (hasClaude) {
     try {
-      const claudeText = await callClaudeAPI(env, prompt, maxTokens, {
+      const claudeResponse = await callClaudeAPI(env, prompt, maxTokens, {
         tier,
         complexity,
         temperature,
         workflowType: opts.workflowType,
         jobId: opts.jobId
       });
-      return claudeText;
+      
+      // Extract text content from Claude response
+      if (typeof claudeResponse === 'string') {
+        return claudeResponse;
+      } else if (claudeResponse && claudeResponse.content && claudeResponse.content.length > 0) {
+        return claudeResponse.content[0].text || '';
+      } else {
+        throw new Error('Invalid Claude response format');
+      }
+      
     } catch (error) {
       console.warn('Claude API failed, trying OpenAI fallback:', error.message);
       // Fall through to OpenAI if Claude fails
@@ -92,14 +101,22 @@ export async function callModel(env, prompt, opts = {}) {
   
   // Last resort: try Claude without validation (might be dev environment)
   try {
-    const claudeText = await callClaudeAPI(env, prompt, maxTokens, {
+    const claudeResponse = await callClaudeAPI(env, prompt, maxTokens, {
       tier,
       complexity,
       temperature,
       workflowType: opts.workflowType,
       jobId: opts.jobId
     });
-    return claudeText;
+    
+    // Extract text content from Claude response
+    if (typeof claudeResponse === 'string') {
+      return claudeResponse;
+    } else if (claudeResponse && claudeResponse.content && claudeResponse.content.length > 0) {
+      return claudeResponse.content[0].text || '';
+    } else {
+      throw new Error('Invalid Claude response format');
+    }
   } catch (error) {
     throw new Error(`All AI providers failed. Claude error: ${error.message}`);
   }

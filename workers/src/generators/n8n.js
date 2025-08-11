@@ -109,8 +109,21 @@ export async function generateN8nWorkflow(env, orchestrationPlan, job) {
     temperature: 0.1 // Lower temperature for more consistent, production-ready output
   });
   
+  // Extract text content from response
+  let responseText = '';
+  if (typeof response === 'string') {
+    responseText = response;
+  } else if (response && response.content && response.content.length > 0) {
+    responseText = response.content[0].text || '';
+  } else if (response && response.choices && response.choices.length > 0) {
+    // OpenAI format
+    responseText = response.choices[0].message.content || '';
+  } else {
+    throw new Error('Invalid AI response format - no text content found');
+  }
+  
   // Clean and extract JSON from AI response
-  let cleanJson = response;
+  let cleanJson = responseText;
   
   // Remove markdown code blocks if present
   if (cleanJson.includes('```json') || cleanJson.includes('```')) {
