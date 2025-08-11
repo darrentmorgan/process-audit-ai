@@ -68,7 +68,10 @@ export default async function handler(req, res) {
     console.log('Job created successfully:', job);
 
     // Submit job to Cloudflare Worker (required)
-    const workerUrl = process.env.CLOUDFLARE_WORKER_URL;
+    const workerUrl = process.env.CLOUDFLARE_WORKER_URL || 'https://process-audit-automation.damorgs85.workers.dev';
+    
+    console.log('Worker URL from env:', process.env.CLOUDFLARE_WORKER_URL);
+    console.log('Using worker URL:', workerUrl);
     
     if (!workerUrl) {
       return res.status(500).json({ 
@@ -88,10 +91,11 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           id: job.id,
+          jobId: job.id,  // Some workers expect jobId instead of id
           auditReportId,
           processData,
           automationOpportunities,
-          automationType,
+          automationType: automationType || 'n8n',
           userId,
         }),
       });
@@ -146,6 +150,11 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Error in create automation:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 }
