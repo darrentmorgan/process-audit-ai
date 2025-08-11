@@ -25,86 +25,88 @@ export async function callClaudeAPI(env, prompt, maxTokens = 4096, options = {})
   console.log(`🤖 Using ${selectedModel} (${complexity} workflow, ${tier} tier)`);
   console.log(`📊 Estimated: ${estimatedInputTokens} input + ${budgetEnforcedTokens} output tokens`);
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': env.CLAUDE_API_KEY,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: selectedModel,
-      max_tokens: budgetEnforcedTokens,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
+  // Retry logic for overloaded errors
+  let lastError;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': env.CLAUDE_API_KEY,
+          'anthropic-version': '2023-06-01',
         },
-      ],
-      temperature,
-    }),
-  });
+        body: JSON.stringify({
+          model: selectedModel,
+          max_tokens: budgetEnforcedTokens,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          temperature,
+        }),
+      });
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Claude API error: ${error}`);
+      if (!response.ok) {
+        const error = await response.text();
+        lastError = error;
+        
+        // Parse error to check if it's overloaded
+        let errorData;
+        try {
+          errorData = JSON.parse(error);
+        } catch {
+          errorData = { error: { type: 'unknown', message: error } };
+        }
+        
+        // If overloaded and we have attempts left, wait and retry
+        if (errorData.error?.type === 'overloaded_error' && attempt < 3) {
+          console.log(`🔄 Claude API overloaded, retrying attempt ${attempt + 1}/3 after ${attempt * 2}s...`);
+          await new Promise(resolve => setTimeout(resolve, attempt * 2000));
+          continue;
+        }
+        
+        throw new Error(`Claude API error: ${error}`);
+      }
+
+      // Success - break out of retry loop
+      const data = await response.json();
+      
+      // Cost tracking
+      if (data.usage) {
+        try {
+          const { CostMonitor } = await import('../monitoring/cost-monitor.js');
+          const costMonitor = new CostMonitor(env);
+          
+          const costData = costMonitor.calculateCost(selectedModel, data.usage.input_tokens, data.usage.output_tokens);
+          await costMonitor.logCost(costData, {
+            workflowType,
+            complexity,
+            jobId,
+            tier,
+            success: true
+          });
+        } catch (costError) {
+          console.warn('Cost monitoring failed:', costError.message);
+        }
+      }
+      
+      return data;
+      
+    } catch (error) {
+      lastError = error.message;
+      if (attempt === 3) {
+        throw error;
+      }
+      console.log(`🔄 Attempt ${attempt} failed: ${error.message}, retrying...`);
+      await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+    }
   }
 
-  const data = await response.json();
-  
-  // Track actual token usage and cost
-  const actualInputTokens = data.usage?.input_tokens || estimatedInputTokens;
-  const actualOutputTokens = data.usage?.output_tokens || Math.ceil(data.content[0].text.length / 4);
-  
-  // Log cost metrics (import done lazily to avoid circular dependencies)
-  try {
-    const { CostMonitor } = await import('../monitoring/cost-monitor.js');
-    const costMonitor = new CostMonitor(env);
-    
-    const costData = costMonitor.calculateCost(selectedModel, actualInputTokens, actualOutputTokens);
-    await costMonitor.logCost(costData, {
-      workflowType,
-      complexity,
-      jobId,
-      tier,
-      success: true
-    });
-    
-    const budgetStatus = costMonitor.checkBudget(costData);
-    if (!budgetStatus.withinBudget) {
-      console.warn('⚠️ Budget warning:', budgetStatus.warnings.join('; '));
-    }
-  } catch (costError) {
-    console.warn('Cost monitoring failed:', costError.message);
-  }
-  
-  // Extract JSON from the response
-  const content = data.content[0].text;
-  
-  // Try to parse JSON from the response
-  try {
-    // Look for JSON blocks in the response
-    const jsonMatch = content.match(/```json\n?([\s\S]*?)\n?```/);
-    if (jsonMatch) {
-      return jsonMatch[1].trim();
-    }
-    
-    // Try to parse the entire response as JSON
-    JSON.parse(content);
-    return content;
-  } catch (e) {
-    // If not valid JSON, try to extract JSON object
-    const jsonStart = content.indexOf('{');
-    const jsonEnd = content.lastIndexOf('}') + 1;
-    
-    if (jsonStart !== -1 && jsonEnd > jsonStart) {
-      const jsonStr = content.substring(jsonStart, jsonEnd);
-      JSON.parse(jsonStr); // Validate it's valid JSON
-      return jsonStr;
-    }
-    
-    throw new Error('Failed to extract valid JSON from Claude response');
-  }
+  // Should never reach here due to throws above
+  throw new Error(`All Claude API attempts failed: ${lastError}`);
 }
 
 /**
