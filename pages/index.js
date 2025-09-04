@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext'
 export default function Home() {
   const [showApp, setShowApp] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [verificationMessage, setVerificationMessage] = useState('')
   const { user } = useAuth()
   const router = useRouter()
 
@@ -14,9 +15,21 @@ export default function Home() {
     // Check if user has access via URL parameter or is authenticated
     const hasAccess = router.query.access === 'granted' || user
     
+    // Handle email verification redirect
+    if (router.query.verified === 'true') {
+      console.log('Email verification successful')
+      setVerificationMessage('Email verified successfully! You can now sign in.')
+      
+      // Clean up the URL parameter after a delay
+      setTimeout(() => {
+        setVerificationMessage('')
+        router.replace(router.pathname, undefined, { shallow: true })
+      }, 5000)
+    }
+    
     setShowApp(hasAccess)
     setIsLoading(false)
-  }, [router.query.access, user])
+  }, [router.query.access, router.query.verified, user, router])
 
   // Check if user is in demo mode (has access but not authenticated)
   const isDemoMode = router.query.access === 'granted' && !user
@@ -52,11 +65,34 @@ export default function Home() {
     )
   }
 
+  // Show verification message if present
+  const VerificationBanner = () => {
+    if (!verificationMessage) return null
+    
+    return (
+      <div className="fixed top-0 left-0 right-0 z-50 bg-green-500 text-white text-center py-3 px-4">
+        <div className="max-w-4xl mx-auto">
+          {verificationMessage}
+        </div>
+      </div>
+    )
+  }
+
   // Show the app if user has access
   if (showApp) {
-    return <ProcessAuditApp isDemoMode={isDemoMode} />
+    return (
+      <>
+        <VerificationBanner />
+        <ProcessAuditApp isDemoMode={isDemoMode} />
+      </>
+    )
   }
 
   // Show landing page by default
-  return <LandingPage onSignUp={handleSignUp} />
+  return (
+    <>
+      <VerificationBanner />
+      <LandingPage onSignUp={handleSignUp} />
+    </>
+  )
 }
