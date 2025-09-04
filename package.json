@@ -9,9 +9,12 @@
     "lint": "next lint",
     "setup:supabase": "./scripts/setup-supabase.sh",
     "setup:quick": "./scripts/quick-supabase.sh",
+    "setup:clerk": "./scripts/setup-clerk.sh",
     "validate": "./scripts/validate-setup.sh"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.31.8",
+    "@clerk/themes": "^2.4.16",
     "@supabase/supabase-js": "^2.53.0",
     "cookies-next": "^4.0.0",
     "dotenv": "^17.2.1",

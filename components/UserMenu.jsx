@@ -1,10 +1,22 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { User, LogOut, Settings, Save, ChevronDown, Database } from 'lucide-react'
-import { useAuth } from '../contexts/AuthContext'
+import { User, LogOut, Settings, Save, ChevronDown, Database, Building2, Users } from 'lucide-react'
+import { useUnifiedAuth } from '../contexts/UnifiedAuthContext'
+import { ClerkUserMenu } from './ClerkAuthModal'
+import OrganizationSwitcher from './OrganizationSwitcher'
 
 const UserMenu = ({ onOpenAuth, onOpenSavedReports, onOpenCleanup }) => {
-  const { user, signOut, isConfigured } = useAuth()
+  const { 
+    user, 
+    signOut, 
+    isConfigured, 
+    authSystem,
+    isSignedIn,
+    organization,
+    isOrgAdmin,
+    orgContext,
+    availableOrganizations
+  } = useUnifiedAuth()
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
 
@@ -30,6 +42,36 @@ const UserMenu = ({ onOpenAuth, onOpenSavedReports, onOpenCleanup }) => {
     )
   }
 
+  // If using Clerk authentication, use Clerk components
+  if (authSystem === 'clerk') {
+    return (
+      <div className="flex items-center space-x-3">
+        {/* Organization Switcher (only show when signed in) */}
+        {isSignedIn && <OrganizationSwitcher />}
+        
+        {/* User Menu or Auth Buttons */}
+        {isSignedIn ? (
+          <ClerkUserMenu />
+        ) : (
+          <>
+            <button
+              onClick={() => onOpenAuth('signin')}
+              className="text-white hover:text-blue-100 transition-colors font-medium"
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => onOpenAuth('signup')}
+              className="bg-white text-primary px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+            >
+              Sign Up
+            </button>
+          </>
+        )}
+      </div>
+    )
+  }
+  
   // If user is not logged in, show auth buttons
   if (!user) {
     return (
@@ -82,6 +124,31 @@ const UserMenu = ({ onOpenAuth, onOpenSavedReports, onOpenCleanup }) => {
                 {user.user_metadata?.full_name || 'User'}
               </p>
               <p className="text-xs text-gray-500">{user.email}</p>
+              
+              {/* Organization context info */}
+              {organization && (
+                <div className="flex items-center mt-2 text-xs text-gray-600">
+                  <Building2 className="w-3 h-3 mr-1" />
+                  <span className="truncate">{organization.name}</span>
+                  {isOrgAdmin && (
+                    <span className="ml-2 px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                      Admin
+                    </span>
+                  )}
+                </div>
+              )}
+              
+              {/* Organization context type indicator */}
+              {orgContext && (
+                <div className="mt-1 text-xs text-gray-500">
+                  {orgContext.type === 'domain' && (
+                    <span>📡 Domain: {orgContext.domain}</span>
+                  )}
+                  {orgContext.type === 'path' && (
+                    <span>🔗 Path: /org/{orgContext.identifier}</span>
+                  )}
+                </div>
+              )}
             </div>
             
             <button
