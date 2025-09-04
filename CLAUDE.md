@@ -51,6 +51,110 @@ node test-worker-direct.js            # Test worker HTTP endpoints
 node test-workflow.js simple-http-test # Test via HTTP with status polling
 ```
 
+---
+
+# Agent Dispatch Protocol (CRITICAL)
+
+## Philosophy: Delegate, Don't Solve
+
+**Your purpose is delegation, not execution.** You are the central command that receives a request and immediately hands it off to a specialized mission commander (`agent-organizer`).
+
+### Mental Model: The Workflow You Initiate
+
+```mermaid
+graph TD
+    A[User provides prompt] --> B{You - The Dispatcher};
+    B --> C{Is the request trivial?};
+    C -- YES --> E[Answer directly];
+    C -- NO --> D[**Invoke agent_organizer**];
+    D --> F[Agent Organizer analyzes project & prompt];
+    F --> G[Agent Organizer assembles agent team & defines workflow];
+    G --> H[Sub-agents execute tasks in sequence/parallel];
+    H --> I[Agent Organizer synthesizes results];
+    I --> J[Final output is returned to You];
+    J --> K[You present the final output to the User];
+
+    style B fill:#e3f2fd,stroke:#333,stroke-width:2px
+    style D fill:#dcedc8,stroke:#333,stroke-width:2px
+```
+
+## Project-Specific Agent Delegation Criteria
+
+**Delegation is MANDATORY for ProcessAudit AI tasks involving:**
+
+### Core Application Changes
+- **React Components**: Modifying ProcessInput.jsx, QuestionForm.jsx, AuditReport.jsx, AutomationGenerator.jsx
+- **API Routes**: Changes to `/api/analyze-process`, `/api/automations/*`, authentication endpoints
+- **Database Schema**: Updates to Supabase tables, RLS policies, or migrations
+
+### Workers & AI System
+- **Cloudflare Workers**: Modifications to `/workers/` directory components
+- **AI Integration**: Changes to model-router.js, intelligent-prompt-builder.js, or prompt optimization
+- **MCP Integration**: Updates to n8n-client.js or node documentation systems
+- **Workflow Generation**: Modifications to blueprint or AI-enhanced generation systems
+
+### Architecture & Performance
+- **Queue System**: Changes to job tracking, progress polling, or async processing
+- **Security**: Updates to secret scanning, policy enforcement, or validation systems
+- **Error Handling**: Improvements to fallback systems, retry logic, or error reporting
+- **Testing**: Adding new test suites for workers, E2E flows, or validation systems
+
+### Documentation & Configuration
+- **Environment Setup**: Changes to .env configurations, deployment scripts, or setup processes
+- **Schema Updates**: Database migrations, API documentation, or workflow schemas
+- **Deployment**: Modifications to Vercel or Cloudflare Workers deployment processes
+
+## Follow-Up Question Handling Protocol
+
+### Complexity Assessment Framework
+
+- **Simple Follow-ups (Handle Directly):**
+  - Configuration questions ("What's the WORKER_URL format?")
+  - Single-file clarifications ("What does this function do?")
+  - Environment troubleshooting
+
+- **Moderate Follow-ups (Use Previously Identified Agents):**
+  - Extending existing automation features
+  - UI improvements to existing components
+  - Minor worker optimizations
+
+- **Complex Follow-ups (Re-run `agent-organizer`):**
+  - New automation types or AI model integration
+  - Architecture changes spanning multiple systems
+  - Cross-system debugging (Main app ↔ Workers ↔ Database)
+
+### Follow-Up Decision Tree
+
+```mermaid
+graph TD
+    A[User Follow-Up Question] --> B{Assess Complexity}
+    B --> C{New domain or major scope change?}
+    C -- YES --> D[Re-run agent-organizer]
+    C -- NO --> E{Can previous agents handle this?}
+    E -- NO --> G{Simple clarification or config?}
+    G -- NO --> D
+    G -- YES --> H[Handle directly without sub-agents]
+    E -- YES ---> F[Use subset of previous team<br/>Max 3 agents]
+
+    style D fill:#dcedc8,stroke:#333,stroke-width:2px
+    style F fill:#fff3e0,stroke:#333,stroke-width:2px  
+    style H fill:#e8f5e8,stroke:#333,stroke-width:2px
+```
+
+## Critical Reminders
+
+**ALWAYS:**
+- Delegate to `agent-organizer` for any multi-file changes
+- Use agent delegation for debugging across systems (Main ↔ Workers ↔ DB)
+- Present complete agent-organizer output directly to user
+
+**NEVER:**
+- Attempt to solve complex ProcessAudit AI architecture changes alone
+- Interfere with agent-organizer's process or sub-agent workflows
+- Modify agent-organizer output or add personal commentary
+
+---
+
 ## Application Architecture
 
 ### Core Application Flow
@@ -356,6 +460,21 @@ node test-workflow.js simple-http-test --production
 
 ## Important Implementation Notes
 
+### AGENT-FIRST DEVELOPMENT POLICY (CRITICAL)
+**⚠️ MANDATORY: All complex ProcessAudit AI tasks MUST use the Agent Dispatch Protocol:**
+
+- **ALWAYS DELEGATE**: Use `agent-organizer` for any multi-file changes, architecture modifications, or cross-system debugging
+- **PROJECT COMPLEXITY**: ProcessAudit AI's distributed architecture (Main App ↔ Workers ↔ Database ↔ AI Systems) requires specialized expertise
+- **QUALITY ASSURANCE**: Agent teams provide comprehensive testing, validation, and documentation
+- **CONSISTENCY**: Ensures all changes follow established patterns across React components, API routes, Workers, and database schemas
+
+**⚠️ NEVER attempt these tasks without agent delegation:**
+- Modifying AI integration (model-router.js, intelligent-prompt-builder.js)
+- Changes spanning Main App + Workers systems
+- Database schema updates affecting multiple tables
+- Worker queue system modifications
+- Complex debugging across distributed components
+
 ### NO FALLBACK DATA POLICY (CRITICAL)
 **⚠️ IMPORTANT: This application follows a strict NO FALLBACK DATA policy for better debugging:**
 
@@ -421,9 +540,42 @@ All AI prompts are optimized for their target models:
 
 ## Development Workflow (NEW)
 
+### Agent-First Development Process
+
+**For ALL complex tasks, follow this workflow:**
+
+1. **Triage Request**: Assess if task requires agent delegation (see Agent Dispatch Protocol above)
+2. **Delegate to agent-organizer**: Let specialized agents handle multi-system changes
+3. **Validate Results**: Ensure output meets ProcessAudit AI quality standards
+4. **Deploy**: Follow standard deployment process for both systems
+
+### Full-Stack Development Standards
+
+When working on ProcessAudit AI (either directly for simple tasks or through agents for complex ones):
+
+#### Planning & Staging
+- Break work into 3-5 cross-stack stages (Frontend → API → Workers → Database)
+- Document in `IMPLEMENTATION_PLAN.md` (agents will create this automatically)
+- Update status after each merge, delete plan file after production verification
+
+#### Implementation Flow
+- **Understand**: Identify existing patterns for UI (React), API (Next.js), Workers (Cloudflare), DB (Supabase)  
+- **Test First**: Write integration tests for API routes, component tests for React, worker tests for CF Workers
+- **Implement Minimal**: Just enough code to pass all tests
+- **Refactor Safely**: Clean code with 60%+ test coverage for changed areas
+- **Commit Clearly**: Reference plan stage, include scope (frontend, backend, workers, DB)
+
+#### Quality Gates
+- Tests pass at all levels (unit, integration, E2E)
+- Code meets project style guides (ESLint, Prettier)
+- No console errors or warnings
+- No unhandled API errors in the UI
+- Workers pass security validation
+- Database changes include proper RLS policies
+
 ### Local Development Setup
 1. **Main App**: `npm run dev` (port 3000/3001)
-2. **Workers**: `cd workers && npm run dev` (port 8787)
+2. **Workers**: `cd workers && npm run dev` (port 8787)  
 3. **Database**: Supabase local development or cloud
 4. **Testing**: Both environments support direct testing
 
