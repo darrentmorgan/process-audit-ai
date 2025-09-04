@@ -66,7 +66,7 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'signin' }) => {
         if (error) {
           setError(error.message)
         } else {
-          setMessage('Check your email for the confirmation link!')
+          setMessage('If this is a new account, check your email for the verification link. If you already have an account, please sign in instead.')
         }
       } else if (mode === 'reset') {
         const { error } = await resetPassword(email)
@@ -263,6 +263,15 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'signin' }) => {
                   className="text-primary hover:underline font-medium"
                 >
                   Sign in
+                </button>
+              </p>
+              <p className="text-gray-500 text-sm text-center">
+                Forgot your password?{' '}
+                <button
+                  onClick={() => setMode('reset')}
+                  className="text-primary hover:underline font-medium"
+                >
+                  Reset it here
                 </button>
               </p>
               <p className="text-gray-500 text-sm text-center">
