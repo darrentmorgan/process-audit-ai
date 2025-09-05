@@ -20,9 +20,10 @@ npm start
 # Linting
 npm run lint
 
-# Supabase setup (automated)
-npm run setup:supabase     # Full guided setup
-npm run setup:quick        # Quick setup with defaults
+# Authentication and Database setup (automated)
+npm run setup:clerk        # Set up Clerk authentication (required)
+npm run setup:supabase     # Set up Supabase data storage (required)
+npm run setup:quick        # Quick Supabase setup with defaults
 npm run validate           # Validate current setup
 ```
 
@@ -232,12 +233,13 @@ The AI system has been completely redesigned with multiple sophisticated layers:
 6. File processing handled by `/api/process-file` and `utils/fileProcessor.js`
 
 ### Authentication System
-Supabase-based authentication with graceful degradation:
-- `contexts/AuthContext.js` provides authentication state
-- `hooks/useSupabase.js` handles database operations
-- App functions fully without authentication (shows landing page)
-- Database operations only work when Supabase is configured
-- **NEW**: Service role authentication for worker database access
+Clerk-based authentication with multi-tenant organization support:
+- `contexts/UnifiedAuthContext.js` provides unified authentication state
+- Full Clerk Organizations integration for white-label capabilities
+- Custom sign-in/sign-up pages with ProcessAudit AI branding
+- Organization-specific routing and permissions
+- **TypeScript**: Complete auth type definitions in `types/auth.ts`
+- **Service Role**: Supabase service key authentication for worker database access
 
 ## Key Configuration
 
@@ -249,12 +251,16 @@ Supabase-based authentication with graceful degradation:
 CLAUDE_API_KEY=sk-ant-your_key_here              # Primary AI provider
 OPENAI_API_KEY=sk-your_openai_key                # Fallback AI provider
 
-# Supabase Configuration  
+# Authentication (Clerk)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_clerk_key
+CLERK_SECRET_KEY=sk_test_your_clerk_secret
+
+# Database (Supabase) - For data storage only
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_KEY=your_service_role_key       # For worker access
 
-# Workers Integration (NEW)
+# Workers Integration
 CLOUDFLARE_WORKER_URL=https://your-worker.workers.dev  # Production worker URL
 NEXT_PUBLIC_APP_URL=https://your-app.vercel.app  # For CORS configuration
 ```
@@ -356,8 +362,11 @@ The AI responses follow specific JSON structures that map to component expectati
 - **Progress System**: Real-time polling from 0% → 100% with status updates
 
 ### Authentication Components
-- `AuthModal.jsx` - Sign in/sign up modal with form validation
-- `LandingPage.jsx` - Marketing page with authentication CTAs and waitlist
+- **`/pages/sign-in/[[...index]].js`** - Custom Clerk sign-in page with ProcessAudit AI branding
+- **`/pages/sign-up/[[...index]].js`** - Custom Clerk sign-up page with organization support
+- **`/pages/organization-required.js`** - Organization selection/creation page
+- **`contexts/UnifiedAuthContext.js`** - Unified auth context (Clerk-only implementation)
+- `LandingPage.jsx` - Marketing page with Clerk authentication CTAs
 
 ### NEW: Job Management System (`utils/jobStore.js`)
 - **In-Memory Fallback**: Job tracking when Supabase unavailable
@@ -505,10 +514,11 @@ node test-workflow.js simple-http-test --production
 - File upload includes validation and user-friendly error messages
 
 ### State Management
-- Global authentication state via React Context (`AuthContext`)
+- Global authentication state via React Context (`UnifiedAuthContext`)
+- Clerk Organizations state management for multi-tenant support
 - Component-level state for multi-step workflow
-- **NEW**: Queue-based state management for long-running operations
-- **NEW**: Real-time progress tracking with polling
+- **Queue-based state management**: Long-running operations
+- **Real-time progress tracking**: Polling-based status updates
 - No external state management library used
 
 ### Security Enhancements (NEW)
@@ -592,3 +602,34 @@ When working on ProcessAudit AI (either directly for simple tasks or through age
 - **Progress Tracking**: Real-time job status monitoring
 
 This represents a significant architectural evolution from a simple Next.js app to a distributed, production-ready system with advanced AI capabilities, comprehensive testing, and enterprise-grade reliability features.
+
+## Authentication Migration (COMPLETED)
+
+**ProcessAudit AI has been fully migrated from dual Supabase/Clerk auth to a pure Clerk-only authentication system.**
+
+### Key Migration Changes:
+- **Authentication Provider**: Pure Clerk-only system (Supabase auth completely removed)
+- **Multi-tenant Support**: Clerk Organizations for white-label capabilities  
+- **Custom Pages**: `/sign-in` and `/sign-up` with ProcessAudit AI branding
+- **TypeScript Integration**: Complete auth type definitions in `types/auth.ts`
+- **Unified Context**: `UnifiedAuthContext.js` provides consistent auth API
+- **Organization Routing**: Support for org-specific URLs and permissions
+
+### Migration Benefits:
+1. **White-label Ready**: Full organization support with custom branding
+2. **Simplified Architecture**: Single auth provider reduces complexity
+3. **Enhanced Security**: Enterprise-grade authentication and session management
+4. **Better Developer Experience**: TypeScript support and unified API
+5. **Multi-tenant Capable**: Native organization support for B2B applications
+
+### Removed Components:
+- `AuthModal.jsx` - Replaced with dedicated Clerk pages
+- `AuthContext.js` - Replaced with unified auth context
+- Supabase auth dependencies and configurations
+
+### Modified Components:
+- `UnifiedAuthContext.js` - Simplified to Clerk-only implementation
+- `LandingPage.jsx` - Updated with Clerk authentication routing
+- Environment configurations - Removed dual auth flags
+
+For detailed migration documentation, see `CLERK_MIGRATION.md`.

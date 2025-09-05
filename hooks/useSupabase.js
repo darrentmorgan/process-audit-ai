@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
+import { useUnifiedAuth } from '../contexts/UnifiedAuthContext'
 
 // Hook for saving and loading audit reports
 export const useAuditReports = () => {
-  const { user, isConfigured } = useAuth()
+  const { user, isConfigured } = useUnifiedAuth()
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(false)
 

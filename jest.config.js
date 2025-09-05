@@ -19,6 +19,43 @@ const customJestConfig = {
     '**/*.(test|spec).(js|jsx|ts|tsx)'
   ],
   
+  // Test suites configuration
+  projects: [
+    {
+      displayName: 'Auth Unit Tests',
+      testMatch: ['<rootDir>/__tests__/contexts/**/*.(js|jsx)', '<rootDir>/__tests__/types/**/*.(js|jsx|ts|tsx)'],
+      testEnvironment: 'jsdom'
+    },
+    {
+      displayName: 'Auth Integration Tests',
+      testMatch: ['<rootDir>/__tests__/auth/**/*.(js|jsx)', '<rootDir>/__tests__/components/**/*.(js|jsx)'],
+      testEnvironment: 'jsdom'
+    },
+    {
+      displayName: 'Organization Tests',
+      testMatch: ['<rootDir>/__tests__/organization/**/*.(js|jsx)'],
+      testEnvironment: 'jsdom'
+    },
+    {
+      displayName: 'Multi-Tenant Integration',
+      testMatch: ['<rootDir>/__tests__/multitenant/**/*.test.js'],
+      testEnvironment: 'node',
+      timeout: 30000
+    },
+    {
+      displayName: 'Security Tests',
+      testMatch: ['<rootDir>/__tests__/integration/security/**/*.test.js'],
+      testEnvironment: 'node',
+      timeout: 20000
+    },
+    {
+      displayName: 'Performance Tests',
+      testMatch: ['<rootDir>/__tests__/integration/performance/**/*.test.js'],
+      testEnvironment: 'node',
+      timeout: 60000
+    }
+  ],
+  
   // Module name mapping for absolute imports and aliases
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
@@ -67,6 +104,25 @@ const customJestConfig = {
       statements: 80,
     },
     'pages/api/organizations/**/*.js': {
+      branches: 85,
+      functions: 85,
+      lines: 85,
+      statements: 85,
+    },
+    // Multi-tenant specific thresholds
+    'pages/api/audit-reports/**/*.js': {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+    'pages/api/automations/**/*.js': {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+    'middleware.js': {
       branches: 85,
       functions: 85,
       lines: 85,

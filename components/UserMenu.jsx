@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
+import { useClerk } from '@clerk/nextjs'
 import { User, LogOut, Settings, Save, ChevronDown, Database, Building2, Users } from 'lucide-react'
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext'
 import { ClerkUserMenu } from './ClerkAuthModal'
@@ -17,6 +18,7 @@ const UserMenu = ({ onOpenAuth, onOpenSavedReports, onOpenCleanup }) => {
     orgContext,
     availableOrganizations
   } = useUnifiedAuth()
+  const { redirectToSignIn, redirectToSignUp } = useClerk()
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
 
@@ -55,13 +57,13 @@ const UserMenu = ({ onOpenAuth, onOpenSavedReports, onOpenCleanup }) => {
         ) : (
           <>
             <button
-              onClick={() => onOpenAuth('signin')}
+              onClick={() => redirectToSignIn({ redirectUrl: '/dashboard' })}
               className="text-white hover:text-blue-100 transition-colors font-medium"
             >
               Sign In
             </button>
             <button
-              onClick={() => onOpenAuth('signup')}
+              onClick={() => redirectToSignUp({ redirectUrl: '/dashboard' })}
               className="bg-white text-primary px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors font-medium"
             >
               Sign Up
@@ -77,13 +79,13 @@ const UserMenu = ({ onOpenAuth, onOpenSavedReports, onOpenCleanup }) => {
     return (
       <div className="flex items-center space-x-3">
         <button
-          onClick={() => onOpenAuth('signin')}
+          onClick={() => redirectToSignIn({ redirectUrl: '/dashboard' })}
           className="text-white hover:text-blue-100 transition-colors font-medium"
         >
           Sign In
         </button>
         <button
-          onClick={() => onOpenAuth('signup')}
+          onClick={() => redirectToSignUp({ redirectUrl: '/dashboard' })}
           className="bg-white text-primary px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors font-medium"
         >
           Sign Up

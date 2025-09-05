@@ -34,15 +34,17 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: `
       default-src 'self';
-      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.supabase.co https://vercel.live;
-      style-src 'self' 'unsafe-inline';
-      img-src 'self' blob: data: https:;
-      font-src 'self';
+      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.supabase.co https://vercel.live https://*.clerk.accounts.dev https://*.clerk.dev https://*.clerk.com https://clerk-telemetry.com;
+      worker-src 'self' blob: https://*.clerk.accounts.dev https://*.clerk.dev https://*.clerk.com;
+      style-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev https://*.clerk.dev https://*.clerk.com;
+      img-src 'self' blob: data: https: https://*.clerk.accounts.dev https://*.clerk.dev https://*.clerk.com https://img.clerk.com;
+      font-src 'self' https://*.clerk.accounts.dev https://*.clerk.dev https://*.clerk.com;
       object-src 'none';
       base-uri 'self';
-      form-action 'self';
+      form-action 'self' https://*.clerk.accounts.dev https://*.clerk.dev https://*.clerk.com;
       frame-ancestors 'none';
-      connect-src 'self' https://*.supabase.co https://api.anthropic.com wss://*.supabase.co;
+      frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.dev https://*.clerk.com;
+      connect-src 'self' https://*.supabase.co https://api.anthropic.com wss://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.dev https://*.clerk.com https://clerk-telemetry.com https://api.clerk.com;
       upgrade-insecure-requests;
     `.replace(/\s{2,}/g, ' ').trim()
   }
@@ -55,9 +57,9 @@ const nextConfig = {
     serverComponentsExternalPackages: [],
   },
   
-  // Apply security headers
+  // Apply security headers (disabled in development)
   async headers() {
-    return [
+    return process.env.NODE_ENV === 'production' ? [
       {
         // Apply to all routes
         source: '/:path*',
@@ -65,6 +67,17 @@ const nextConfig = {
       },
       {
         // Additional headers for API routes
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, max-age=0',
+          },
+        ],
+      },
+    ] : [
+      {
+        // Only cache control for API routes in development
         source: '/api/:path*',
         headers: [
           {

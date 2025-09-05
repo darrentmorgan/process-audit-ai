@@ -1,7 +1,7 @@
 // API endpoint for organization theme management
 // Handles theme updates, validation, and asset management
 
-import { supabase } from '../../../lib/supabaseClient'
+import { supabase } from '../../../lib/supabase'
 import { validateTheme, deepMergeThemes } from '../../../lib/themeUtils'
 
 // Default theme configuration

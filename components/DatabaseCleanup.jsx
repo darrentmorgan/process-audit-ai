@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Trash2, Search, AlertTriangle, CheckCircle } from 'lucide-react'
 import { useAuditReports } from '../hooks/useSupabase'
-import { useAuth } from '../contexts/AuthContext'
+import { useUnifiedAuth } from '../contexts/UnifiedAuthContext'
 
 const DatabaseCleanup = ({ isOpen, onClose }) => {
   const { reports, deleteReport, loadReports } = useAuditReports()
-  const { user } = useAuth()
+  const { user } = useUnifiedAuth()
   const [duplicates, setDuplicates] = useState([])
   const [scanning, setScanning] = useState(false)
   const [cleaning, setCleaning] = useState(false)

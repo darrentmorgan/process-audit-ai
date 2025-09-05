@@ -17,7 +17,7 @@ import {
   Heart,
   Cpu
 } from 'lucide-react'
-import { useAuth } from '../contexts/AuthContext'
+import { useUnifiedAuth } from '../contexts/UnifiedAuthContext'
 import { useAuditReports } from '../hooks/useSupabase'
 import AutoSaveNotification from './AutoSaveNotification'
 import AutomationTemplates from './AutomationTemplates'
@@ -37,7 +37,7 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
   const [notificationType, setNotificationType] = useState('success')
   const [showAutomationGenerator, setShowAutomationGenerator] = useState(false)
   
-  const { user, isConfigured } = useAuth()
+  const { user, isConfigured } = useUnifiedAuth()
   const { saveReport } = useAuditReports()
   
   // Normalize report data early to use throughout the component

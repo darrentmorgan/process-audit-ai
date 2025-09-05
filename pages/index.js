@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import ProcessAuditApp from '../components/ProcessAuditApp'
 import LandingPage from '../components/LandingPage'
-import { useAuth } from '../contexts/AuthContext'
+import { useUnifiedAuth } from '../contexts/UnifiedAuthContext'
 
 export default function Home() {
   const [showApp, setShowApp] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [verificationMessage, setVerificationMessage] = useState('')
-  const { user } = useAuth()
+  const { user, loading } = useUnifiedAuth()
   const router = useRouter()
 
   useEffect(() => {
@@ -28,8 +28,8 @@ export default function Home() {
     }
     
     setShowApp(hasAccess)
-    setIsLoading(false)
-  }, [router.query.access, router.query.verified, user, router])
+    setIsLoading(loading)
+  }, [router.query.access, router.query.verified, user, router, loading])
 
   // Check if user is in demo mode (has access but not authenticated)
   const isDemoMode = router.query.access === 'granted' && !user

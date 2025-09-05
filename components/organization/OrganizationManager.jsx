@@ -12,6 +12,7 @@ import {
   Crown,
   UserPlus
 } from 'lucide-react'
+import { useOrganizationList } from '@clerk/nextjs'
 import { useUnifiedAuth } from '../../contexts/UnifiedAuthContext'
 import { OrganizationMembershipModal } from './OrganizationMembershipModal'
 import { OrganizationSettingsPanel } from './OrganizationSettingsPanel'
@@ -34,6 +35,9 @@ const OrganizationManager = ({
     orgMemberships,
     authSystem 
   } = useUnifiedAuth()
+  
+  // Clerk organization management
+  const { createOrganization: clerkCreateOrganization, setActive } = useOrganizationList()
   
   const [organization, setOrganization] = useState(initialOrganization || null)
   const [activeTab, setActiveTab] = useState('overview')
@@ -82,6 +86,18 @@ const OrganizationManager = ({
     }
   }, [currentOrg, organization, mode])
 
+  // Debug logging for modal state
+  useEffect(() => {
+    console.log('OrganizationManager: Modal state debug', {
+      mode,
+      isEditing,
+      organization: !!organization,
+      formData: formData.name,
+      isOpen,
+      timestamp: new Date().toISOString()
+    })
+  }, [mode, isEditing, organization, formData.name, isOpen])
+
   const handleSaveOrganization = async () => {
     if (!formData.name.trim()) {
       setError('Organization name is required')
@@ -104,24 +120,41 @@ const OrganizationManager = ({
 
       let result
       if (mode === 'create') {
-        // Create new organization
-        result = await createOrganization(orgData)
+        // Create new organization using Clerk's API
+        result = await clerkCreateOrganization({ 
+          name: formData.name.trim(),
+          slug: formData.name.trim().toLowerCase().replace(/[^a-z0-9]/g, '-')
+        })
+        
+        console.log('Clerk organization created:', result)
       } else {
         // Update existing organization
         result = await updateOrganization(organization.id, orgData)
       }
 
-      if (result.success) {
-        setOrganization(result.data)
+      if (mode === 'create') {
+        // Clerk returns the organization object directly
+        setOrganization(result)
         setIsEditing(false)
-        onOrganizationUpdate?.(result.data)
         
-        if (mode === 'create') {
-          // Redirect to the new organization or close modal
+        // Automatically set the new organization as active
+        await setActive({ organization: result.id })
+        
+        onOrganizationUpdate?.(result)
+        
+        // Auto-close modal after successful creation
+        setTimeout(() => {
           onClose()
-        }
+        }, 1000)
       } else {
-        setError(result.error || 'Failed to save organization')
+        // Custom update API returns success/data wrapper
+        if (result.success) {
+          setOrganization(result.data)
+          setIsEditing(false)
+          onOrganizationUpdate?.(result.data)
+        } else {
+          setError(result.error || 'Failed to save organization')
+        }
       }
     } catch (err) {
       console.error('Organization save error:', err)
@@ -179,7 +212,7 @@ const OrganizationManager = ({
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center space-x-3">
@@ -228,7 +261,7 @@ const OrganizationManager = ({
           )}
 
           {/* Content */}
-          <div className="flex h-[calc(90vh-120px)]">
+          <div className="flex flex-1 min-h-0">
             {/* Sidebar Navigation (only show for existing organizations) */}
             {mode !== 'create' && (
               <div className="w-56 border-r border-gray-200 p-4">
@@ -260,7 +293,7 @@ const OrganizationManager = ({
             )}
 
             {/* Main Content */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto flex flex-col">
               {/* Overview Tab / Create Form */}
               {(activeTab === 'overview' || mode === 'create') && (
                 <div className="p-6">
@@ -478,9 +511,9 @@ const OrganizationManager = ({
             </div>
           </div>
 
-          {/* Footer */}
+          {/* Footer - Fixed at bottom outside scrolling area */}
           {isEditing && (
-            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
+            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50 flex-shrink-0">
               <button
                 onClick={() => {
                   setIsEditing(false)

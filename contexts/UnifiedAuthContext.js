@@ -1,10 +1,7 @@
-import { createContext, useContext, useEffect, useState } from 'react'
-import { useAuth as useClerkAuth, useOrganization, useOrganizationList } from '@clerk/nextjs'
-import { useAuth as useSupabaseAuth } from './AuthContext'
+import { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/router'
-
-// Feature flag to control which authentication system to use
-const USE_CLERK_AUTH = process.env.NEXT_PUBLIC_USE_CLERK_AUTH === 'true'
+import { useClerkBridge } from '../components/ClerkAuthBridge'
+import { UnifiedAuthContextType } from '../types/auth'
 
 const UnifiedAuthContext = createContext({})
 
@@ -19,56 +16,104 @@ export const useUnifiedAuth = () => {
 export const UnifiedAuthProvider = ({ children }) => {
   const router = useRouter()
   
-  // Clerk authentication
-  const clerkAuth = useClerkAuth()
-  const { organization, membershipList, isLoaded: orgLoaded, setActive } = useOrganization()
-  const { organizationList, isLoaded: orgListLoaded, setActive: setActiveOrg } = useOrganizationList()
-  
-  // Supabase authentication (existing)
-  const supabaseAuth = useSupabaseAuth()
+  // Get Clerk auth data from bridge
+  const clerkBridge = useClerkBridge()
+  // CRITICAL FIX: Don't default isLoaded to true when bridge is null - this was causing premature auth checks
+  const clerkAuth = clerkBridge?.clerkAuth || { isLoaded: false, isSignedIn: false, user: null }
+  const organization = clerkBridge?.organization || null
+  const membershipList = clerkBridge?.membershipList || []
+  const orgLoaded = clerkBridge?.orgLoaded || false  // Changed from true to false
+  const setActive = clerkBridge?.setActive || (() => Promise.resolve())
+  const organizationList = clerkBridge?.organizationList || []
+  const orgListLoaded = clerkBridge?.orgListLoaded || false  // Changed from true to false
+  const setActiveOrg = clerkBridge?.setActiveOrg || (() => Promise.resolve())
   
   // Unified state
   const [currentOrg, setCurrentOrg] = useState(null)
   const [isOrgAdmin, setIsOrgAdmin] = useState(false)
   const [orgMemberships, setOrgMemberships] = useState([])
-  const [availableOrganizations, setAvailableOrganizations] = useState([])
   const [orgContext, setOrgContext] = useState(null)
   const [isOrgContextLoaded, setIsOrgContextLoaded] = useState(false)
 
+  // Add debugging logs for authentication state changes
+  useEffect(() => {
+    console.log('UnifiedAuthContext: Auth state updated:', {
+      clerkAuth: {
+        isLoaded: clerkAuth?.isLoaded,
+        isSignedIn: clerkAuth?.isSignedIn,
+        userId: clerkAuth?.user?.id,
+        userEmail: clerkAuth?.user?.primaryEmailAddress?.emailAddress,
+        userFullName: clerkAuth?.user?.fullName,
+        loading: clerkAuth?.isLoaded === false
+      },
+      organization: {
+        id: organization?.id,
+        slug: organization?.slug,
+        name: organization?.name
+      },
+      bridgeState: {
+        hasBridge: !!clerkBridge,
+        orgLoaded,
+        orgListLoaded
+      },
+      timestamp: new Date().toISOString()
+    })
+  }, [
+    clerkAuth?.isLoaded,
+    clerkAuth?.isSignedIn,
+    clerkAuth?.user?.id,
+    clerkAuth?.user?.fullName,
+    organization?.id,
+    clerkBridge,
+    orgLoaded,
+    orgListLoaded
+  ])
+
   // Update organization context from URL/domain
   useEffect(() => {
-    if (USE_CLERK_AUTH && clerkAuth.isLoaded) {
+    if (clerkAuth?.isLoaded) {
       const context = getOrganizationContext()
       setOrgContext(context)
       setIsOrgContextLoaded(true)
     }
-  }, [USE_CLERK_AUTH, clerkAuth.isLoaded, router.asPath])
-
-  // Handle organization resolution and switching based on context
-  useEffect(() => {
-    if (USE_CLERK_AUTH && orgContext && clerkAuth.isSignedIn && orgListLoaded) {
-      resolveAndSetOrganization(orgContext)
-    }
-  }, [USE_CLERK_AUTH, orgContext, clerkAuth.isSignedIn, orgListLoaded, organizationList])
+  }, [clerkAuth?.isLoaded, router.asPath])
 
   // Update organization state when Clerk organization changes
   useEffect(() => {
-    if (USE_CLERK_AUTH && orgLoaded) {
-      setCurrentOrg(organization)
+    if (orgLoaded) {
+      // Only update if organization actually changed
+      setCurrentOrg(prev => {
+        if (prev?.id !== organization?.id) {
+          return organization
+        }
+        return prev
+      })
       
       // Check if user is an admin of the current organization
       const currentMembership = membershipList?.find(
         membership => membership.organization.id === organization?.id
       )
-      setIsOrgAdmin(currentMembership?.role === 'admin')
-      setOrgMemberships(membershipList || [])
+      const newIsOrgAdmin = currentMembership?.role === 'admin'
+      
+      // Only update admin status if it changed
+      setIsOrgAdmin(prev => prev !== newIsOrgAdmin ? newIsOrgAdmin : prev)
+      
+      // Only update memberships if the array actually changed
+      setOrgMemberships(prev => {
+        const newMemberships = membershipList || []
+        if (prev.length !== newMemberships.length || 
+            prev.some((mem, index) => mem.id !== newMemberships[index]?.id)) {
+          return newMemberships
+        }
+        return prev
+      })
     }
   }, [organization, membershipList, orgLoaded])
 
-  // Update available organizations list
-  useEffect(() => {
-    if (USE_CLERK_AUTH && orgListLoaded && organizationList) {
-      const orgs = organizationList.map(orgMembership => ({
+  // Memoize available organizations to prevent unnecessary re-renders
+  const availableOrganizations = useMemo(() => {
+    if (orgListLoaded && organizationList) {
+      return organizationList.map(orgMembership => ({
         id: orgMembership.organization.id,
         slug: orgMembership.organization.slug,
         name: orgMembership.organization.name,
@@ -76,25 +121,48 @@ export const UnifiedAuthProvider = ({ children }) => {
         role: orgMembership.role,
         permissions: orgMembership.permissions || []
       }))
-      setAvailableOrganizations(orgs)
     }
-  }, [USE_CLERK_AUTH, orgListLoaded, organizationList])
+    return []
+  }, [orgListLoaded, organizationList])
+
+  // Create a stable ref for the setActive function to avoid circular dependencies
+  const setActiveRef = useRef()
+  setActiveRef.current = setActive
+
+  // Create a stable ref for organization data to avoid circular dependencies  
+  const organizationDataRef = useRef()
+  organizationDataRef.current = { organization, organizationList, orgListLoaded }
 
   // Function to resolve organization from context
-  const resolveAndSetOrganization = async (context) => {
+  const resolveAndSetOrganization = useCallback(async (context) => {
     if (!context || !context.identifier) return
+
+    const { organization: currentOrg, organizationList: currentOrgList, orgListLoaded: currentOrgLoaded } = organizationDataRef.current
+
+    // Build current available orgs from organizationList
+    const currentOrgs = currentOrgLoaded && currentOrgList ? 
+      currentOrgList.map(orgMembership => ({
+        id: orgMembership.organization.id,
+        slug: orgMembership.organization.slug,
+        name: orgMembership.organization.name,
+        imageUrl: orgMembership.organization.imageUrl,
+        role: orgMembership.role,
+        permissions: orgMembership.permissions || []
+      })) : []
+
+    if (!currentOrgs.length) return
 
     try {
       // Find organization in user's available organizations
-      const targetOrg = availableOrganizations.find(org => 
+      const targetOrg = currentOrgs.find(org => 
         org.slug === context.identifier || 
         org.id === context.identifier ||
         org.name.toLowerCase() === context.identifier.toLowerCase()
       )
 
-      if (targetOrg && (!organization || organization.id !== targetOrg.id)) {
-        // Switch to the target organization
-        await setActive({ organization: targetOrg.id })
+      if (targetOrg && (!currentOrg || currentOrg.id !== targetOrg.id)) {
+        // Switch to the target organization using the stable ref
+        await setActiveRef.current({ organization: targetOrg.id })
       } else if (!targetOrg && context.identifier) {
         // Try to resolve from public API (for organizations user isn't a member of)
         const response = await fetch(`/api/organizations/resolve?${context.type === 'domain' ? 'domain' : 'subdomain'}=${context.identifier}`)
@@ -107,18 +175,34 @@ export const UnifiedAuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Error resolving organization:', error)
     }
-  }
+  }, []) // Empty dependency array since we use refs for data access
+
+
+  // Create stable refs for router and orgContext to avoid unnecessary recreations
+  const routerRef = useRef()
+  routerRef.current = router
+  const orgContextRef = useRef()
+  orgContextRef.current = orgContext
 
   // Function to switch organization context
-  const switchOrganization = async (orgIdentifier) => {
-    if (!USE_CLERK_AUTH || !setActive) return
+  const switchOrganization = useCallback(async (orgIdentifier) => {
+    if (!setActiveRef.current) return
 
     try {
       let targetOrgId = orgIdentifier
+      const { organizationList: currentOrgList, orgListLoaded: currentOrgLoaded } = organizationDataRef.current
 
       if (typeof orgIdentifier === 'string') {
+        // Build current available orgs from organizationList
+        const currentOrgs = currentOrgLoaded && currentOrgList ? 
+          currentOrgList.map(orgMembership => ({
+            id: orgMembership.organization.id,
+            slug: orgMembership.organization.slug,
+            name: orgMembership.organization.name,
+          })) : []
+
         // Find organization by slug or ID
-        const targetOrg = availableOrganizations.find(org => 
+        const targetOrg = currentOrgs.find(org => 
           org.id === orgIdentifier || 
           org.slug === orgIdentifier
         )
@@ -128,32 +212,45 @@ export const UnifiedAuthProvider = ({ children }) => {
       }
 
       if (targetOrgId) {
-        await setActive({ organization: targetOrgId })
+        await setActiveRef.current({ organization: targetOrgId })
         
         // Update URL if needed (for path-based routing)
-        if (orgContext?.type === 'path') {
-          const targetOrg = availableOrganizations.find(org => org.id === targetOrgId)
+        const currentOrgContext = orgContextRef.current
+        if (currentOrgContext?.type === 'path') {
+          const currentOrgs = currentOrgLoaded && currentOrgList ? 
+            currentOrgList.map(orgMembership => ({
+              id: orgMembership.organization.id,
+              slug: orgMembership.organization.slug,
+            })) : []
+          const targetOrg = currentOrgs.find(org => org.id === targetOrgId)
           if (targetOrg?.slug) {
-            const newPath = router.asPath.replace(
-              `/org/${orgContext.identifier}`,
+            const newPath = routerRef.current.asPath.replace(
+              `/org/${currentOrgContext.identifier}`,
               `/org/${targetOrg.slug}`
             )
-            router.push(newPath)
+            routerRef.current.push(newPath)
           }
         }
       }
     } catch (error) {
       console.error('Error switching organization:', error)
     }
-  }
+  }, []) // Empty dependency array since we use refs for data access
 
-  // Unified authentication interface
-  const auth = USE_CLERK_AUTH ? {
+  // Handle organization resolution and switching based on context (after function definitions)
+  useEffect(() => {
+    if (orgContext && clerkAuth?.isSignedIn && orgListLoaded && organizationList?.length > 0) {
+      resolveAndSetOrganization(orgContext)
+    }
+  }, [orgContext, clerkAuth?.isSignedIn, orgListLoaded, organizationList?.length, resolveAndSetOrganization])
+
+  // Memoize the unified authentication interface to prevent unnecessary re-renders
+  const auth = useMemo(() => ({
     // User state
-    user: clerkAuth.user,
-    isSignedIn: clerkAuth.isSignedIn,
-    isLoaded: clerkAuth.isLoaded,
-    loading: !clerkAuth.isLoaded,
+    user: clerkAuth?.user || null,
+    isSignedIn: clerkAuth?.isSignedIn || false,
+    isLoaded: clerkAuth?.isLoaded || false,
+    loading: clerkAuth?.isLoaded === false,
     
     // Organization state
     organization: currentOrg,
@@ -178,45 +275,47 @@ export const UnifiedAuthProvider = ({ children }) => {
     signIn: async (email, password) => {
       throw new Error('Use Clerk SignIn component for authentication')
     },
-    signOut: () => clerkAuth.signOut(),
+    signOut: () => clerkAuth?.signOut?.() || Promise.resolve(),
     
     // Legacy methods for compatibility
     resetPassword: async (email) => {
       throw new Error('Use Clerk password reset flow')
     },
     updateProfile: async (updates) => {
-      return await clerkAuth.user?.update(updates)
+      return await clerkAuth?.user?.update?.(updates)
     },
     
-    // Configuration
+    // Configuration - only check client-side accessible env vars
     isConfigured: !!(
-      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && 
-      process.env.CLERK_SECRET_KEY
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
     ),
     
     // Auth system identifier
     authSystem: 'clerk'
-  } : {
-    // Fallback to Supabase auth
-    ...supabaseAuth,
+  }), [
+    // User state dependencies
+    clerkAuth?.user?.id,
+    clerkAuth?.isSignedIn,
+    clerkAuth?.isLoaded,
+    clerkAuth?.signOut,
     
-    // Organization state (empty for Supabase)
-    organization: null,
-    isOrgAdmin: false,
-    orgMemberships: [],
-    orgLoaded: true,
-    availableOrganizations: [],
-    orgListLoaded: true,
-    orgContext: null,
-    isOrgContextLoaded: true,
+    // Organization state dependencies
+    currentOrg?.id,
+    isOrgAdmin,
+    orgMemberships,
+    orgLoaded,
+    availableOrganizations,
+    orgListLoaded,
     
-    // Organization management methods (no-ops)
-    switchOrganization: () => {},
-    setActive: () => {},
+    // Organization context dependencies
+    orgContext?.type,
+    orgContext?.identifier,
+    isOrgContextLoaded,
     
-    // Auth system identifier
-    authSystem: 'supabase'
-  }
+    // Method dependencies
+    switchOrganization,
+    setActive
+  ])
 
   return (
     <UnifiedAuthContext.Provider value={auth}>
@@ -260,7 +359,7 @@ export const getOrganizationContext = () => {
 
 // Helper function to check if current deployment supports organizations
 export const isOrganizationsEnabled = () => {
-  return USE_CLERK_AUTH && !!(
+  return !!(
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && 
     process.env.CLERK_SECRET_KEY
   )

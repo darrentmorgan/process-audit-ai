@@ -12,8 +12,11 @@ export class IntelligentPromptBuilder {
 
   /**
    * Build a comprehensive, context-aware prompt for n8n workflow generation
+   * @param {Object} orchestrationPlan - The orchestration plan
+   * @param {Object} businessContext - Business context
+   * @param {Object} organizationContext - Organization context for customization
    */
-  async buildIntelligentPrompt(orchestrationPlan, businessContext = {}) {
+  async buildIntelligentPrompt(orchestrationPlan, businessContext = {}, organizationContext = {}) {
     // Analyze the plan to find similar workflows and best practices
     const similarWorkflows = this.patternAnalyzer.findSimilarWorkflows(orchestrationPlan, 3);
     const bestPractices = this.patternAnalyzer.getApplicableBestPractices(orchestrationPlan, similarWorkflows);
@@ -21,16 +24,19 @@ export class IntelligentPromptBuilder {
     const optimizations = this.patternAnalyzer.generateOptimizations(orchestrationPlan, similarWorkflows);
     const commonSequences = this.patternAnalyzer.extractCommonSequences();
     
-    // Build the intelligent prompt
+    // Build the intelligent prompt with organization context
     const prompt = `# 🚀 Elite n8n Workflow Architect
 
 You are an expert n8n workflow architect with access to a comprehensive knowledge base of successful, production-tested workflows. Generate a high-quality, production-ready workflow based on proven patterns.
 
-## 📋 BUSINESS REQUIREMENTS
+## 📋 BUSINESS & ORGANIZATION REQUIREMENTS
 **Process**: ${orchestrationPlan.description}
 **Workflow Type**: ${orchestrationPlan.workflowName || 'Custom Automation'}
 **Expected Volume**: ${businessContext.expectedVolume || 'Standard'}
 **Industry Context**: ${businessContext.industry || 'General'}
+**Organization**: ${organizationContext.organizationName || 'Personal Workspace'}
+**Organization Plan**: ${organizationContext.organizationPlan || 'free'}
+**Workspace Type**: ${organizationContext.workspaceType || 'personal'}
 
 ## 🎯 ORCHESTRATION PLAN
 \`\`\`json
@@ -57,7 +63,7 @@ ${this.buildCommonSequencesSection(commonSequences)}
 ### Required n8n Workflow Structure:
 \`\`\`json
 {
-  "name": "Descriptive Workflow Name",
+  "name": "${this.generateWorkflowName(orchestrationPlan, organizationContext)}",
   "nodes": [
     // Array of properly configured nodes
   ],
@@ -65,8 +71,13 @@ ${this.buildCommonSequencesSection(commonSequences)}
     // Proper node connections
   },
   "active": false,
-  "settings": {},
-  "versionId": "1"
+  "settings": ${JSON.stringify(this.getOrganizationSettings(organizationContext))},
+  "versionId": "1",
+  "meta": {
+    "organizationId": "${organizationContext.organizationId || null}",
+    "workspaceType": "${organizationContext.workspaceType || 'personal'}",
+    "generatedAt": "${new Date().toISOString()}"
+  }
 }
 \`\`\`
 
@@ -83,15 +94,14 @@ ${this.buildCommonSequencesSection(commonSequences)}
    - Email operations: Include retry logic and fallback handling
    - Function nodes: Wrap logic in try/catch blocks
 
-3. **Authentication**:
+3. **Authentication (Organization-Aware)**:
    - Use environment variables: \`{{ $env.VARIABLE_NAME }}\`
    - Never hardcode credentials or API keys
    - Use OAuth2 for email services when possible
+   ${this.getOrganizationAuthGuidelines(organizationContext)}
 
-4. **Performance Optimization**:
-   - Set appropriate timeouts for external calls
-   - Use batch processing for large datasets
-   - Implement caching for repeated operations
+4. **Performance Optimization (Plan-Based)**:
+   ${this.getPerformanceGuidelines(organizationContext)}
 
 ## 🎨 WORKFLOW GENERATION INSTRUCTIONS
 
@@ -103,6 +113,10 @@ Generate a complete, production-ready n8n workflow that:
 4. **Optimizes for Performance**: Apply relevant optimizations from the suggestions above
 5. **Implements Best Practices**: Incorporate all mandatory best practices listed above
 6. **Avoids Known Risks**: Specifically prevent the risk patterns identified above
+
+### Organization-Specific Implementation Guidelines:
+
+${this.buildOrganizationImplementationGuidelines(orchestrationPlan, similarWorkflows, organizationContext)}
 
 ### Specific Implementation Guidelines:
 
@@ -294,6 +308,231 @@ ${Object.entries(workflow.patterns).map(([key, pattern]) =>
       }, {});
     
     return criticalNodes;
+  }
+
+  /**
+   * Generate organization-appropriate workflow name
+   */
+  generateWorkflowName(orchestrationPlan, organizationContext) {
+    const baseName = orchestrationPlan.workflowName || 'Custom Automation';
+    const orgPrefix = organizationContext.organizationId ? 
+      `[${organizationContext.organizationName || 'Org'}] ` : '';
+    
+    return `${orgPrefix}${baseName}`;
+  }
+
+  /**
+   * Get organization-specific workflow settings
+   */
+  getOrganizationSettings(organizationContext) {
+    const plan = organizationContext.organizationPlan || 'free';
+    
+    const settings = {
+      timezone: 'UTC',
+      saveDataErrorExecution: 'all',
+      saveDataSuccessExecution: 'all'
+    };
+
+    // Plan-based settings
+    switch (plan) {
+      case 'enterprise':
+        settings.executionTimeout = 7200; // 2 hours
+        settings.maxExecutionTime = 7200;
+        settings.saveExecutionProgress = true;
+        break;
+      case 'professional':
+        settings.executionTimeout = 3600; // 1 hour
+        settings.maxExecutionTime = 3600;
+        settings.saveExecutionProgress = true;
+        break;
+      case 'starter':
+        settings.executionTimeout = 1800; // 30 minutes
+        settings.maxExecutionTime = 1800;
+        break;
+      default: // free
+        settings.executionTimeout = 900; // 15 minutes
+        settings.maxExecutionTime = 900;
+        break;
+    }
+
+    return settings;
+  }
+
+  /**
+   * Get organization-specific authentication guidelines
+   */
+  getOrganizationAuthGuidelines(organizationContext) {
+    const plan = organizationContext.organizationPlan || 'free';
+    const isOrg = organizationContext.organizationId;
+
+    const guidelines = [];
+
+    if (isOrg) {
+      guidelines.push('- Use organization-specific credential prefixes: `{{ $env.ORG_' + (organizationContext.organizationId || 'ID').toUpperCase() + '_CREDENTIAL_NAME }}`');
+    }
+
+    switch (plan) {
+      case 'enterprise':
+        guidelines.push('- Enable audit logging for all credential usage');
+        guidelines.push('- Implement credential rotation schedules');
+        guidelines.push('- Use service accounts for production integrations');
+        break;
+      case 'professional':
+        guidelines.push('- Enable audit logging for critical credential usage');
+        guidelines.push('- Use dedicated API keys for production');
+        break;
+      case 'starter':
+        guidelines.push('- Use basic authentication security measures');
+        break;
+      default:
+        guidelines.push('- Follow basic security practices for credential management');
+    }
+
+    return guidelines.join('\n   ');
+  }
+
+  /**
+   * Get plan-based performance guidelines
+   */
+  getPerformanceGuidelines(organizationContext) {
+    const plan = organizationContext.organizationPlan || 'free';
+    
+    const baseGuidelines = [
+      '- Set appropriate timeouts for external calls',
+      '- Use batch processing for large datasets',
+      '- Implement caching for repeated operations'
+    ];
+
+    const planGuidelines = {
+      enterprise: [
+        ...baseGuidelines,
+        '- Enable high-performance execution modes',
+        '- Use advanced caching strategies with Redis integration',
+        '- Implement horizontal scaling patterns',
+        '- Set aggressive retry policies (5+ attempts)',
+        '- Use concurrent processing where possible'
+      ],
+      professional: [
+        ...baseGuidelines,
+        '- Enable performance monitoring',
+        '- Use intermediate caching for complex workflows',
+        '- Set moderate retry policies (3-5 attempts)',
+        '- Optimize for mid-scale operations (100-1000 items)'
+      ],
+      starter: [
+        ...baseGuidelines,
+        '- Focus on reliability over speed',
+        '- Set conservative retry policies (2-3 attempts)',
+        '- Optimize for small-scale operations (10-100 items)'
+      ],
+      free: [
+        '- Keep workflows simple to avoid timeouts',
+        '- Minimize external API calls',
+        '- Use basic error handling (1-2 retry attempts)',
+        '- Optimize for small datasets (1-10 items)'
+      ]
+    };
+
+    return (planGuidelines[plan] || planGuidelines.free)
+      .map(guideline => `   ${guideline}`)
+      .join('\n');
+  }
+
+  /**
+   * Build organization-specific implementation guidelines
+   */
+  buildOrganizationImplementationGuidelines(orchestrationPlan, similarWorkflows, organizationContext) {
+    const guidelines = [];
+    const plan = organizationContext.organizationPlan || 'free';
+    const isOrg = organizationContext.organizationId;
+
+    // Organization-specific branding and naming
+    if (isOrg) {
+      guidelines.push(`
+**Organization Workflow Guidelines for ${organizationContext.organizationName}**:
+- Use consistent naming: Prefix nodes with organization identifier
+- Include organization metadata in webhook URLs and identifiers  
+- Set organization-specific error notification channels
+- Apply organization branding to generated emails and notifications`);
+    }
+
+    // Plan-based complexity recommendations
+    const complexityGuidelines = {
+      enterprise: 'Implement comprehensive workflows with advanced logic, multiple integrations, and sophisticated error handling',
+      professional: 'Build robust workflows with multiple steps, conditional logic, and proper error handling',
+      starter: 'Create efficient workflows with essential steps and basic error handling',
+      free: 'Keep workflows simple with minimal steps to avoid timeout and complexity limits'
+    };
+
+    guidelines.push(`
+**${plan.toUpperCase()} Plan Optimization**:
+- ${complexityGuidelines[plan]}
+- Maximum recommended nodes: ${this.getMaxRecommendedNodes(plan)}
+- Focus areas: ${this.getPlanFocusAreas(plan).join(', ')}`);
+
+    // Volume-specific recommendations
+    if (organizationContext.expectedVolume) {
+      guidelines.push(`
+**Volume Optimization for ${organizationContext.expectedVolume}**:
+${this.getVolumeOptimizations(organizationContext.expectedVolume, plan)}`);
+    }
+
+    return guidelines.join('\n') || 'Apply standard implementation practices.';
+  }
+
+  /**
+   * Get maximum recommended nodes based on plan
+   */
+  getMaxRecommendedNodes(plan) {
+    const limits = {
+      enterprise: '50+ nodes',
+      professional: '25-30 nodes', 
+      starter: '15-20 nodes',
+      free: '5-10 nodes'
+    };
+    return limits[plan] || limits.free;
+  }
+
+  /**
+   * Get plan-specific focus areas
+   */
+  getPlanFocusAreas(plan) {
+    const areas = {
+      enterprise: ['Security', 'Scalability', 'Monitoring', 'Compliance'],
+      professional: ['Reliability', 'Performance', 'Integration'],
+      starter: ['Efficiency', 'Essential Features', 'Stability'],
+      free: ['Simplicity', 'Basic Functionality', 'Resource Conservation']
+    };
+    return areas[plan] || areas.free;
+  }
+
+  /**
+   * Get volume-based optimizations
+   */
+  getVolumeOptimizations(volume, plan) {
+    const optimizations = {
+      'high': [
+        '- Implement batching and queuing mechanisms',
+        '- Use parallel processing where possible',
+        '- Add comprehensive monitoring and alerting',
+        '- Implement circuit breaker patterns for external services'
+      ],
+      'medium': [
+        '- Use moderate batching (10-50 items per batch)',
+        '- Implement basic monitoring',
+        '- Add retry logic with exponential backoff'
+      ],
+      'low': [
+        '- Process items individually for maximum reliability',
+        '- Use simple retry mechanisms',
+        '- Focus on error prevention over performance'
+      ]
+    };
+
+    const volumeKey = volume.toLowerCase().includes('high') ? 'high' :
+                     volume.toLowerCase().includes('medium') ? 'medium' : 'low';
+    
+    return (optimizations[volumeKey] || optimizations.low).join('\n');
   }
 }
 

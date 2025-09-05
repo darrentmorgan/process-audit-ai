@@ -8,7 +8,7 @@ import SOPFeedback from './SOPFeedback'
 import SOPQuestionForm from './SOPQuestionForm'
 import SOPRevision from './SOPRevision'
 import UserMenu from './UserMenu'
-import AuthModal from './AuthModal'
+import ClerkAuthModal from './ClerkAuthModal'
 import SavedReportsModal from './SavedReportsModal'
 import DatabaseCleanup from './DatabaseCleanup'
 import Logo from './Logo'
@@ -535,7 +535,7 @@ const ProcessAuditApp = ({ isDemoMode = false }) => {
         </div>
 
         {/* Auth Modal */}
-        <AuthModal
+        <ClerkAuthModal
           isOpen={authModal.isOpen}
           onClose={closeAuthModal}
           defaultMode={authModal.mode}

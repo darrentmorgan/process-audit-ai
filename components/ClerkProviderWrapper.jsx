@@ -1,5 +1,6 @@
-import { ClerkProvider } from '@clerk/nextjs'
+import ClerkProviderPagesRouter from './ClerkProviderPagesRouter'
 import { dark } from '@clerk/themes'
+import ClerkAuthBridge from './ClerkAuthBridge'
 
 // Feature flag to control Clerk usage
 const USE_CLERK_AUTH = process.env.NEXT_PUBLIC_USE_CLERK_AUTH === 'true'
@@ -10,9 +11,17 @@ const ClerkProviderWrapper = ({ children }) => {
     return <>{children}</>
   }
 
+  // Validate required environment variables
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  
+  if (!publishableKey) {
+    console.error('NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is missing. Clerk authentication disabled.')
+    return <>{children}</>
+  }
+
   return (
-    <ClerkProvider
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+    <ClerkProviderPagesRouter
+      publishableKey={publishableKey}
       appearance={{
         baseTheme: undefined, // Use light theme by default
         variables: {
@@ -78,8 +87,10 @@ const ClerkProviderWrapper = ({ children }) => {
         },
       }}
     >
-      {children}
-    </ClerkProvider>
+      <ClerkAuthBridge>
+        {children}
+      </ClerkAuthBridge>
+    </ClerkProviderPagesRouter>
   )
 }
 

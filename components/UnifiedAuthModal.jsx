@@ -1,24 +1,12 @@
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext'
-import AuthModal from './AuthModal'
 import ClerkAuthModal from './ClerkAuthModal'
 
 const UnifiedAuthModal = ({ isOpen, onClose, defaultMode = 'signin' }) => {
   const { authSystem } = useUnifiedAuth()
   
-  // Route to appropriate authentication modal based on the active system
-  if (authSystem === 'clerk') {
-    return (
-      <ClerkAuthModal
-        isOpen={isOpen}
-        onClose={onClose}
-        defaultMode={defaultMode}
-      />
-    )
-  }
-  
-  // Default to Supabase authentication
+  // Use ClerkAuthModal (Clerk-only system now)
   return (
-    <AuthModal
+    <ClerkAuthModal
       isOpen={isOpen}
       onClose={onClose}
       defaultMode={defaultMode}

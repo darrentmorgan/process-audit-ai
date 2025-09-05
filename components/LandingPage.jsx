@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useRouter } from 'next/router'
+import { useClerk } from '@clerk/nextjs'
 import { 
   Zap, 
   Target, 
@@ -14,13 +16,13 @@ import {
   UserPlus
 } from 'lucide-react'
 import Logo from './Logo'
-import AuthModal from './AuthModal'
 
 const LandingPage = ({ onSignUp }) => {
+  const router = useRouter()
+  const { redirectToSignIn, redirectToSignUp } = useClerk()
   const [email, setEmail] = useState('')
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [authModal, setAuthModal] = useState({ isOpen: false, mode: 'signin' })
 
   const handleSignUp = async (e) => {
     e.preventDefault()
@@ -43,12 +45,16 @@ const LandingPage = ({ onSignUp }) => {
     }
   }
 
-  const openAuthModal = (mode = 'signin') => {
-    setAuthModal({ isOpen: true, mode })
+  const handleSignIn = () => {
+    redirectToSignIn({
+      redirectUrl: '/dashboard'
+    })
   }
 
-  const closeAuthModal = () => {
-    setAuthModal({ isOpen: false, mode: 'signin' })
+  const handleAuthSignUp = () => {
+    redirectToSignUp({
+      redirectUrl: '/dashboard'
+    })
   }
 
   return (
@@ -65,14 +71,14 @@ const LandingPage = ({ onSignUp }) => {
           {/* Auth Buttons */}
           <div className="flex items-center gap-3">
             <button
-              onClick={() => openAuthModal('signin')}
+              onClick={handleSignIn}
               className="flex items-center px-4 py-2 text-white hover:text-blue-200 transition-colors duration-200"
             >
               <LogIn className="w-4 h-4 mr-2" />
               Sign In
             </button>
             <button
-              onClick={() => openAuthModal('signup')}
+              onClick={handleAuthSignUp}
               className="flex items-center px-6 py-2 bg-white bg-opacity-20 backdrop-blur-md rounded-lg border border-white border-opacity-30 text-white hover:bg-opacity-30 transition-all duration-200"
             >
               <UserPlus className="w-4 h-4 mr-2" />
@@ -121,7 +127,7 @@ const LandingPage = ({ onSignUp }) => {
                 <div className="flex flex-col gap-4 mb-6">
                   {/* Primary CTA - Try It Now */}
                   <button
-                    onClick={() => openAuthModal('signup')}
+                    onClick={handleAuthSignUp}
                     className="w-full px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200 text-lg flex items-center justify-center shadow-lg"
                   >
                     <UserPlus className="mr-3 h-6 w-6" />
@@ -364,7 +370,7 @@ const LandingPage = ({ onSignUp }) => {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => openAuthModal('signup')}
+              onClick={handleAuthSignUp}
               className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200 text-lg flex items-center justify-center shadow-lg"
             >
               <UserPlus className="mr-2 h-5 w-5" />
@@ -392,12 +398,6 @@ const LandingPage = ({ onSignUp }) => {
         </div>
       </div>
 
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={authModal.isOpen}
-        onClose={closeAuthModal}
-        defaultMode={authModal.mode}
-      />
     </div>
   )
 }

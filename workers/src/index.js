@@ -5,6 +5,11 @@
 
 import { processAutomationJob } from './processor';
 import { validateN8nWorkflow } from './generators/n8n';
+import { 
+  validateOrganizationAccess, 
+  checkOrganizationLimits,
+  getJobOrganizationContext 
+} from './database.js';
 
 export default {
   async fetch(request, env, ctx) {
@@ -312,40 +317,147 @@ export default {
       }
     }
 
-    // Get job status endpoint
+    // Get job status endpoint with organization context
     if (url.pathname.startsWith('/status/')) {
       const jobId = url.pathname.split('/')[2];
+      const userId = url.searchParams.get('userId');
+      const organizationId = url.searchParams.get('organizationId');
       
       try {
+        // Get job organization context first
+        const orgContext = await getJobOrganizationContext(env, jobId);
+        
+        // Validate access to job based on organization membership
+        if (orgContext && orgContext.organizationId && userId) {
+          const access = await validateOrganizationAccess(env, userId, orgContext.organizationId);
+          if (!access) {
+            return new Response(JSON.stringify({ 
+              error: 'Access denied',
+              details: 'You do not have access to this automation job',
+              code: 'JOB_ACCESS_DENIED'
+            }), {
+              status: 403,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+        }
+        
         const status = await getJobStatus(env, jobId);
-        return new Response(JSON.stringify(status), {
+        
+        // Enhance status with organization context
+        const enhancedStatus = {
+          ...status,
+          organizationContext: orgContext ? {
+            organizationId: orgContext.organizationId,
+            organizationName: orgContext.organization?.name || 'Unknown',
+            organizationPlan: orgContext.organization?.plan || 'free'
+          } : null
+        };
+        
+        return new Response(JSON.stringify(enhancedStatus), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
+        console.error(`Job status error for ${jobId}:`, error.message);
+        return new Response(JSON.stringify({ 
+          error: 'Failed to get job status',
+          details: error.message,
+          code: 'JOB_STATUS_ERROR'
+        }), {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
     }
 
-    // Submit job endpoint
+    // Submit job endpoint with organization context validation
     if (url.pathname === '/submit' && request.method === 'POST') {
       try {
         const job = await request.json();
+        const jobId = job.jobId || job.id;
+        
+        // Extract organization context from job data
+        const userId = job.userId;
+        const organizationId = job.organizationId;
+        
+        console.log(`Processing job submission: ${jobId} for user: ${userId}, organization: ${organizationId || 'Personal'}`);
+        
+        // Validate organization access if organizationId is provided
+        if (organizationId && userId) {
+          try {
+            const access = await validateOrganizationAccess(env, userId, organizationId);
+            if (!access) {
+              console.error(`Access denied: User ${userId} is not a member of organization ${organizationId}`);
+              return new Response(JSON.stringify({ 
+                error: 'Organization access denied',
+                details: `User does not have access to organization ${organizationId}`,
+                code: 'ORGANIZATION_ACCESS_DENIED'
+              }), {
+                status: 403,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              });
+            }
+            console.log(`Access granted: User ${userId} has ${access.role} role in organization ${organizationId}`);
+          } catch (accessError) {
+            console.error(`Organization access validation failed:`, accessError.message);
+            return new Response(JSON.stringify({ 
+              error: 'Organization validation failed',
+              details: accessError.message,
+              code: 'ORGANIZATION_VALIDATION_ERROR'
+            }), {
+              status: 500,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+        }
+        
+        // Check organization plan limits
+        if (organizationId) {
+          const limitsCheck = await checkOrganizationLimits(env, organizationId);
+          if (!limitsCheck.allowed) {
+            console.warn(`Automation limit exceeded for organization ${organizationId}: ${limitsCheck.reason}`);
+            return new Response(JSON.stringify({ 
+              error: 'Plan limit exceeded',
+              details: `Your ${limitsCheck.plan} plan allows ${limitsCheck.limit} automations per month. You have used ${limitsCheck.currentUsage}.`,
+              code: 'PLAN_LIMIT_EXCEEDED',
+              limits: limitsCheck
+            }), {
+              status: 429, // Too Many Requests
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+          console.log(`Plan limits check passed: ${limitsCheck.currentUsage}/${limitsCheck.limit} automations used`);
+        }
+        
+        // Enhance job with organization context for queue processing
+        const enhancedJob = {
+          ...job,
+          organizationContext: {
+            organizationId,
+            userId,
+            submittedAt: new Date().toISOString()
+          }
+        };
         
         // Add job to queue
-        await env.AUTOMATION_QUEUE.send(job);
+        await env.AUTOMATION_QUEUE.send(enhancedJob);
         
         // Return job ID for status polling
         return new Response(JSON.stringify({ 
-          jobId: job.jobId || job.id,
-          status: 'queued' 
+          jobId: jobId,
+          status: 'queued',
+          organizationId: organizationId || null,
+          message: `Job queued successfully for ${organizationId ? 'organization' : 'personal'} workspace`
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
+        console.error('Job submission error:', error.message);
+        return new Response(JSON.stringify({ 
+          error: 'Job submission failed',
+          details: error.message,
+          code: 'JOB_SUBMISSION_ERROR'
+        }), {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
@@ -439,22 +551,35 @@ export default {
     return new Response('Not Found', { status: 404 });
   },
 
-  // Queue consumer for processing automation jobs
+  // Queue consumer for processing automation jobs with organization context
   async queue(batch, env) {
     for (const message of batch.messages) {
       try {
         const job = message.body;
-        console.log(`Processing job: ${job.jobId || job.id || 'undefined'}`);
+        const jobId = job.jobId || job.id || 'undefined';
+        const orgContext = job.organizationContext || {};
         
-        // Process the automation job
+        console.log(`Processing job: ${jobId} for organization: ${orgContext.organizationId || 'Personal'}`);
+        
+        // Process the automation job with organization context
         await processAutomationJob(env, job);
         
         // Acknowledge message
         message.ack();
+        console.log(`Successfully processed job: ${jobId}`);
       } catch (error) {
         console.error(`Error processing job: ${error.message}`);
-        // Retry the message
-        message.retry();
+        console.error(`Job details:`, JSON.stringify(message.body, null, 2));
+        
+        // For organization limit errors, don't retry
+        if (error.message.includes('PLAN_LIMIT_EXCEEDED') || 
+            error.message.includes('ORGANIZATION_ACCESS_DENIED')) {
+          console.log('Not retrying job due to access/limit restrictions');
+          message.ack(); // Acknowledge to prevent retry loop
+        } else {
+          // Retry the message for other errors
+          message.retry();
+        }
       }
     }
   }
@@ -476,12 +601,16 @@ async function getJobStatus(env, jobId) {
   }
 
   try {
-    const response = await fetch(`${env.SUPABASE_URL}/rest/v1/automation_jobs?id=eq.${jobId}`, {
-      headers: {
-        'apikey': env.SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-      },
-    });
+    // Fetch job with organization context
+    const response = await fetch(
+      `${env.SUPABASE_URL}/rest/v1/automation_jobs?id=eq.${jobId}&select=*,organizations(id,name,slug,plan)`,
+      {
+        headers: {
+          'apikey': env.SUPABASE_SERVICE_KEY,
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+        },
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -503,7 +632,14 @@ async function getJobStatus(env, jobId) {
       throw new Error('Job not found');
     }
 
-    return jobs[0];
+    const job = jobs[0];
+    
+    // Enhanced job status with organization context
+    return {
+      ...job,
+      organization: job.organizations || null,
+      workspace: job.organization_id ? 'organization' : 'personal'
+    };
   } catch (error) {
     console.error(`Error fetching job status for ${jobId}:`, error.message);
     throw error;

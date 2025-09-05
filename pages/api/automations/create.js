@@ -23,8 +23,18 @@ export default async function handler(req, res) {
       processData, 
       automationOpportunities,
       automationType = 'n8n',
-      userId 
+      userId,
+      organizationId, // NEW: Organization context
+      organizationSlug // NEW: Organization slug for routing
     } = req.body;
+    
+    console.log('Creating automation job:', {
+      auditReportId,
+      automationType,
+      userId,
+      organizationId: organizationId || 'Personal',
+      organizationSlug: organizationSlug || null
+    });
 
     const supabase = getSupabase();
     let job;
@@ -42,16 +52,30 @@ export default async function handler(req, res) {
 
     console.log('Creating job record in Supabase...');
     const jobId = generateJobId();
+    
+    // Enhanced job creation with organization context
+    const jobData = {
+      id: jobId,
+      audit_report_id: auditReportId || null,
+      user_id: userId || null, 
+      organization_id: organizationId || null, // NEW: Include organization context
+      automation_type: automationType,
+      status: 'queued',
+      progress: 0,
+      metadata: {
+        createdAt: new Date().toISOString(),
+        organizationSlug: organizationSlug || null,
+        processDataSummary: {
+          hasProcessData: !!processData,
+          opportunityCount: automationOpportunities?.length || 0,
+          processComplexity: processData?.businessContext?.complexity || 'unknown'
+        }
+      }
+    };
+    
     const { data, error: jobError } = await supabase
       .from('automation_jobs')
-      .insert({
-        id: jobId,
-        audit_report_id: auditReportId || null,
-        user_id: userId || null, 
-        automation_type: automationType,
-        status: 'queued',
-        progress: 0,
-      })
+      .insert(jobData)
       .select()
       .single();
 
@@ -85,20 +109,39 @@ export default async function handler(req, res) {
     console.log('Submitting to worker at:', workerUrl);
     
     try {
+      // Enhanced worker payload with organization context
+      const workerPayload = {
+        id: job.id,
+        jobId: job.id,  // Some workers expect jobId instead of id
+        auditReportId,
+        processData,
+        automationOpportunities,
+        automationType: automationType || 'n8n',
+        userId,
+        organizationId: organizationId || null, // NEW: Pass organization context to worker
+        organizationSlug: organizationSlug || null,
+        organizationContext: {
+          workspaceType: organizationId ? 'organization' : 'personal',
+          submittedAt: new Date().toISOString(),
+          auditReportId,
+          automationType
+        }
+      };
+      
+      console.log('Worker payload:', {
+        jobId: workerPayload.jobId,
+        userId: workerPayload.userId,
+        organizationId: workerPayload.organizationId || 'Personal',
+        workspaceType: workerPayload.organizationContext.workspaceType,
+        automationType: workerPayload.automationType
+      });
+      
       const workerResponse = await fetch(`${workerUrl}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          id: job.id,
-          jobId: job.id,  // Some workers expect jobId instead of id
-          auditReportId,
-          processData,
-          automationOpportunities,
-          automationType: automationType || 'n8n',
-          userId,
-        }),
+        body: JSON.stringify(workerPayload),
       });
 
       if (!workerResponse.ok) {
@@ -147,12 +190,27 @@ export default async function handler(req, res) {
       jobId: job.id,
       status: 'queued',
       message: 'Automation generation started',
+      organizationId: organizationId || null,
+      workspaceType: organizationId ? 'organization' : 'personal',
+      metadata: {
+        automationType,
+        processDataAvailable: !!processData,
+        opportunityCount: automationOpportunities?.length || 0
+      }
     });
 
   } catch (error) {
     console.error('Error in create automation:', error);
     console.error('Error stack:', error.stack);
-    console.error('Request body:', JSON.stringify(req.body, null, 2));
+    console.error('Request body (sanitized):', {
+      auditReportId,
+      automationType,
+      userId: userId ? '[REDACTED]' : null,
+      organizationId: organizationId || 'Personal',
+      organizationSlug: organizationSlug || null,
+      hasProcessData: !!processData,
+      opportunityCount: automationOpportunities?.length || 0
+    });
     console.error('Environment check:', {
       hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
       hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -164,6 +222,8 @@ export default async function handler(req, res) {
       error: 'Internal server error',
       details: error.message,
       timestamp: new Date().toISOString(),
+      organizationId: organizationId || null,
+      workspaceType: organizationId ? 'organization' : 'personal',
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }

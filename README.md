@@ -8,7 +8,7 @@ An AI-powered web application that helps technical founders identify automation 
 - **AI-Generated Discovery Questions**: Targeted questions based on your specific process
 - **Comprehensive Audit Reports**: Detailed automation opportunities with ROI calculations
 - **Implementation Roadmap**: Phased approach with quick wins and strategic initiatives
-- **User Authentication**: Secure sign-up/sign-in with Supabase
+- **User Authentication**: Enterprise-grade authentication with Clerk Organizations
 - **Report Management**: Save, organize, and retrieve audit reports
 - **Export Functionality**: Download reports for team review
 
@@ -17,9 +17,9 @@ An AI-powered web application that helps technical founders identify automation 
 - **Framework**: Next.js 14 with Pages Router
 - **Styling**: Tailwind CSS with custom components
 - **Icons**: Lucide React
-- **AI Integration**: Claude API (with sample data fallback)
-- **Authentication**: Supabase Auth
-- **Database**: Supabase PostgreSQL
+- **AI Integration**: Claude API with OpenAI fallback
+- **Authentication**: Clerk with Organizations support
+- **Database**: Supabase PostgreSQL (data storage only)
 - **Deployment**: Vercel-ready
 
 ## Quick Start
@@ -33,8 +33,9 @@ An AI-powered web application that helps technical founders identify automation 
    ```bash
    cp .env.example .env.local
    # Add your API keys to .env.local:
-   # - Claude API key (optional, for AI integration)
-   # - Supabase URL and key (optional, for authentication)
+   # - Claude API key (for AI integration)
+   # - Clerk keys (for authentication)
+   # - Supabase URL and keys (for data storage)
    ```
 
 3. **Run development server**:
@@ -42,9 +43,15 @@ An AI-powered web application that helps technical founders identify automation 
    npm run dev
    ```
 
-4. **Set up Supabase** (optional, for authentication):
+4. **Set up Authentication and Database**:
    
-   **Option A: Automated CLI Setup (Recommended)**
+   **Authentication (Clerk) - Required**
+   ```bash
+   # Set up Clerk authentication
+   ./scripts/setup-clerk.sh
+   ```
+   
+   **Database (Supabase) - Required for data storage**
    ```bash
    # Full setup with guided prompts
    ./scripts/setup-supabase.sh
@@ -52,11 +59,6 @@ An AI-powered web application that helps technical founders identify automation 
    # Or quick setup with defaults
    ./scripts/quick-supabase.sh
    ```
-   
-   **Option B: Manual Setup**
-   - Create a new project at [supabase.com](https://supabase.com)
-   - Run the SQL commands from `database/schema.sql` in your SQL editor
-   - Add your project URL and anon key to `.env.local`
 
 5. **Open application**:
    Navigate to [http://localhost:3000](http://localhost:3000)
@@ -73,12 +75,21 @@ process-audit-ai/
 │   ├── AnalysisLoader.jsx     # Loading state with progress
 │   └── AuditReport.jsx        # Comprehensive report display
 ├── pages/                # Next.js pages
-│   ├── _app.js              # App wrapper
+│   ├── _app.js              # App wrapper with Clerk provider
 │   ├── index.js             # Home page
+│   ├── sign-in/             # Custom Clerk authentication pages
+│   │   └── [[...index]].js     # Sign-in with ProcessAudit AI styling
+│   ├── sign-up/             # Custom Clerk registration pages
+│   │   └── [[...index]].js     # Sign-up with organization support
+│   ├── organization-required.js # Organization selection workflow
 │   └── api/                 # API endpoints
 │       ├── generate-questions.js
 │       ├── analyze-process.js
 │       └── process-file.js
+├── contexts/             # React contexts
+│   └── UnifiedAuthContext.js  # Clerk-only authentication context
+├── types/                # TypeScript definitions
+│   └── auth.ts              # Complete auth type definitions
 ├── utils/                # Utility functions
 │   ├── fileProcessor.js     # File upload handling
 │   └── aiPrompts.js         # AI prompts and integration
@@ -96,13 +107,38 @@ process-audit-ai/
 
 ## API Integration
 
-The application is designed to work with the Claude API for AI analysis. When `CLAUDE_API_KEY` is not provided, the app uses comprehensive sample data to demonstrate functionality.
+The application integrates with multiple APIs for comprehensive functionality:
+
+- **Claude API (Primary)**: Advanced AI analysis and workflow generation
+- **OpenAI API (Fallback)**: Backup AI provider for high availability  
+- **Clerk API**: Enterprise authentication and organization management
+- **Supabase API**: Database operations and data storage
+
+## Authentication System
+
+ProcessAudit AI uses **Clerk Organizations** for enterprise-ready authentication:
+
+### Key Features
+- **Multi-tenant Support**: Complete organization isolation and management
+- **Custom Branding**: ProcessAudit AI styled authentication pages
+- **Enterprise Security**: Advanced session management and audit trails
+- **TypeScript Integration**: Full type safety for all auth operations
+
+### Organization Workflow
+1. **Sign Up**: Users create account and organization
+2. **Organization Selection**: Access existing organization or create new one
+3. **Role Management**: Organization-based permissions and access control
+4. **Data Isolation**: Complete separation of data by organization
 
 ### Environment Variables
 
-- `CLAUDE_API_KEY`: Optional Claude API key for real AI analysis
-- `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anonymous key
+- `CLAUDE_API_KEY`: Claude API key for AI analysis (primary)
+- `OPENAI_API_KEY`: OpenAI API key (fallback)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`: Clerk publishable key
+- `CLERK_SECRET_KEY`: Clerk secret key
+- `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase anonymous key
+- `SUPABASE_SERVICE_KEY`: Supabase service role key
 - `NEXT_PUBLIC_APP_URL`: Application URL for deployment
 
 ## Features in Detail
@@ -193,6 +229,26 @@ npm run build
 ## License
 
 MIT License - see LICENSE file for details.
+
+## Authentication Migration
+
+**ProcessAudit AI has migrated to Clerk-only authentication (December 2024)**
+
+The application now uses Clerk Organizations for enterprise-ready authentication with multi-tenant support. This provides:
+
+- **White-label capabilities** with organization-specific branding
+- **Enterprise security** with advanced session management
+- **Multi-tenant architecture** for B2B applications
+- **TypeScript support** with complete auth type definitions
+
+### Migration Notes
+
+If you're updating from an older version:
+1. Remove old Supabase auth environment variables
+2. Set up Clerk authentication credentials
+3. Update any custom auth components to use the new system
+
+For detailed migration information, see `CLERK_MIGRATION.md`.
 
 ## Support
 

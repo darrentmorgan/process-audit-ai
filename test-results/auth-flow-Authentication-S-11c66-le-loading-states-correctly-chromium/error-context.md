@@ -1,0 +1,5 @@
+# Page snapshot
+
+```yaml
+- alert
+```

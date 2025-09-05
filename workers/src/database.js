@@ -432,3 +432,194 @@ export async function getOrganizationUsageStats(env, organizationId) {
     return null;
   }
 }
+
+/**
+ * Check organization plan limits for automation generation
+ * @param {Object} env - Environment variables
+ * @param {string} organizationId - Organization ID
+ * @returns {Object} Limits check result
+ */
+export async function checkOrganizationLimits(env, organizationId) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) {
+    console.warn('Supabase not configured - skipping limits check');
+    return { allowed: true, reason: 'limits_disabled' };
+  }
+
+  try {
+    // Get organization info
+    const orgResponse = await fetch(
+      `${env.SUPABASE_URL}/rest/v1/organizations?id=eq.${organizationId}&select=plan,name`,
+      {
+        method: 'GET',
+        headers: {
+          'apikey': env.SUPABASE_SERVICE_KEY,
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!orgResponse.ok) {
+      console.warn('Could not fetch organization info for limits check');
+      return { allowed: true, reason: 'org_fetch_failed' };
+    }
+
+    const orgs = await orgResponse.json();
+    if (orgs.length === 0) {
+      return { allowed: false, reason: 'organization_not_found' };
+    }
+
+    const org = orgs[0];
+    const plan = org.plan || 'free';
+    
+    // Get current month's usage
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    
+    const jobsResponse = await fetch(
+      `${env.SUPABASE_URL}/rest/v1/automation_jobs?organization_id=eq.${organizationId}&created_at=gte.${monthStart}&select=id,created_at`,
+      {
+        method: 'GET',
+        headers: {
+          'apikey': env.SUPABASE_SERVICE_KEY,
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const currentUsage = jobsResponse.ok ? (await jobsResponse.json()).length : 0;
+    
+    // Define plan limits
+    const limits = {
+      free: { automations: 5 },
+      starter: { automations: 50 },
+      professional: { automations: 200 },
+      enterprise: { automations: Infinity }
+    };
+
+    const planLimit = limits[plan] || limits.free;
+    const allowed = currentUsage < planLimit.automations;
+    
+    console.log(`Organization ${org.name} (${plan}): ${currentUsage}/${planLimit.automations} automations this month`);
+    
+    return {
+      allowed,
+      reason: allowed ? 'within_limits' : 'monthly_limit_exceeded',
+      plan,
+      currentUsage,
+      limit: planLimit.automations,
+      resetDate: new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString()
+    };
+  } catch (error) {
+    console.error('Error checking organization limits:', error.message);
+    return { allowed: true, reason: 'limits_check_failed' };
+  }
+}
+
+/**
+ * Get organization-specific AI model preferences
+ * @param {Object} env - Environment variables
+ * @param {string} organizationId - Organization ID
+ * @returns {Object} Model preferences
+ */
+export async function getOrganizationModelPreferences(env, organizationId) {
+  if (!organizationId) {
+    return {
+      preferredModel: 'claude',
+      fallbackModel: 'openai',
+      maxTokens: 8192,
+      temperature: 0.7
+    };
+  }
+
+  try {
+    // Get organization context including plan and preferences
+    const orgContext = await getJobOrganizationContext(env, 'dummy');
+    const plan = orgContext?.organization?.plan || 'free';
+    
+    // Plan-based model preferences
+    const preferences = {
+      free: {
+        preferredModel: 'openai', // More cost-effective for free tier
+        fallbackModel: 'claude',
+        maxTokens: 4096,
+        temperature: 0.7
+      },
+      starter: {
+        preferredModel: 'claude',
+        fallbackModel: 'openai', 
+        maxTokens: 8192,
+        temperature: 0.7
+      },
+      professional: {
+        preferredModel: 'claude',
+        fallbackModel: 'openai',
+        maxTokens: 16384,
+        temperature: 0.5 // More precise for professional use
+      },
+      enterprise: {
+        preferredModel: 'claude',
+        fallbackModel: 'openai',
+        maxTokens: 32768,
+        temperature: 0.3 // Most precise for enterprise
+      }
+    };
+    
+    return preferences[plan] || preferences.free;
+  } catch (error) {
+    console.error('Error getting organization model preferences:', error.message);
+    return {
+      preferredModel: 'claude',
+      fallbackModel: 'openai',
+      maxTokens: 8192,
+      temperature: 0.7
+    };
+  }
+}
+
+/**
+ * Log organization-specific automation usage for analytics
+ * @param {Object} env - Environment variables
+ * @param {string} organizationId - Organization ID
+ * @param {Object} usageData - Usage data to log
+ */
+export async function logOrganizationUsage(env, organizationId, usageData) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY || !organizationId) {
+    return; // Skip if no database or personal workspace
+  }
+
+  try {
+    const logEntry = {
+      organization_id: organizationId,
+      event_type: usageData.eventType || 'automation_generated',
+      metadata: {
+        timestamp: new Date().toISOString(),
+        jobId: usageData.jobId,
+        automationType: usageData.automationType,
+        nodeCount: usageData.nodeCount,
+        processingTime: usageData.processingTime,
+        aiModel: usageData.aiModel,
+        tokenUsage: usageData.tokenUsage,
+        success: usageData.success,
+        ...usageData.metadata
+      },
+      created_at: new Date().toISOString()
+    };
+
+    // Insert usage log (fire and forget)
+    fetch(`${env.SUPABASE_URL}/rest/v1/organization_usage_logs`, {
+      method: 'POST',
+      headers: {
+        'apikey': env.SUPABASE_SERVICE_KEY,
+        'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(logEntry)
+    }).catch(error => {
+      console.warn('Failed to log organization usage:', error.message);
+    });
+  } catch (error) {
+    console.warn('Error logging organization usage:', error.message);
+  }
+}
