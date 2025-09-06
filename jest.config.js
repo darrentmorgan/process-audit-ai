@@ -39,20 +39,17 @@ const customJestConfig = {
     {
       displayName: 'Multi-Tenant Integration',
       testMatch: ['<rootDir>/__tests__/multitenant/**/*.test.js'],
-      testEnvironment: 'node',
-      timeout: 30000
+      testEnvironment: 'node'
     },
     {
       displayName: 'Security Tests',
       testMatch: ['<rootDir>/__tests__/integration/security/**/*.test.js'],
-      testEnvironment: 'node',
-      timeout: 20000
+      testEnvironment: 'node'
     },
     {
       displayName: 'Performance Tests',
       testMatch: ['<rootDir>/__tests__/integration/performance/**/*.test.js'],
-      testEnvironment: 'node',
-      timeout: 60000
+      testEnvironment: 'node'
     }
   ],
   

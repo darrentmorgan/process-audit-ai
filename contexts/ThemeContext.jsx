@@ -1,111 +1,15 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { useUnifiedAuth } from './UnifiedAuthContext'
 import { supabase } from '../lib/supabase'
+import { DEFAULT_THEME } from '../types/branding' // Move the default theme to the new branding types
+import { 
+  BrandColors, 
+  BrandAssets, 
+  OrganizationBranding, 
+  ThemeContextType 
+} from '../types/branding'
 
 const ThemeContext = createContext({})
-
-// Default theme configuration
-const DEFAULT_THEME = {
-  // Brand colors
-  colors: {
-    primary: '#4299e1',
-    secondary: '#38a169',
-    accent: '#ed8936',
-    background: '#ffffff',
-    surface: '#f7fafc',
-    text: {
-      primary: '#2d3748',
-      secondary: '#4a5568',
-      muted: '#718096'
-    },
-    border: '#e2e8f0',
-    success: '#38a169',
-    warning: '#ed8936',
-    error: '#e53e3e'
-  },
-  
-  // Typography
-  typography: {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-    fontSize: {
-      xs: '0.75rem',
-      sm: '0.875rem',
-      base: '1rem',
-      lg: '1.125rem',
-      xl: '1.25rem',
-      '2xl': '1.5rem',
-      '3xl': '1.875rem',
-      '4xl': '2.25rem'
-    },
-    fontWeight: {
-      normal: '400',
-      medium: '500',
-      semibold: '600',
-      bold: '700'
-    }
-  },
-  
-  // Spacing and layout
-  spacing: {
-    xs: '0.25rem',
-    sm: '0.5rem',
-    md: '1rem',
-    lg: '1.5rem',
-    xl: '2rem',
-    '2xl': '3rem'
-  },
-  
-  // Border radius
-  borderRadius: {
-    sm: '0.125rem',
-    base: '0.375rem',
-    md: '0.5rem',
-    lg: '0.75rem',
-    xl: '1rem',
-    full: '9999px'
-  },
-  
-  // Shadows
-  shadows: {
-    sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-    base: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-    md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-    lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-    xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-  },
-  
-  // Brand assets
-  assets: {
-    logoUrl: null,
-    faviconUrl: null,
-    customDomain: null
-  }
-}
-
-// Theme validation schema
-const validateTheme = (theme) => {
-  const errors = []
-  
-  // Validate colors
-  if (theme.colors) {
-    Object.entries(theme.colors).forEach(([key, value]) => {
-      if (typeof value === 'string' && value && !isValidColor(value)) {
-        errors.push(`Invalid color value for ${key}: ${value}`)
-      }
-    })
-  }
-  
-  // Validate URLs
-  if (theme.assets?.logoUrl && !isValidUrl(theme.assets.logoUrl)) {
-    errors.push('Invalid logo URL')
-  }
-  
-  if (theme.assets?.faviconUrl && !isValidUrl(theme.assets.faviconUrl)) {
-    errors.push('Invalid favicon URL')
-  }
-  
-  return errors
-}
 
 // Color validation helper
 const isValidColor = (color) => {
@@ -170,6 +74,35 @@ export const ThemeProvider = ({ children }) => {
   const [isPreviewMode, setIsPreviewMode] = useState(false)
   const [previewTheme, setPreviewTheme] = useState(null)
 
+  // Validation for branding
+  const validateTheme = (theme) => {
+    const errors = []
+    
+    // Validate colors
+    if (theme.colors) {
+      Object.entries(theme.colors).forEach(([key, value]) => {
+        if (typeof value === 'string' && value && !isValidColor(value)) {
+          errors.push(`Invalid color value for ${key}: ${value}`)
+        }
+      })
+    }
+    
+    // Validate URLs
+    if (theme.assets?.logo?.light && !isValidUrl(theme.assets.logo.light)) {
+      errors.push('Invalid light logo URL')
+    }
+    
+    if (theme.assets?.logo?.dark && !isValidUrl(theme.assets.logo.dark)) {
+      errors.push('Invalid dark logo URL')
+    }
+    
+    if (theme.assets?.favicon && !isValidUrl(theme.assets.favicon)) {
+      errors.push('Invalid favicon URL')
+    }
+    
+    return errors
+  }
+
   // Load organization theme
   const loadOrganizationTheme = useCallback(async (orgId) => {
     if (!orgId) {
@@ -196,17 +129,14 @@ export const ThemeProvider = ({ children }) => {
       }
 
       if (data?.branding) {
-        // Convert organization branding to theme format
-        const organizationTheme = convertBrandingToTheme(data.branding)
-        
         // Validate the theme
-        const validationErrors = validateTheme(organizationTheme)
+        const validationErrors = validateTheme(data.branding)
         if (validationErrors.length > 0) {
           console.warn('Theme validation warnings:', validationErrors)
         }
         
         // Merge with default theme to ensure all properties exist
-        const mergedTheme = deepMerge(DEFAULT_THEME, organizationTheme)
+        const mergedTheme = deepMerge(DEFAULT_THEME, data.branding)
         setCurrentTheme(mergedTheme)
       } else {
         setCurrentTheme(DEFAULT_THEME)
@@ -219,34 +149,6 @@ export const ThemeProvider = ({ children }) => {
       setIsThemeLoading(false)
     }
   }, [])
-
-  // Convert organization branding data to theme format
-  const convertBrandingToTheme = (branding) => {
-    const theme = {}
-    
-    if (branding.primaryColor) {
-      theme.colors = {
-        primary: branding.primaryColor
-      }
-    }
-    
-    if (branding.secondaryColor) {
-      theme.colors = {
-        ...theme.colors,
-        secondary: branding.secondaryColor
-      }
-    }
-    
-    if (branding.logoUrl || branding.faviconUrl || branding.customDomain) {
-      theme.assets = {
-        logoUrl: branding.logoUrl,
-        faviconUrl: branding.faviconUrl,
-        customDomain: branding.customDomain
-      }
-    }
-    
-    return theme
-  }
 
   // Apply theme to CSS custom properties
   const applyCSSVariables = useCallback((theme) => {
@@ -267,42 +169,18 @@ export const ThemeProvider = ({ children }) => {
     
     // Apply typography variables
     if (theme.typography) {
-      if (theme.typography.fontFamily) {
-        root.style.setProperty('--font-family', theme.typography.fontFamily)
-      }
-      
-      if (theme.typography.fontSize) {
-        Object.entries(theme.typography.fontSize).forEach(([key, value]) => {
-          root.style.setProperty(`--font-size-${key}`, value)
-        })
-      }
-      
-      if (theme.typography.fontWeight) {
-        Object.entries(theme.typography.fontWeight).forEach(([key, value]) => {
-          root.style.setProperty(`--font-weight-${key}`, value)
-        })
-      }
+      root.style.setProperty('--font-family', theme.typography.fontFamily)
+      root.style.setProperty('--font-heading', theme.typography.headingFont || theme.typography.fontFamily)
+      root.style.setProperty('--base-font-size', `${theme.typography.baseFontSize}px`)
+      root.style.setProperty('--line-height', theme.typography.lineHeight.toString())
     }
     
-    // Apply spacing variables
-    if (theme.spacing) {
-      Object.entries(theme.spacing).forEach(([key, value]) => {
-        root.style.setProperty(`--spacing-${key}`, value)
-      })
-    }
-    
-    // Apply border radius variables
-    if (theme.borderRadius) {
-      Object.entries(theme.borderRadius).forEach(([key, value]) => {
-        root.style.setProperty(`--border-radius-${key}`, value)
-      })
-    }
-    
-    // Apply shadow variables
-    if (theme.shadows) {
-      Object.entries(theme.shadows).forEach(([key, value]) => {
-        root.style.setProperty(`--shadow-${key}`, value)
-      })
+    // Apply custom CSS if provided
+    if (theme.customCSS) {
+      const customStyleElement = document.getElementById('custom-theme-styles') || document.createElement('style')
+      customStyleElement.id = 'custom-theme-styles'
+      customStyleElement.textContent = theme.customCSS
+      document.head.appendChild(customStyleElement)
     }
   }, [])
 
@@ -335,8 +213,8 @@ export const ThemeProvider = ({ children }) => {
     applyCSSVariables(activeTheme)
     
     // Update favicon if provided
-    if (activeTheme.assets?.faviconUrl) {
-      updateFavicon(activeTheme.assets.faviconUrl)
+    if (activeTheme.assets?.favicon) {
+      updateFavicon(activeTheme.assets.favicon)
     }
   }, [currentTheme, previewTheme, isPreviewMode, applyCSSVariables, updateFavicon])
 
@@ -353,13 +231,10 @@ export const ThemeProvider = ({ children }) => {
         throw new Error(`Theme validation failed: ${validationErrors.join(', ')}`)
       }
 
-      // Convert theme format to branding format
-      const brandingUpdate = convertThemeToBranding(themeUpdates)
-
       const { error } = await supabase
         .from('organizations')
         .update({ 
-          branding: brandingUpdate,
+          branding: themeUpdates,
           updated_at: new Date().toISOString()
         })
         .eq('id', organization.id)
@@ -374,33 +249,6 @@ export const ThemeProvider = ({ children }) => {
       console.error('Error updating organization theme:', error)
       throw error
     }
-  }
-
-  // Convert theme format back to organization branding format
-  const convertThemeToBranding = (theme) => {
-    const branding = {}
-    
-    if (theme.colors?.primary) {
-      branding.primaryColor = theme.colors.primary
-    }
-    
-    if (theme.colors?.secondary) {
-      branding.secondaryColor = theme.colors.secondary
-    }
-    
-    if (theme.assets?.logoUrl) {
-      branding.logoUrl = theme.assets.logoUrl
-    }
-    
-    if (theme.assets?.faviconUrl) {
-      branding.faviconUrl = theme.assets.faviconUrl
-    }
-    
-    if (theme.assets?.customDomain) {
-      branding.customDomain = theme.assets.customDomain
-    }
-    
-    return branding
   }
 
   // Preview mode functions
@@ -487,5 +335,3 @@ export const ThemeProvider = ({ children }) => {
     </ThemeContext.Provider>
   )
 }
-
-export { DEFAULT_THEME }
