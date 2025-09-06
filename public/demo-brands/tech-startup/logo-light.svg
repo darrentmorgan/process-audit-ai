@@ -1,0 +1,19 @@
+<svg width="120" height="40" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="techGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1" />
+      <stop offset="100%" style="stop-color:#06b6d4" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Logo mark circle -->
+  <circle cx="20" cy="20" r="15" fill="url(#techGradient)" />
+  
+  <!-- Inner tech symbol -->
+  <path d="M15 15 L25 20 L15 25 Z" fill="white" />
+  <circle cx="22" cy="20" r="2" fill="white" />
+  
+  <!-- Company name -->
+  <text x="45" y="16" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="600" fill="#1f2937">TechFlow</text>
+  <text x="45" y="30" font-family="Inter, sans-serif" font-size="10" fill="#6b7280">AI</text>
+</svg>
