@@ -10,8 +10,10 @@ import { healthcareBrandPackage } from './healthcare'
 import { creativeAgencyBrandPackage } from './creative-agency'
 import { financeBrandPackage } from './finance'
 import { retailBrandPackage } from './retail'
+import { hospoDojoBrandPackage } from './hospo-dojo'
 
 // Export individual brand packages
+export { hospoDojoBrandPackage } from './hospo-dojo'
 export { techStartupBrandPackage } from './tech-startup'
 export { manufacturingBrandPackage } from './manufacturing'
 export { healthcareBrandPackage } from './healthcare'
@@ -28,7 +30,8 @@ export const allBrandPackages = {
   'healthcare': healthcareBrandPackage,
   'creative-agency': creativeAgencyBrandPackage,
   'finance': financeBrandPackage,
-  'retail': retailBrandPackage
+  'retail': retailBrandPackage,
+  'hospo-dojo': hospoDojoBrandPackage
 } as const
 
 /**
