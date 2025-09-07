@@ -1,85 +1,76 @@
-// Client Branding Types for ProcessAudit AI
+// Client Branding Type Definitions
 
-import { Organization } from './organization'
-
-export interface ClientBrandingColors {
-  primaryColor: string
-  secondaryColor: string
-  accentColor?: string
-  textColor?: string
-  backgroundColor?: string
+export interface ColorPalette {
+  primary: string;
+  secondary: string;
+  accent: string;
+  background: string;
+  surface: string;
+  text: {
+    primary: string;
+    secondary: string;
+    accent: string;
+  };
 }
 
-export interface ClientBrandingAssets {
-  logoUrl?: string
-  faviconUrl?: string
-  heroImageUrl?: string
-  bannerImageUrl?: string
+export interface TypographyConfig {
+  fontFamily: string;
+  headingFont: string;
+  subHeadingFont: string;
+  baseFontSize: number;
+  lineHeight: number;
+  headingLineHeight: number;
 }
 
-export interface ClientBrandingTypography {
-  fontFamily?: string
-  headingFont?: string
-  bodyFont?: string
+export interface AccessibilityColorPair {
+  foreground: string;
+  background: string;
+  contrastRatio: number;
+  description: string;
 }
 
-export interface ClientBrandingTheme {
-  mode?: 'light' | 'dark'
-  borderRadius?: number
-  boxShadow?: string
+export interface FeatureContent {
+  title: string;
+  description: string;
 }
 
-export interface ClientBrandPackage {
-  // Unique identifier for the client brand
-  clientId: string
-
-  // Client organization details
-  organization: Pick<Organization, 'id' | 'name' | 'slug'>
-
-  // Branding components
-  colors: ClientBrandingColors
-  assets: ClientBrandingAssets
-  typography: ClientBrandingTypography
-  theme: ClientBrandingTheme
-
-  // Deployment configuration
-  deployment: {
-    routingType: 'domain' | 'subdomain' | 'path'
-    primaryDomain?: string
-    alternativeDomains?: string[]
-    sslRequired: boolean
-  }
-
-  // Content customization
-  customContent?: {
-    landingPageTitle?: string
-    landingPageSubtitle?: string
-    ctaText?: string
-  }
-
-  // Permissions and access levels
-  brandingLevel: 'basic' | 'full' | 'white-label'
-  
-  // Timestamps for tracking
-  createdAt: Date
-  updatedAt: Date
+export interface CTAContent {
+  primary: string;
+  secondary: string;
 }
 
-// Configuration for brand management UI
-export interface ClientBrandEditorConfig {
-  allowedFileTypes: string[]
-  maxLogoSize: number // in bytes
-  colorValidation: {
-    minContrast: number
-    allowCustom: boolean
-  }
+export interface HeroContent {
+  headline: string;
+  subheadline: string;
+  description: string;
 }
 
-// Validation result for brand configuration
-export interface BrandValidationResult {
-  isValid: boolean
-  errors?: {
-    field: keyof ClientBrandPackage
-    message: string
-  }[]
+export interface LandingPageContent {
+  hero: HeroContent;
+  features: FeatureContent[];
+  cta: CTAContent;
 }
+
+export interface OrganizationBranding {
+  name: string;
+  slug: string;
+  tagline: string;
+  colors: ColorPalette;
+  typography: TypographyConfig;
+}
+
+export interface ClientBrandExtensions {
+  designElements?: {
+    waves?: boolean;
+    scribbles?: boolean;
+    textures?: string[];
+  };
+  industrySpecificContent?: {
+    domain: string;
+    keywords: string[];
+    messagingTone: 'professional' | 'casual' | 'technical';
+  };
+}
+
+// Utility type for theme injection
+export type ThemeInjectionConfig = OrganizationBranding & ClientBrandExtensions;

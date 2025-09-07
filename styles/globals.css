@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Brand-specific style imports */
+@import './brands/hospo-dojo.css';
+
 /* CSS Custom Properties for Dynamic Theming */
 :root {
   /* Default theme colors */

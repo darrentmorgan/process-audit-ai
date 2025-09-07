@@ -1,0 +1,86 @@
+/* Hospo Dojo Custom Brand Styles */
+
+:root[data-brand="hospo-dojo"] {
+  /* Color Variables */
+  --color-primary: #42551C;        /* Khaki Green */
+  --color-secondary: #1C1C1C;      /* Black */
+  --color-accent: #42551C;         /* Khaki Green */
+  --color-background: #FFFFFF;     /* White */
+  --color-surface: #EAE8DD;        /* Ivory */
+  
+  /* Text Colors */
+  --color-text-primary: #1C1C1C;   /* Black */
+  --color-text-secondary: #42551C; /* Khaki Green */
+  --color-text-accent: #42551C;    /* Khaki Green */
+  
+  /* Typography Variables */
+  --font-family: "DM Sans", Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-family-headlines: "Gefika", "Bebas Neue", "Oswald", Impact, sans-serif;
+  --font-family-subheadlines: "Nimbus Sans", "Nimbus Sans L", "Helvetica Neue", Arial, sans-serif;
+  
+  /* Design System Overrides */
+  --border-radius-base: 12px;
+  --spacing-base: 24px;
+  
+  /* Animation & Transitions */
+  --transition-colors: color 0.3s ease, background-color 0.3s ease;
+}
+
+/* Hospo Dojo Specific Design Elements */
+.hd-wave-background {
+  background-image: linear-gradient(
+    135deg, 
+    var(--color-surface) 0%, 
+    var(--color-background) 100%
+  );
+  background-size: 400% 400%;
+  animation: waveBackground 15s ease infinite;
+}
+
+.hd-section {
+  @apply py-16 px-4 md:px-8 lg:px-16;
+}
+
+.hd-section--ivory {
+  @apply bg-hd-ivory text-hd-black;
+}
+
+.hd-section--khaki {
+  @apply bg-hd-khaki text-hd-white;
+}
+
+@keyframes waveBackground {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Headline Styles */
+.hd-headline {
+  font-family: var(--font-family-headlines);
+  font-weight: bold;
+  text-transform: uppercase;
+  line-height: 1.0;
+  letter-spacing: 0.05em;
+}
+
+/* CTA Button Styles */
+.hd-button {
+  @apply rounded-hd transition-all duration-300 ease-in-out;
+}
+
+.hd-button--primary {
+  @apply bg-hd-khaki text-hd-white hover:bg-opacity-90;
+}
+
+.hd-button--secondary {
+  @apply bg-hd-ivory text-hd-black hover:bg-opacity-80;
+}
+
+/* Accessibility Enhancements */
+@media (prefers-reduced-motion: reduce) {
+  .hd-wave-background {
+    animation: none;
+    background-position: center;
+  }
+}

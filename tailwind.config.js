@@ -13,6 +13,14 @@ module.exports = {
         secondary: '#38a169',
         warning: '#ed8936',
         
+        // Hospo Dojo specific colors
+        hd: {
+          white: '#FFFFFF',
+          ivory: '#EAE8DD', 
+          black: '#1C1C1C',
+          khaki: '#42551C',
+        },
+        
         // Theme-aware colors using CSS custom properties
         theme: {
           primary: 'var(--color-primary)',
@@ -32,7 +40,11 @@ module.exports = {
         }
       },
       fontFamily: {
-        theme: ['var(--font-family)']
+        theme: ['var(--font-family)'],
+        // Hospo Dojo specific fonts
+        headline: ['Gefika', 'Bebas Neue', 'Oswald', 'Impact', 'sans-serif'],
+        sub: ['Nimbus Sans', 'Nimbus Sans L', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        body: ['DM Sans', 'Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif']
       },
       fontSize: {
         'theme-xs': 'var(--font-size-xs)',
@@ -56,14 +68,18 @@ module.exports = {
         'theme-md': 'var(--spacing-md)',
         'theme-lg': 'var(--spacing-lg)',
         'theme-xl': 'var(--spacing-xl)',
-        'theme-2xl': 'var(--spacing-2xl)'
+        'theme-2xl': 'var(--spacing-2xl)',
+        // Hospo Dojo specific spacing
+        'hd': '24px'
       },
       borderRadius: {
         'theme-sm': 'var(--border-radius-sm)',
         'theme-base': 'var(--border-radius-base)',
         'theme-md': 'var(--border-radius-md)',
         'theme-lg': 'var(--border-radius-lg)',
-        'theme-xl': 'var(--border-radius-xl)'
+        'theme-xl': 'var(--border-radius-xl)',
+        // Hospo Dojo specific radius
+        'hd': '12px'
       },
       boxShadow: {
         'theme-sm': 'var(--shadow-sm)',

@@ -9,24 +9,26 @@ import { allBrandPackages, brandKeys } from '../../__tests__/fixtures/brands'
  * Test different brand configurations and see live previews
  * Access: /dev/brand-tester?brand=tech-startup
  */
-export default function BrandTester() {
+export default function BrandTester({ initialBrand = 'tech-startup' }) {
   const router = useRouter()
   const { brand: brandQuery } = router.query
   
-  const [selectedBrand, setSelectedBrand] = useState('tech-startup')
-  const [isApplied, setIsApplied] = useState(false)
+  const [selectedBrand, setSelectedBrand] = useState(initialBrand)
+  const [isApplied, setIsApplied] = useState(true)
   
   // Update selected brand from query param
   useEffect(() => {
-    if (brandQuery && brandKeys.includes(brandQuery)) {
-      setSelectedBrand(brandQuery)
+    const brandParam = Array.isArray(brandQuery) ? brandQuery[0] : brandQuery
+    if (brandParam && typeof brandParam === 'string' && brandKeys.includes(brandParam)) {
+      setSelectedBrand(brandParam)
     }
   }, [brandQuery])
   
   // Apply brand CSS variables
   useEffect(() => {
     if (selectedBrand && allBrandPackages[selectedBrand]) {
-      const { colors, customCSS } = allBrandPackages[selectedBrand].branding
+      const { colors } = allBrandPackages[selectedBrand].branding
+      const customCSS = allBrandPackages[selectedBrand].branding.customCSS
       const root = document.documentElement
       
       // Apply color variables
@@ -153,7 +155,7 @@ export default function BrandTester() {
                       color: 'white'
                     }}
                   >
-                    {currentContent.hero.ctaText}
+                    {currentContent.cta?.primary || currentContent.hero.ctaText || 'Get Started'}
                   </button>
                 </div>
               </div>
@@ -168,10 +170,10 @@ export default function BrandTester() {
                       fontFamily: currentBranding.typography.headingFont 
                     }}
                   >
-                    {currentContent.features?.title}
+                    Key Features
                   </h2>
                   <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-                    {currentContent.features?.features.map((feature, index) => (
+                    {currentContent.features?.map((feature, index) => (
                       <div key={index} className="text-center p-6 rounded-lg border-2" style={{
                         borderColor: currentBranding.colors.primary + '20',
                         backgroundColor: currentBranding.colors.background
@@ -207,7 +209,7 @@ export default function BrandTester() {
                         <strong>Target Market:</strong> {currentBrandPackage.metadata.targetMarket}
                       </div>
                       <div>
-                        <strong>Custom Domain:</strong> {currentBranding.customDomain}
+                        <strong>Custom Domain:</strong> {currentBranding.customDomain || 'N/A'}
                       </div>
                       <div>
                         <strong>Font Family:</strong> {currentBranding.typography.fontFamily.split(',')[0]}
@@ -250,7 +252,12 @@ export async function getServerSideProps(context) {
     }
   }
   
+  const { brand } = context.query
+  const selectedBrand = (brand && brandKeys.includes(brand)) ? brand : 'tech-startup'
+  
   return {
-    props: {}
+    props: {
+      initialBrand: selectedBrand
+    }
   }
 }

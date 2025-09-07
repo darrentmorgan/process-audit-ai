@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import LandingPage from '../components/marketing/LandingPage';
+import LandingPage from '../components/LandingPage';
 import HospoDojoBrandedLanding from '../components/brands/HospoDojoBrandedLanding';
 
 export default function Home() {
