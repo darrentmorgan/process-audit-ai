@@ -29,4 +29,17 @@ workers/.wrangler/tmp/**
 workers/worker.log
 workers/worker.pid
 workers/.dev.vars
-Invoice-Processing-Audit-Report-E2E-Test.pdf
+
+# PDF files (keep examples in docs/examples only)
+*.pdf
+!docs/examples/*.pdf
+
+# Test artifacts and temporary files
+test-*.json
+*-test.pdf
+puppeteer-*.pdf
+api-*.pdf
+
+# Additional log files
+dev.log
+worker.log
