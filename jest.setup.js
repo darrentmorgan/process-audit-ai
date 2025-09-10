@@ -126,21 +126,7 @@ if (!global.fetch) {
   )
 }
 
-// Mock @react-pdf/renderer for testing
-jest.mock('@react-pdf/renderer', () => ({
-  Document: ({ children }) => children,
-  Page: ({ children }) => children,
-  View: ({ children }) => children,
-  Text: ({ children }) => children,
-  Image: () => 'Image',
-  StyleSheet: {
-    create: (styles) => styles
-  },
-  Font: {
-    register: jest.fn()
-  },
-  renderToBuffer: jest.fn().mockResolvedValue(Buffer.from('mock-pdf-data'))
-}))
+// Note: @react-pdf/renderer mock removed - deprecated React-PDF system was removed
 
 // Mock PDFKit for testing
 jest.mock('pdfkit', () => {

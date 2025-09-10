@@ -28,7 +28,6 @@
   "dependencies": {
     "@clerk/nextjs": "^6.31.8",
     "@clerk/themes": "^2.4.16",
-    "@react-pdf/renderer": "^4.3.0",
     "@sparticuz/chromium": "^138.0.2",
     "@supabase/supabase-js": "^2.53.0",
     "cookies-next": "^4.0.0",

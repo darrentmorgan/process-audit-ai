@@ -144,8 +144,8 @@ class PDFExportService {
    */
   async storePDF(pdfBuffer, filename, storageOptions = {}) {
     try {
-      // TODO: Implement permanent storage (S3, database blob, etc.)
-      // This is a placeholder implementation
+      // File-based temporary storage implementation
+      // For production: integrate with cloud storage (S3, etc.)
       
       const sanitizedFilename = this._sanitizeFilename(filename)
       const storageKey = `${Date.now()}-${sanitizedFilename}`
