@@ -74,8 +74,8 @@ const SOPRevision = ({ originalSOP, revisedSOP, analysis, onApprove, onReject, o
         }
       }
 
-      // Call PDF generation API
-      const response = await fetch('/api/generate-pdf', {
+      // Call professional PDF generation API (v2 with Puppeteer)
+      const response = await fetch('/api/generate-pdf-v2', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
