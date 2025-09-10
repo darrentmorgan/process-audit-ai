@@ -15,7 +15,10 @@ import {
   BarChart3,
   Save,
   Heart,
-  Cpu
+  Cpu,
+  FileText,
+  Eye,
+  Mail
 } from 'lucide-react'
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext'
 import { useAuditReports } from '../hooks/useSupabase'
@@ -36,6 +39,11 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
   const [notificationMessage, setNotificationMessage] = useState('')
   const [notificationType, setNotificationType] = useState('success')
   const [showAutomationGenerator, setShowAutomationGenerator] = useState(false)
+  
+  // PDF Export state
+  const [showPDFExportMenu, setShowPDFExportMenu] = useState(false)
+  const [pdfExporting, setPdfExporting] = useState(false)
+  const [pdfExportType, setPdfExportType] = useState(null)
   
   const { user, isConfigured } = useUnifiedAuth()
   const { saveReport } = useAuditReports()
@@ -162,6 +170,20 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
       setAutoSaved(false)
     }
   }, [processData?.reportId])
+
+  // Handle clicking outside PDF export menu
+  useEffect(() => {
+    const handleClickAway = (event) => {
+      if (showPDFExportMenu && !event.target.closest('.pdf-export-dropdown')) {
+        setShowPDFExportMenu(false)
+      }
+    }
+
+    if (showPDFExportMenu) {
+      document.addEventListener('mousedown', handleClickAway)
+      return () => document.removeEventListener('mousedown', handleClickAway)
+    }
+  }, [showPDFExportMenu])
 
   // Auto-save report when user is logged in and report is complete (but not for loaded reports)
   useEffect(() => {
@@ -362,6 +384,202 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
     link.click()
   }
 
+  // PDF Export Functions
+  const generatePDF = async (documentType, deliveryMethod = 'download') => {
+    if (pdfExporting) return
+    
+    setPdfExporting(true)
+    setPdfExportType(documentType)
+    
+    try {
+      const payload = {
+        documentType,
+        reportData: normalizedReport,
+        processData: {
+          processName: processData?.processName || 'Business Process Analysis',
+          industry: processData?.industry,
+          department: processData?.department,
+          processOwner: processData?.processOwner,
+          description: processData?.description
+        },
+        options: {
+          page: { format: 'A4', orientation: 'portrait' },
+          filename: `${documentType}-${new Date().toISOString().split('T')[0]}.pdf`,
+          metadata: {
+            title: `${documentType.replace('-', ' ')} - ProcessAudit AI`,
+            author: user?.firstName ? `${user.firstName} ${user.lastName}` : 'ProcessAudit AI User',
+            subject: 'Business Process Analysis Report',
+            keywords: ['process analysis', 'automation', 'business optimization']
+          },
+          options: {
+            coverPage: true,
+            tableOfContents: documentType === 'audit-report',
+            pageNumbers: true,
+            headerFooter: true
+          }
+        }
+      }
+
+      const response = await fetch(`/api/generate-pdf?delivery=${deliveryMethod}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'PDF generation failed')
+      }
+
+      if (deliveryMethod === 'download') {
+        // Handle direct download
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = payload.options.filename
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+        
+        showNotificationMessage('PDF downloaded successfully!', 'success')
+      } else if (deliveryMethod === 'link') {
+        // Handle download link generation
+        const data = await response.json()
+        if (data.success) {
+          showNotificationMessage('PDF generation complete! Download link created.', 'success')
+          // Could show the download link in a modal or copy to clipboard
+          navigator.clipboard?.writeText(window.location.origin + data.downloadUrl)
+        }
+      }
+
+    } catch (error) {
+      console.error('PDF generation error:', error)
+      showNotificationMessage(`PDF generation failed: ${error.message}`, 'error')
+    } finally {
+      setPdfExporting(false)
+      setPdfExportType(null)
+      setShowPDFExportMenu(false)
+    }
+  }
+
+  const generateSOPFromReport = async () => {
+    if (pdfExporting) return
+    
+    setPdfExporting(true)
+    setPdfExportType('sop-document')
+    
+    try {
+      const payload = {
+        documentType: 'sop-document',
+        reportData: normalizedReport, // Will be converted to SOP format server-side
+        options: {
+          page: { format: 'A4', orientation: 'portrait' },
+          filename: `SOP-${processData?.processName?.replace(/[^a-zA-Z0-9]/g, '-') || 'Business-Process'}-${new Date().toISOString().split('T')[0]}.pdf`,
+          metadata: {
+            title: `SOP: ${processData?.processName || 'Business Process'}`,
+            author: user?.firstName ? `${user.firstName} ${user.lastName}` : 'ProcessAudit AI User',
+            subject: 'Standard Operating Procedure',
+            keywords: ['SOP', 'procedure', 'operations', processData?.processName]
+          },
+          options: {
+            coverPage: true,
+            tableOfContents: false,
+            pageNumbers: true,
+            headerFooter: true
+          }
+        }
+      }
+
+      const response = await fetch('/api/generate-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'SOP generation failed')
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = payload.options.filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      
+      showNotificationMessage('SOP document generated and downloaded successfully!', 'success')
+
+    } catch (error) {
+      console.error('SOP generation error:', error)
+      showNotificationMessage(`SOP generation failed: ${error.message}`, 'error')
+    } finally {
+      setPdfExporting(false)
+      setPdfExportType(null)
+      setShowPDFExportMenu(false)
+    }
+  }
+
+  const previewPDF = async (documentType) => {
+    if (pdfExporting) return
+    
+    setPdfExporting(true)
+    
+    try {
+      const payload = {
+        documentType,
+        data: normalizedReport,
+        options: {
+          pageCount: 3,
+          quality: 'medium'
+        }
+      }
+
+      const response = await fetch('/api/pdf-preview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Preview generation failed')
+      }
+
+      const data = await response.json()
+      
+      if (data.success) {
+        // Show preview in a modal (would need to implement PreviewModal component)
+        showNotificationMessage('Preview generated successfully!', 'success')
+        console.log('Preview images:', data.previewImages)
+      }
+
+    } catch (error) {
+      console.error('Preview generation error:', error)
+      showNotificationMessage(`Preview generation failed: ${error.message}`, 'error')
+    } finally {
+      setPdfExporting(false)
+    }
+  }
+
+  const showNotificationMessage = (message, type) => {
+    setNotificationMessage(message)
+    setNotificationType(type)
+    setShowNotification(true)
+    setTimeout(() => setShowNotification(false), 5000)
+  }
+
   return (
     <div className="max-w-6xl mx-auto">
       {/* Header */}
@@ -407,13 +625,98 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
                 </span>
               </div>
             )}
-            <button
-              onClick={exportReport}
-              className="btn-secondary flex items-center"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Export JSON
-            </button>
+            {/* PDF Export Dropdown */}
+            <div className="relative pdf-export-dropdown">
+              <button
+                onClick={() => setShowPDFExportMenu(!showPDFExportMenu)}
+                disabled={pdfExporting}
+                className="btn-primary flex items-center"
+              >
+                {pdfExporting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    {pdfExportType === 'audit-report' ? 'Generating Audit Report...' :
+                     pdfExportType === 'executive-summary' ? 'Generating Executive Summary...' :
+                     pdfExportType === 'sop-document' ? 'Generating SOP...' : 'Generating PDF...'}
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-4 h-4 mr-2" />
+                    Export PDF
+                  </>
+                )}
+              </button>
+              
+              {showPDFExportMenu && !pdfExporting && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <div className="py-2">
+                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b">
+                      PDF Report Options
+                    </div>
+                    
+                    <button
+                      onClick={() => generatePDF('audit-report')}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center group"
+                    >
+                      <FileText className="w-4 h-4 mr-3 text-blue-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">Complete Audit Report</div>
+                        <div className="text-sm text-gray-500">Full analysis with all sections</div>
+                      </div>
+                    </button>
+                    
+                    <button
+                      onClick={() => generatePDF('executive-summary')}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center group"
+                    >
+                      <BarChart3 className="w-4 h-4 mr-3 text-green-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">Executive Summary</div>
+                        <div className="text-sm text-gray-500">Key findings and recommendations</div>
+                      </div>
+                    </button>
+                    
+                    <button
+                      onClick={generateSOPFromReport}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center group"
+                    >
+                      <Settings className="w-4 h-4 mr-3 text-purple-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">Standard Operating Procedure</div>
+                        <div className="text-sm text-gray-500">Structured SOP document</div>
+                      </div>
+                    </button>
+                    
+                    <div className="border-t my-1"></div>
+                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Preview & Other Options
+                    </div>
+                    
+                    <button
+                      onClick={() => previewPDF('audit-report')}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center group"
+                    >
+                      <Eye className="w-4 h-4 mr-3 text-orange-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">Preview Report</div>
+                        <div className="text-sm text-gray-500">Preview before downloading</div>
+                      </div>
+                    </button>
+                    
+                    <button
+                      onClick={exportReport}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center group"
+                    >
+                      <Download className="w-4 h-4 mr-3 text-gray-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">Export JSON</div>
+                        <div className="text-sm text-gray-500">Raw data export</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
             <button
               onClick={onRestart}
               className="btn-primary flex items-center"

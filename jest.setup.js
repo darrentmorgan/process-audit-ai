@@ -126,6 +126,44 @@ if (!global.fetch) {
   )
 }
 
+// Mock @react-pdf/renderer for testing
+jest.mock('@react-pdf/renderer', () => ({
+  Document: ({ children }) => children,
+  Page: ({ children }) => children,
+  View: ({ children }) => children,
+  Text: ({ children }) => children,
+  Image: () => 'Image',
+  StyleSheet: {
+    create: (styles) => styles
+  },
+  Font: {
+    register: jest.fn()
+  },
+  renderToBuffer: jest.fn().mockResolvedValue(Buffer.from('mock-pdf-data'))
+}))
+
+// Mock PDFKit for testing
+jest.mock('pdfkit', () => {
+  const EventEmitter = require('events')
+  
+  class MockPDFDocument extends EventEmitter {
+    constructor() {
+      super()
+      this.x = 0
+      this.y = 0
+    }
+    
+    fontSize(size) { return this }
+    text(text, x, y) { return this }
+    end() { 
+      setTimeout(() => this.emit('end'), 10)
+      return this 
+    }
+  }
+  
+  return MockPDFDocument
+})
+
 // Mock console methods to reduce noise in tests
 const originalError = console.error
 const originalWarn = console.warn

@@ -50,6 +50,11 @@ const customJestConfig = {
       displayName: 'Performance Tests',
       testMatch: ['<rootDir>/__tests__/integration/performance/**/*.test.js'],
       testEnvironment: 'node'
+    },
+    {
+      displayName: 'PDF Generation Tests',
+      testMatch: ['<rootDir>/__tests__/services/pdf/**/*.(test|spec).(js|jsx|ts|tsx)', '<rootDir>/__tests__/services/sop/**/*.(test|spec).(js|jsx|ts|tsx)'],
+      testEnvironment: 'node'
     }
   ],
   

@@ -73,6 +73,8 @@
     color: var(--color-text-primary);
     background-color: var(--color-background);
     transition: var(--transition-colors);
+    /* Fix for Next.js FOUC prevention mechanism blocking UI display */
+    display: block !important;
   }
 
   a {

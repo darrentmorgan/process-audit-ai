@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{metadata.title}}</title>
+    <style>
+        /* Professional Business Document Styling */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #1f2937;
+            background: white;
+        }
+        
+        .page {
+            width: 8.5in;
+            min-height: 11in;
+            margin: 0 auto;
+            padding: 1in 0.75in 1in 0.75in;
+            background: white;
+            page-break-after: always;
+            position: relative;
+        }
+        
+        .page:last-child {
+            page-break-after: auto;
+        }
+        
+        /* Headers and Footers */
+        .page-header {
+            position: fixed;
+            top: 0.5in;
+            left: 0.75in;
+            right: 0.75in;
+            height: 0.4in;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 8px;
+            font-size: 9pt;
+            color: #6b7280;
+        }
+        
+        .page-footer {
+            position: fixed;
+            bottom: 0.5in;
+            left: 0.75in;
+            right: 0.75in;
+            height: 0.3in;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 8px;
+            font-size: 9pt;
+            color: #6b7280;
+        }
+        
+        /* Cover Page Styling */
+        .cover-page {
+            text-align: center;
+            padding-top: 2in;
+        }
+        
+        .sop-title {
+            font-size: 24pt;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5in;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .process-title {
+            font-size: 18pt;
+            font-weight: 600;
+            color: #2563eb;
+            margin-bottom: 1in;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 12px;
+            display: inline-block;
+        }
+        
+        .document-info {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 1in 0;
+            text-align: left;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 11pt;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #374151;
+            min-width: 120px;
+        }
+        
+        .info-value {
+            color: #1f2937;
+            font-weight: 500;
+        }
+        
+        /* Section Styling */
+        .section {
+            margin-bottom: 32px;
+            page-break-inside: avoid;
+        }
+        
+        .section-title {
+            font-size: 16pt;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #2563eb;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .subsection-title {
+            font-size: 13pt;
+            font-weight: 600;
+            color: #374151;
+            margin: 20px 0 12px 0;
+        }
+        
+        .content {
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #374151;
+            margin-bottom: 16px;
+            text-align: justify;
+        }
+        
+        /* Procedure Steps */
+        .procedure {
+            margin-bottom: 32px;
+        }
+        
+        .procedure-name {
+            font-size: 14pt;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+            background: #f1f5f9;
+            padding: 12px 16px;
+            border-left: 4px solid #2563eb;
+        }
+        
+        .step {
+            margin-bottom: 24px;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fefefe;
+        }
+        
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .step-number {
+            background: #2563eb;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 12px;
+            font-size: 12pt;
+        }
+        
+        .step-title {
+            font-size: 12pt;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .step-description {
+            font-size: 10.5pt;
+            line-height: 1.5;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+        
+        .step-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 12px;
+        }
+        
+        .detail-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px;
+        }
+        
+        .detail-label {
+            font-size: 9pt;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        
+        .detail-value {
+            font-size: 10pt;
+            color: #374151;
+        }
+        
+        /* Tables */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+        
+        .table th {
+            background: #f1f5f9;
+            border: 1px solid #d1d5db;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 10pt;
+            color: #374151;
+        }
+        
+        .table td {
+            border: 1px solid #d1d5db;
+            padding: 10px 12px;
+            font-size: 10pt;
+            color: #374151;
+            vertical-align: top;
+        }
+        
+        .table tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        
+        /* Lists */
+        .list {
+            padding-left: 20px;
+            margin: 12px 0;
+        }
+        
+        .list li {
+            margin-bottom: 8px;
+            font-size: 10.5pt;
+            line-height: 1.4;
+            color: #374151;
+        }
+        
+        /* Special Elements */
+        .approval-section {
+            background: #f0fdf4;
+            border: 2px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        
+        .approval-title {
+            font-size: 14pt;
+            font-weight: 700;
+            color: #166534;
+            margin-bottom: 16px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 9pt;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-approved {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .status-draft {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fbbf24;
+        }
+        
+        /* Page Breaks */
+        .page-break {
+            page-break-before: always;
+        }
+        
+        .no-break {
+            page-break-inside: avoid;
+        }
+        
+        /* Logo and Branding */
+        .company-logo {
+            max-height: 60px;
+            max-width: 200px;
+        }
+        
+        .company-name {
+            font-size: 12pt;
+            font-weight: 700;
+            color: #2563eb;
+        }
+        
+        /* Print Optimization */
+        @media print {
+            body { -webkit-print-color-adjust: exact; }
+            .page { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Header (appears on all pages) -->
+    <div class="page-header">
+        <div>
+            {{#if branding.logo}}
+            <img src="{{branding.logo}}" alt="{{branding.companyName}}" class="company-logo">
+            {{else}}
+            <span class="company-name">{{branding.companyName}}</span>
+            {{/if}}
+        </div>
+        <div>
+            <strong>{{metadata.title}}</strong><br>
+            Document ID: {{metadata.documentId}}
+        </div>
+    </div>
+    
+    <!-- Page Footer (appears on all pages) -->
+    <div class="page-footer">
+        <div>Generated by ProcessAudit AI on {{generatedDate}}</div>
+        <div>Page <span class="page-number"></span></div>
+    </div>
+
+    <!-- Cover Page -->
+    <div class="page cover-page">
+        <div class="sop-title">Standard Operating Procedure</div>
+        
+        <div class="process-title">{{metadata.title}}</div>
+        
+        <div class="document-info">
+            <div class="info-row">
+                <span class="info-label">Document ID:</span>
+                <span class="info-value">{{metadata.documentId}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Version:</span>
+                <span class="info-value">{{metadata.sopVersion}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Effective Date:</span>
+                <span class="info-value">{{effectiveDate}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Department:</span>
+                <span class="info-value">{{metadata.department}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Process Owner:</span>
+                <span class="info-value">{{metadata.processOwner}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Status:</span>
+                <span class="info-value">
+                    <span class="status-badge {{#if (eq metadata.approvalStatus 'approved')}}status-approved{{else}}status-draft{{/if}}">
+                        {{metadata.approvalStatus}}
+                    </span>
+                </span>
+            </div>
+        </div>
+
+        {{#if metadata.approver}}
+        <div class="approval-section">
+            <div class="approval-title">Document Approval</div>
+            <table class="table" style="max-width: 400px; margin: 0 auto;">
+                <tr>
+                    <td><strong>Approved By:</strong></td>
+                    <td>{{metadata.approver.name}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Title:</strong></td>
+                    <td>{{metadata.approver.title}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Date:</strong></td>
+                    <td>{{approverDate}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Signature:</strong></td>
+                    <td><em>Digital signature on file</em></td>
+                </tr>
+            </table>
+        </div>
+        {{/if}}
+    </div>
+
+    <!-- Document Control Page -->
+    <div class="page page-break">
+        <div class="section">
+            <h1 class="section-title">Document Control</h1>
+            
+            <div class="subsection-title">Document Information</div>
+            <table class="table">
+                <tr>
+                    <th style="width: 30%;">Attribute</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td><strong>Document Title</strong></td>
+                    <td>{{metadata.title}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Document ID</strong></td>
+                    <td>{{metadata.documentId}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Version</strong></td>
+                    <td>{{metadata.sopVersion}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Effective Date</strong></td>
+                    <td>{{effectiveDate}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Next Review Date</strong></td>
+                    <td>{{reviewDate}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Document Owner</strong></td>
+                    <td>{{metadata.processOwner}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Classification</strong></td>
+                    <td style="text-transform: uppercase;">{{metadata.classification}}</td>
+                </tr>
+            </table>
+            
+            <div class="subsection-title">Distribution and Control</div>
+            <div class="content">
+                <p><strong>Important Note:</strong> This document is distributed to all relevant personnel and stakeholders. Printed copies of this document are considered uncontrolled. Always refer to the electronic version for the most current information.</p>
+                
+                <p><strong>Document Location:</strong> Electronic copies are maintained in the company document management system.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purpose and Scope Page -->
+    <div class="page page-break">
+        <div class="section">
+            <h1 class="section-title">Purpose and Scope</h1>
+            
+            <div class="subsection-title">1. Purpose</div>
+            <div class="content">
+                {{purpose}}
+            </div>
+            
+            <div class="subsection-title">2. Scope</div>
+            <div class="content">
+                {{scope}}
+            </div>
+            
+            <div class="subsection-title">3. Applicability</div>
+            <div class="content">
+                This Standard Operating Procedure applies to all personnel involved in the processes described herein. Compliance with this procedure is mandatory for all applicable staff members and must be followed consistently to ensure operational excellence and regulatory compliance.
+            </div>
+        </div>
+    </div>
+
+    <!-- Responsibilities Page -->
+    <div class="page page-break">
+        <div class="section">
+            <h1 class="section-title">Responsibilities</h1>
+            
+            {{#each responsibilities}}
+            <div class="subsection-title">{{this.role}}</div>
+            <div class="content">{{this.description}}</div>
+            {{/each}}
+            
+            <div class="subsection-title">General Responsibilities</div>
+            <div class="content">
+                All personnel are responsible for:
+                <ul class="list">
+                    <li>Ensuring compliance with this SOP at all times</li>
+                    <li>Reporting any deviations or issues immediately to the process owner</li>
+                    <li>Participating in regular training and competency assessments</li>
+                    <li>Maintaining accurate records as specified in this procedure</li>
+                    <li>Following all safety and regulatory requirements</li>
+                    <li>Contributing to continuous improvement initiatives</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Procedures Pages -->
+    {{#each procedures}}
+    <div class="page page-break">
+        <div class="section">
+            <h1 class="section-title">{{this.name}}</h1>
+            
+            {{#each this.steps}}
+            <div class="step no-break">
+                <div class="step-header">
+                    <div class="step-number">{{this.stepNumber}}</div>
+                    <div class="step-title">{{this.title}}</div>
+                </div>
+                
+                <div class="step-description">
+                    {{this.description}}
+                </div>
+                
+                {{#if this.instructions}}
+                <div style="margin: 12px 0;">
+                    <strong>Instructions:</strong>
+                    <ul class="list">
+                        {{#each this.instructions}}
+                        <li>{{this}}</li>
+                        {{/each}}
+                    </ul>
+                </div>
+                {{/if}}
+                
+                <div class="step-details">
+                    {{#if this.prerequisites}}
+                    <div class="detail-box">
+                        <div class="detail-label">Prerequisites</div>
+                        <div class="detail-value">
+                            {{#each this.prerequisites}}
+                            • {{this}}<br>
+                            {{/each}}
+                        </div>
+                    </div>
+                    {{/if}}
+                    
+                    {{#if this.expectedOutcome}}
+                    <div class="detail-box">
+                        <div class="detail-label">Expected Outcome</div>
+                        <div class="detail-value">{{this.expectedOutcome}}</div>
+                    </div>
+                    {{/if}}
+                    
+                    {{#if this.timeEstimate}}
+                    <div class="detail-box">
+                        <div class="detail-label">Time Estimate</div>
+                        <div class="detail-value">{{this.timeEstimate}} minutes</div>
+                    </div>
+                    {{/if}}
+                    
+                    {{#if this.resources}}
+                    <div class="detail-box">
+                        <div class="detail-label">Required Resources</div>
+                        <div class="detail-value">
+                            {{#each this.resources}}
+                            • {{this}}<br>
+                            {{/each}}
+                        </div>
+                    </div>
+                    {{/if}}
+                </div>
+                
+                {{#if this.qualityChecks}}
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 12px; margin-top: 12px;">
+                    <div class="detail-label" style="color: #166534;">Quality Checkpoints</div>
+                    <ul class="list" style="margin-top: 6px;">
+                        {{#each this.qualityChecks}}
+                        <li style="color: #166534;">{{this}}</li>
+                        {{/each}}
+                    </ul>
+                </div>
+                {{/if}}
+            </div>
+            {{/each}}
+        </div>
+    </div>
+    {{/each}}
+
+    <!-- Related Documents Page -->
+    {{#if relatedDocuments}}
+    <div class="page page-break">
+        <div class="section">
+            <h1 class="section-title">Related Documents</h1>
+            
+            <div class="content">
+                The following documents are referenced in or related to this Standard Operating Procedure:
+            </div>
+            
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 40%;">Document Title</th>
+                        <th style="width: 30%;">Reference</th>
+                        <th style="width: 30%;">Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each relatedDocuments}}
+                    <tr>
+                        <td>{{this.title}}</td>
+                        <td>{{this.reference}}</td>
+                        <td style="text-transform: capitalize;">{{this.type}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {{/if}}
+
+    <!-- Revision History Page -->
+    {{#if revisionHistory}}
+    <div class="page page-break">
+        <div class="section">
+            <h1 class="section-title">Revision History</h1>
+            
+            <div class="content">
+                This section documents all changes made to this Standard Operating Procedure since its initial release.
+            </div>
+            
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Version</th>
+                        <th style="width: 20%;">Date</th>
+                        <th style="width: 25%;">Author</th>
+                        <th style="width: 40%;">Changes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each revisionHistory}}
+                    <tr>
+                        <td><strong>{{this.version}}</strong></td>
+                        <td>{{this.date}}</td>
+                        <td>{{this.author}}</td>
+                        <td>{{this.changes}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {{/if}}
+
+    <script>
+        // Add page numbers
+        document.addEventListener('DOMContentLoaded', function() {
+            const pageNumbers = document.querySelectorAll('.page-number');
+            pageNumbers.forEach((element, index) => {
+                element.textContent = index + 1;
+            });
+        });
+    </script>
+</body>
+</html>

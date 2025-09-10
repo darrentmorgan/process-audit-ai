@@ -1,9 +1,13 @@
 import { useState } from 'react'
-import { Check, X, Download, Upload, ArrowLeft, ArrowRight, FileText, Zap } from 'lucide-react'
+import { Check, X, Download, Upload, ArrowLeft, ArrowRight, FileText, Zap, RefreshCw } from 'lucide-react'
 
 const SOPRevision = ({ originalSOP, revisedSOP, analysis, onApprove, onReject, onBack }) => {
   const [activeTab, setActiveTab] = useState('comparison')
   const [isApproving, setIsApproving] = useState(false)
+  
+  // PDF Download state
+  const [downloadingPDF, setDownloadingPDF] = useState(false)
+  const [downloadingType, setDownloadingType] = useState(null) // 'original', 'revised', 'optimized'
 
   if (!revisedSOP?.revisedSOP) {
     return (
@@ -29,7 +33,88 @@ const SOPRevision = ({ originalSOP, revisedSOP, analysis, onApprove, onReject, o
     }
   }
 
-  const downloadSOP = (content, filename) => {
+  // Updated download function to generate PDF instead of TXT
+  const downloadSOP = async (content, filename, revisionType = 'revised') => {
+    if (downloadingPDF) return
+    
+    setDownloadingPDF(true)
+    setDownloadingType(revisionType)
+    
+    try {
+      // Use SOPDataMapper to convert SOP data to proper format
+      const SOPDataMapper = (await import('../services/pdf/SOPDataMapper')).default
+      
+      // Convert SOP data to PDF-compatible format
+      const sopDocument = SOPDataMapper.convertToSOPDocument(content, {
+        title: getSOPTitle(content, revisionType),
+        department: analysis?.department || 'Operations',
+        processOwner: analysis?.processOwner || 'Process Owner',
+        approver: 'Process Manager'
+      }, revisionType)
+      
+      // Generate PDF filename
+      const pdfFilename = SOPDataMapper.generateFilename(sopDocument, revisionType)
+      
+      // Prepare PDF generation request
+      const payload = {
+        documentType: 'sop-document',
+        sopData: sopDocument,
+        options: {
+          page: { format: 'A4', orientation: 'portrait' },
+          filename: pdfFilename,
+          metadata: SOPDataMapper.getRevisionMetadata(revisionType, {
+            title: sopDocument.metadata.title
+          }),
+          options: {
+            coverPage: true,
+            tableOfContents: false,
+            pageNumbers: true,
+            headerFooter: true
+          }
+        }
+      }
+
+      // Call PDF generation API
+      const response = await fetch('/api/generate-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'PDF generation failed')
+      }
+
+      // Handle PDF download
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = pdfFilename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      
+      console.log(`SOP PDF downloaded successfully: ${pdfFilename}`)
+
+    } catch (error) {
+      console.error('PDF generation failed, falling back to TXT download:', error)
+      
+      // Fallback to original TXT download functionality
+      await downloadSOPAsTxt(content, filename)
+      
+    } finally {
+      setDownloadingPDF(false)
+      setDownloadingType(null)
+    }
+  }
+
+  // Original TXT download function as fallback
+  const downloadSOPAsTxt = async (content, filename) => {
     const sopText = formatSOPForDownload(content)
     const blob = new Blob([sopText], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
@@ -38,6 +123,22 @@ const SOPRevision = ({ originalSOP, revisedSOP, analysis, onApprove, onReject, o
     a.download = filename
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  // Helper function to get appropriate SOP title
+  const getSOPTitle = (content, revisionType) => {
+    if (typeof content === 'object' && content.header?.title) {
+      return content.header.title
+    }
+    
+    if (typeof content === 'string') {
+      const titleMatch = content.match(/^(.+?)(?:\n|$)/)
+      if (titleMatch) {
+        return titleMatch[1].trim()
+      }
+    }
+    
+    return `${revisionType.charAt(0).toUpperCase() + revisionType.slice(1)} Standard Operating Procedure`
   }
 
   const formatSOPForDownload = (sop) => {
@@ -187,11 +288,21 @@ const SOPRevision = ({ originalSOP, revisedSOP, analysis, onApprove, onReject, o
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-gray-900">Original SOP</h4>
                 <button
-                  onClick={() => downloadSOP(originalSOP, 'original-sop.txt')}
-                  className="text-sm text-gray-600 hover:text-gray-900 flex items-center"
+                  onClick={() => downloadSOP(originalSOP, 'original-sop.txt', 'original')}
+                  disabled={downloadingPDF}
+                  className="text-sm text-gray-600 hover:text-gray-900 flex items-center disabled:opacity-50"
                 >
-                  <Download className="w-4 h-4 mr-1" />
-                  Download
+                  {downloadingPDF && downloadingType === 'original' ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                      Generating PDF...
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="w-4 h-4 mr-1" />
+                      Download PDF
+                    </>
+                  )}
                 </button>
               </div>
               <div className="bg-gray-50 rounded-lg p-4 h-96 overflow-y-auto border">
@@ -204,11 +315,21 @@ const SOPRevision = ({ originalSOP, revisedSOP, analysis, onApprove, onReject, o
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-gray-900">Revised SOP</h4>
                 <button
-                  onClick={() => downloadSOP(revised, 'revised-sop.txt')}
-                  className="text-sm text-gray-600 hover:text-gray-900 flex items-center"
+                  onClick={() => downloadSOP(revised, 'revised-sop.txt', 'revised')}
+                  disabled={downloadingPDF}
+                  className="text-sm text-gray-600 hover:text-gray-900 flex items-center disabled:opacity-50"
                 >
-                  <Download className="w-4 h-4 mr-1" />
-                  Download
+                  {downloadingPDF && downloadingType === 'revised' ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                      Generating PDF...
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="w-4 h-4 mr-1" />
+                      Download PDF
+                    </>
+                  )}
                 </button>
               </div>
               <div className="bg-green-50 rounded-lg p-4 h-96 overflow-y-auto border border-green-200">
@@ -225,11 +346,21 @@ const SOPRevision = ({ originalSOP, revisedSOP, analysis, onApprove, onReject, o
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-semibold text-gray-900">Optimized SOP</h4>
               <button
-                onClick={() => downloadSOP(revised, 'optimized-sop.txt')}
-                className="btn-secondary flex items-center"
+                onClick={() => downloadSOP(revised, 'optimized-sop.txt', 'optimized')}
+                disabled={downloadingPDF}
+                className="btn-secondary flex items-center disabled:opacity-50"
               >
-                <Download className="w-4 h-4 mr-2" />
-                Download SOP
+                {downloadingPDF && downloadingType === 'optimized' ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-4 h-4 mr-2" />
+                    Download PDF
+                  </>
+                )}
               </button>
             </div>
             <div className="bg-white rounded-lg p-6 border shadow-sm">

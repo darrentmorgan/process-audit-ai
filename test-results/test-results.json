@@ -1,0 +1,277 @@
+{
+  "config": {
+    "configFile": "/Users/darrenmorgan/AI_Projects/process-audit-ai/playwright.config.ts",
+    "rootDir": "/Users/darrenmorgan/AI_Projects/process-audit-ai/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": "/Users/darrenmorgan/AI_Projects/process-audit-ai/tests/global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 3
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/test-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/darrenmorgan/AI_Projects/process-audit-ai/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 3
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/darrenmorgan/AI_Projects/process-audit-ai/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/darrenmorgan/AI_Projects/process-audit-ai/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 3
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/Users/darrenmorgan/AI_Projects/process-audit-ai/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.54.2",
+    "workers": 6,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "pdf-validation-simple.spec.ts",
+      "file": "pdf-validation-simple.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "ProcessAudit AI PDF Generation Validation",
+          "file": "pdf-validation-simple.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Validate PDF Generation API Functionality",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 71,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🚀 Starting PDF generation validation...\n"
+                        },
+                        {
+                          "text": "📄 Testing Audit Report PDF generation...\n"
+                        },
+                        {
+                          "text": "✅ Audit Report PDF: 1542 bytes\n"
+                        },
+                        {
+                          "text": "📊 Testing Executive Summary PDF generation...\n"
+                        },
+                        {
+                          "text": "✅ Executive Summary PDF: 1443 bytes\n"
+                        },
+                        {
+                          "text": "⚡ Testing PDF generation performance...\n"
+                        },
+                        {
+                          "text": "✅ Performance: PDF generated in 5ms\n"
+                        },
+                        {
+                          "text": "📋 Testing multiple document types...\n"
+                        },
+                        {
+                          "text": "✅ Multi-format results: [\n  { type: \u001b[32m'audit-report'\u001b[39m, size: \u001b[33m1542\u001b[39m, valid: \u001b[33mtrue\u001b[39m },\n  { type: \u001b[32m'executive-summary'\u001b[39m, size: \u001b[33m1443\u001b[39m, valid: \u001b[33mtrue\u001b[39m }\n]\n"
+                        },
+                        {
+                          "text": "🎉 All PDF generation tests completed successfully!\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-09T22:46:09.962Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2fd0d3273ca3555194f7-949ee60e00dcd7332da9",
+              "file": "pdf-validation-simple.spec.ts",
+              "line": 9,
+              "column": 7
+            },
+            {
+              "title": "PDF Error Handling Validation",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 44,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m400\u001b[39m\nReceived: \u001b[31m500\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m400\u001b[39m\nReceived: \u001b[31m500\u001b[39m\n    at /Users/darrenmorgan/AI_Projects/process-audit-ai/tests/e2e/pdf-validation-simple.spec.ts:197:38",
+                        "location": {
+                          "file": "/Users/darrenmorgan/AI_Projects/process-audit-ai/tests/e2e/pdf-validation-simple.spec.ts",
+                          "column": 38,
+                          "line": 197
+                        },
+                        "snippet": "  195 |\n  196 |     expect(invalidResponse.ok()).toBeFalsy();\n> 197 |     expect(invalidResponse.status()).toBe(400);\n      |                                      ^\n  198 |     \n  199 |     const errorResponse = await invalidResponse.json();\n  200 |     expect(errorResponse.success).toBe(false);"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/darrenmorgan/AI_Projects/process-audit-ai/tests/e2e/pdf-validation-simple.spec.ts",
+                            "column": 38,
+                            "line": 197
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m400\u001b[39m\nReceived: \u001b[31m500\u001b[39m\n\n  195 |\n  196 |     expect(invalidResponse.ok()).toBeFalsy();\n> 197 |     expect(invalidResponse.status()).toBe(400);\n      |                                      ^\n  198 |     \n  199 |     const errorResponse = await invalidResponse.json();\n  200 |     expect(errorResponse.success).toBe(false);\n    at /Users/darrenmorgan/AI_Projects/process-audit-ai/tests/e2e/pdf-validation-simple.spec.ts:197:38"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🔧 Testing PDF error handling...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-09T22:46:09.963Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "/Users/darrenmorgan/AI_Projects/process-audit-ai/tests/e2e/pdf-validation-simple.spec.ts",
+                        "column": 38,
+                        "line": 197
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "2fd0d3273ca3555194f7-b9ace01514a24f19c97d",
+              "file": "pdf-validation-simple.spec.ts",
+              "line": 181,
+              "column": 7
+            },
+            {
+              "title": "PDF Generation Concurrent Requests",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 44,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "⚡ Testing concurrent PDF generation...\n"
+                        },
+                        {
+                          "text": "✅ Concurrent generation: 3 PDFs in 35ms\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-09T22:46:09.961Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2fd0d3273ca3555194f7-dc7d1a957aac536b6c6b",
+              "file": "pdf-validation-simple.spec.ts",
+              "line": 206,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-09-09T22:46:09.564Z",
+    "duration": 477.816,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

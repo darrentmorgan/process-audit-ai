@@ -2,10 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import LandingPage from '../components/LandingPage';
 import HospoDojoBrandedLanding from '../components/brands/HospoDojoBrandedLanding';
+import ProcessAuditApp from '../components/ProcessAuditApp';
+import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
 
 export default function Home() {
   const router = useRouter();
   const [organization, setOrganization] = useState<string | null>(null);
+  const [showApp, setShowApp] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Get authentication state
+  const { user, loading: authLoading, isLoaded } = useUnifiedAuth();
 
   useEffect(() => {
     // Check for organization cookie or subdomain
@@ -21,11 +28,47 @@ export default function Home() {
     setOrganization(orgFromCookie || orgFromQuery);
   }, [router.query]);
 
-  // For Hospo Dojo, render branded landing
-  if (organization === 'hospo-dojo') {
+  // Access control logic - check if user has access via parameter or authentication
+  useEffect(() => {
+    // Wait for auth to load
+    if (authLoading || !isLoaded) {
+      setIsLoading(true);
+      return;
+    }
+
+    // Check if user has access via URL parameter or is authenticated
+    const hasAccess = router.query.access === 'granted' || user;
+    
+    setShowApp(hasAccess);
+    setIsLoading(false);
+    
+    console.log('Access control check:', {
+      accessParam: router.query.access,
+      hasUser: !!user,
+      hasAccess,
+      willShowApp: hasAccess
+    });
+  }, [router.query.access, user, authLoading, isLoaded]);
+
+  // Loading state while checking authentication and access
+  if (isLoading) {
+    return (
+      <div className="min-h-screen gradient-bg flex items-center justify-center">
+        <div className="text-white text-xl">Loading ProcessAudit AI...</div>
+      </div>
+    );
+  }
+
+  // For Hospo Dojo, render branded landing (only if no direct app access)
+  if (organization === 'hospo-dojo' && !showApp) {
     return <HospoDojoBrandedLanding />;
   }
 
-  // Default ProcessAudit AI landing
+  // Show main app if user has access via parameter or authentication
+  if (showApp) {
+    return <ProcessAuditApp isDemoMode={!user} />;
+  }
+
+  // Default ProcessAudit AI landing page
   return <LandingPage />;
 }

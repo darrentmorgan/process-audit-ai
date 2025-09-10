@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext'
+import { getDBUserId } from '../utils/clerkUtils'
 
 // Hook for saving and loading audit reports
 export const useAuditReports = () => {
@@ -18,10 +19,14 @@ export const useAuditReports = () => {
     console.log('useAuditReports: Loading reports for user:', user.id)
     setLoading(true)
     try {
+      // Convert Clerk user ID to UUID format for database compatibility
+      const dbUserId = getDBUserId(user.id)
+      console.log('useAuditReports: Using DB user ID:', dbUserId)
+
       const { data, error } = await supabase
         .from('audit_reports')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', dbUserId)
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -41,13 +46,17 @@ export const useAuditReports = () => {
       throw new Error('Authentication required to save reports')
     }
 
-    console.log('useAuditReports: Saving report:', reportData.title)
+    console.log('useAuditReports: Saving report for user:', reportData.title, user.id)
     try {
+      // Convert Clerk user ID to UUID format for database compatibility
+      const dbUserId = getDBUserId(user.id)
+      console.log('useAuditReports: Using DB user ID for save:', dbUserId)
+
       const { data, error } = await supabase
         .from('audit_reports')
         .insert([
           {
-            user_id: user.id,
+            user_id: dbUserId,
             title: reportData.title || 'Process Audit Report',
             process_description: reportData.processDescription,
             file_content: reportData.fileContent,
@@ -78,11 +87,14 @@ export const useAuditReports = () => {
     if (!isConfigured || !user) return
 
     try {
+      // Convert Clerk user ID to UUID format for database compatibility
+      const dbUserId = getDBUserId(user.id)
+
       const { error } = await supabase
         .from('audit_reports')
         .delete()
         .eq('id', reportId)
-        .eq('user_id', user.id) // Ensure user can only delete their own reports
+        .eq('user_id', dbUserId) // Ensure user can only delete their own reports
 
       if (error) throw error
       

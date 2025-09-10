@@ -1,0 +1,101 @@
+{
+  "documentType": "sop-document",
+  "sopData": {
+    "metadata": {
+      "title": "E-commerce Order Fulfillment Standard Operating Procedure",
+      "sopVersion": "3.1", 
+      "effectiveDate": "2025-09-10T00:00:00.000Z",
+      "reviewDate": "2026-09-10T00:00:00.000Z",
+      "approvalStatus": "approved",
+      "documentId": "SOP-OPS-003",
+      "department": "Operations & Fulfillment",
+      "processOwner": "Jennifer Martinez",
+      "classification": "internal",
+      "author": "ProcessAudit AI Optimization System",
+      "approver": {
+        "name": "Michael Thompson",
+        "title": "VP of Operations",
+        "date": "2025-09-10T00:00:00.000Z"
+      }
+    },
+    "purpose": "This Standard Operating Procedure establishes the comprehensive process for e-commerce order fulfillment from order receipt through customer delivery confirmation. The purpose is to ensure consistent, accurate, and timely order processing while maintaining high customer satisfaction, inventory accuracy, and operational efficiency.",
+    "scope": "This procedure applies to all personnel involved in order fulfillment operations including order processing specialists, warehouse staff, inventory managers, quality control inspectors, shipping coordinators, and customer service representatives.",
+    "responsibilities": [
+      {
+        "role": "Order Processing Specialist",
+        "description": "Responsible for order verification, inventory allocation, processing payment confirmations, and generating pick lists. Must maintain 99%+ order accuracy."
+      },
+      {
+        "role": "Warehouse Operations Manager", 
+        "description": "Oversees all warehouse activities including inventory management, pick/pack operations, quality control, and shipping coordination."
+      },
+      {
+        "role": "Quality Control Inspector",
+        "description": "Responsible for order accuracy verification, product quality inspection, and proper packaging validation."
+      }
+    ],
+    "procedures": [
+      {
+        "name": "Order Receipt and Processing",
+        "steps": [
+          {
+            "stepNumber": 1,
+            "title": "Order Verification and Validation", 
+            "description": "All incoming orders must be verified within 30 minutes of receipt. This includes payment confirmation, inventory check, and address validation.",
+            "instructions": [
+              "Check payment authorization status in payment system",
+              "Verify shipping address using validation service",
+              "Confirm all items in stock with sufficient inventory",
+              "Run fraud detection screening",
+              "Validate customer account status"
+            ],
+            "prerequisites": [
+              "Access to order management system",
+              "Payment processing credentials",
+              "Inventory system access"
+            ],
+            "expectedOutcome": "Order validated and approved for processing",
+            "timeEstimate": 8,
+            "resources": [
+              "Order Management System",
+              "Payment Gateway", 
+              "Inventory Database"
+            ],
+            "qualityChecks": [
+              "Payment status shows authorized",
+              "All items in stock",
+              "Address validation passed"
+            ]
+          },
+          {
+            "stepNumber": 2,
+            "title": "Pick List Generation",
+            "description": "Generate optimized pick lists for warehouse operations",
+            "instructions": [
+              "Reserve inventory quantities",
+              "Generate pick list by location",
+              "Assign to warehouse staff"
+            ],
+            "expectedOutcome": "Pick list ready for warehouse",
+            "timeEstimate": 5,
+            "qualityChecks": [
+              "Inventory allocated correctly",
+              "Pick path optimized"
+            ]
+          }
+        ]
+      }
+    ],
+    "relatedDocuments": [
+      {
+        "title": "Inventory Management Policy",
+        "reference": "POL-OPS-001",
+        "type": "policy"
+      }
+    ]
+  },
+  "options": {
+    "page": {"format": "A4"},
+    "filename": "Demo-E-commerce-SOP.pdf"
+  }
+}

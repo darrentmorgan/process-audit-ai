@@ -57,6 +57,11 @@ const LandingPage = ({ onSignUp }) => {
     })
   }
 
+  const handleDemoAccess = () => {
+    console.log('🚀 LandingPage: Demo access requested, redirecting to app...')
+    router.push('/?access=granted')
+  }
+
   return (
     <div className="min-h-screen gradient-bg overflow-hidden">
       {/* Hero Section */}
@@ -78,11 +83,11 @@ const LandingPage = ({ onSignUp }) => {
               Sign In
             </button>
             <button
-              onClick={handleAuthSignUp}
+              onClick={handleDemoAccess}
               className="flex items-center px-6 py-2 bg-white bg-opacity-20 backdrop-blur-md rounded-lg border border-white border-opacity-30 text-white hover:bg-opacity-30 transition-all duration-200"
             >
-              <UserPlus className="w-4 h-4 mr-2" />
-              Try It Now
+              <Zap className="w-4 h-4 mr-2" />
+              Try Demo
             </button>
           </div>
         </div>
@@ -125,15 +130,31 @@ const LandingPage = ({ onSignUp }) => {
               {/* Call to Action Options */}
               <div className="max-w-md mx-auto lg:mx-0">
                 <div className="flex flex-col gap-4 mb-6">
-                  {/* Primary CTA - Try It Now */}
+                  {/* Primary CTA - Try Demo */}
                   <button
-                    onClick={handleAuthSignUp}
-                    className="w-full px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200 text-lg flex items-center justify-center shadow-lg"
+                    onClick={handleDemoAccess}
+                    className="w-full px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200 text-lg flex items-center justify-center shadow-lg"
                   >
-                    <UserPlus className="mr-3 h-6 w-6" />
-                    Start Free Analysis Now
+                    <Zap className="mr-3 h-6 w-6" />
+                    Try Free Demo Now
                     <ArrowRight className="ml-3 h-6 w-6" />
                   </button>
+                  
+                  {/* Secondary CTA - Full Access */}
+                  <button
+                    onClick={handleAuthSignUp}
+                    className="w-full px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200 text-lg flex items-center justify-center shadow-lg border-2 border-white border-opacity-20"
+                  >
+                    <UserPlus className="mr-3 h-6 w-6" />
+                    Sign Up for Full Access
+                    <ArrowRight className="ml-3 h-6 w-6" />
+                  </button>
+                  
+                  {/* Demo vs Full Access Explanation */}
+                  <div className="text-center text-blue-100 text-sm">
+                    <p className="mb-1">🚀 <strong>Try Demo</strong>: Instant access, explore all features</p>
+                    <p>💾 <strong>Sign Up</strong>: Save reports, access history, team features</p>
+                  </div>
                   
                   {/* Secondary CTA - Join Waitlist */}
                   {!isSubmitted ? (
@@ -370,11 +391,20 @@ const LandingPage = ({ onSignUp }) => {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
+              onClick={handleDemoAccess}
+              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200 text-lg flex items-center justify-center shadow-lg"
+            >
+              <Zap className="mr-2 h-5 w-5" />
+              Try Free Demo
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </button>
+            
+            <button
               onClick={handleAuthSignUp}
               className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200 text-lg flex items-center justify-center shadow-lg"
             >
               <UserPlus className="mr-2 h-5 w-5" />
-              Start Free Analysis
+              Sign Up to Save Results
               <ArrowRight className="ml-2 h-5 w-5" />
             </button>
             
