@@ -420,7 +420,7 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
         }
       }
 
-      const response = await fetch(`/api/generate-pdf?delivery=${deliveryMethod}`, {
+      const response = await fetch(`/api/generate-pdf-v2?delivery=${deliveryMethod}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -494,7 +494,7 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
         }
       }
 
-      const response = await fetch('/api/generate-pdf', {
+      const response = await fetch('/api/generate-pdf-v2', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -693,13 +693,13 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
                     </div>
                     
                     <button
-                      onClick={() => previewPDF('audit-report')}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center group"
+                      onClick={() => showNotificationMessage('Preview functionality coming soon! Use download to get the full professional PDF.', 'info')}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center group opacity-50 cursor-not-allowed"
                     >
-                      <Eye className="w-4 h-4 mr-3 text-orange-600" />
+                      <Eye className="w-4 h-4 mr-3 text-gray-400" />
                       <div>
-                        <div className="font-medium text-gray-900">Preview Report</div>
-                        <div className="text-sm text-gray-500">Preview before downloading</div>
+                        <div className="font-medium text-gray-500">Preview Report</div>
+                        <div className="text-sm text-gray-400">Coming soon - Use download for full PDF</div>
                       </div>
                     </button>
                     
