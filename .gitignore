@@ -29,3 +29,4 @@ workers/.wrangler/tmp/**
 workers/worker.log
 workers/worker.pid
 workers/.dev.vars
+Invoice-Processing-Audit-Report-E2E-Test.pdf
