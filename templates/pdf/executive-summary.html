@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{metadata.title}}</title>
+    <style>
+        /* Professional Executive Summary Styling */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #1f2937;
+            background: white;
+        }
+        
+        .page {
+            width: 8.5in;
+            min-height: 11in;
+            margin: 0 auto;
+            padding: 1in 0.75in 1in 0.75in;
+            background: white;
+            page-break-after: always;
+            position: relative;
+        }
+        
+        .page:last-child {
+            page-break-after: auto;
+        }
+        
+        /* Headers and Footers */
+        .page-header {
+            position: fixed;
+            top: 0.5in;
+            left: 0.75in;
+            right: 0.75in;
+            height: 0.4in;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 8px;
+            font-size: 9pt;
+            color: #6b7280;
+        }
+        
+        .page-footer {
+            position: fixed;
+            bottom: 0.5in;
+            left: 0.75in;
+            right: 0.75in;
+            height: 0.3in;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 8px;
+            font-size: 9pt;
+            color: #6b7280;
+        }
+        
+        /* Executive Summary Specific Styling */
+        .executive-title {
+            font-size: 32pt;
+            font-weight: 700;
+            color: #1f2937;
+            text-align: center;
+            margin-bottom: 0.5in;
+            line-height: 1.1;
+        }
+        
+        .process-subtitle {
+            font-size: 18pt;
+            font-weight: 600;
+            color: #2563eb;
+            text-align: center;
+            margin-bottom: 1in;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 12px;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        /* Key Metrics Dashboard */
+        .metrics-dashboard {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin: 32px 0;
+        }
+        
+        .metric-card {
+            text-align: center;
+            padding: 32px 24px;
+            border-radius: 16px;
+            border: 3px solid;
+            background: white;
+        }
+        
+        .metric-primary {
+            border-color: #2563eb;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+        
+        .metric-success {
+            border-color: #16a34a;
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+        }
+        
+        .metric-warning {
+            border-color: #d97706;
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+        }
+        
+        .metric-purple {
+            border-color: #7c3aed;
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+        }
+        
+        .metric-number {
+            font-size: 48pt;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+        
+        .metric-primary .metric-number { color: #2563eb; }
+        .metric-success .metric-number { color: #16a34a; }
+        .metric-warning .metric-number { color: #d97706; }
+        .metric-purple .metric-number { color: #7c3aed; }
+        
+        .metric-label {
+            font-size: 12pt;
+            font-weight: 600;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Section Styling */
+        .section {
+            margin-bottom: 40px;
+            page-break-inside: avoid;
+        }
+        
+        .section-title {
+            font-size: 18pt;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #2563eb;
+        }
+        
+        .subsection-title {
+            font-size: 14pt;
+            font-weight: 600;
+            color: #374151;
+            margin: 24px 0 16px 0;
+        }
+        
+        .content {
+            font-size: 11pt;
+            line-height: 1.6;
+            color: #374151;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+        
+        /* Executive Summary Boxes */
+        .summary-box {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 2px solid #cbd5e1;
+            border-radius: 16px;
+            padding: 32px;
+            margin: 32px 0;
+        }
+        
+        .highlight-box {
+            background: #f0f9ff;
+            border: 2px solid #0284c7;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+        }
+        
+        /* Lists and Recommendations */
+        .recommendation-list {
+            padding-left: 0;
+            list-style: none;
+        }
+        
+        .recommendation-item {
+            margin-bottom: 16px;
+            padding: 16px;
+            background: #f8fafc;
+            border-left: 4px solid #2563eb;
+            border-radius: 8px;
+        }
+        
+        .recommendation-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .recommendation-detail {
+            font-size: 10pt;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+        
+        /* Priority Indicators */
+        .priority-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 9pt;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 8px;
+        }
+        
+        .priority-high {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .priority-medium {
+            background: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fed7aa;
+        }
+        
+        .priority-low {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+        
+        /* Timeline and Next Steps */
+        .timeline-item {
+            margin-bottom: 20px;
+            padding: 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            border-left: 4px solid #2563eb;
+        }
+        
+        .timeline-title {
+            font-size: 12pt;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .timeline-duration {
+            font-size: 9pt;
+            color: #6b7280;
+            background: #f3f4f6;
+            padding: 4px 8px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        
+        /* Investment Summary */
+        .investment-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 24px 0;
+        }
+        
+        .investment-card {
+            text-align: center;
+            padding: 24px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+        
+        .investment-amount {
+            font-size: 24pt;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 8px;
+        }
+        
+        .investment-label {
+            font-size: 11pt;
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        /* Page Breaks */
+        .page-break {
+            page-break-before: always;
+        }
+        
+        /* Print Optimization */
+        @media print {
+            body { -webkit-print-color-adjust: exact; }
+            .page { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            {{#if branding.logo}}
+            <img src="{{branding.logo}}" alt="{{branding.companyName}}" style="max-height: 40px;">
+            {{else}}
+            <span style="font-weight: 600; color: #2563eb;">{{branding.companyName}}</span>
+            {{/if}}
+        </div>
+        <div>
+            <strong>Executive Summary</strong><br>
+            {{reportDate}}
+        </div>
+    </div>
+    
+    <!-- Page Footer -->
+    <div class="page-footer">
+        <div>{{branding.companyName}} • ProcessAudit AI</div>
+        <div>Page <span class="page-number"></span></div>
+    </div>
+
+    <!-- Executive Summary Cover -->
+    <div class="page">
+        <div style="text-align: center; margin-top: 1in;">
+            <div class="executive-title">Executive Summary</div>
+            <div class="process-subtitle">{{processData.processName}}</div>
+        </div>
+        
+        <div class="summary-box">
+            <h2 style="font-size: 16pt; font-weight: 600; color: #1f2937; margin-bottom: 16px; text-align: center;">
+                Strategic Analysis Overview
+            </h2>
+            <div class="content" style="text-align: center;">
+                {{reportData.executiveSummary.overview}}
+            </div>
+        </div>
+
+        <!-- Key Performance Dashboard -->
+        <div class="metrics-dashboard">
+            <div class="metric-card metric-primary">
+                <div class="metric-number">{{reportData.executiveSummary.automationScore}}%</div>
+                <div class="metric-label">Automation Potential</div>
+            </div>
+            
+            <div class="metric-card metric-success">
+                <div class="metric-number">{{reportData.executiveSummary.estimatedROI}}</div>
+                <div class="metric-label">Projected Annual ROI</div>
+            </div>
+            
+            <div class="metric-card metric-warning">
+                <div class="metric-number">{{reportData.executiveSummary.timeSavings}}</div>
+                <div class="metric-label">Time Savings Potential</div>
+            </div>
+            
+            <div class="metric-card metric-purple">
+                <div class="metric-number">{{reportData.automationOpportunities.length}}</div>
+                <div class="metric-label">Opportunities Identified</div>
+            </div>
+        </div>
+
+        <!-- Process Context -->
+        <div style="background: #f8fafc; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 32px;">
+            <table style="width: 100%; font-size: 11pt;">
+                <tr>
+                    <td style="padding: 8px 12px; font-weight: 600;">Industry:</td>
+                    <td style="padding: 8px 12px;">{{processData.industry}}</td>
+                    <td style="padding: 8px 12px; font-weight: 600;">Department:</td>
+                    <td style="padding: 8px 12px;">{{processData.department}}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 12px; font-weight: 600;">Process Owner:</td>
+                    <td style="padding: 8px 12px;">{{processData.processOwner}}</td>
+                    <td style="padding: 8px 12px; font-weight: 600;">Analysis Date:</td>
+                    <td style="padding: 8px 12px;">{{reportDate}}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Strategic Recommendations -->
+    <div class="page page-break">
+        <div class="section">
+            <h1 class="section-title">Strategic Recommendations</h1>
+            
+            <div class="content">
+                Based on our comprehensive analysis, we have identified {{reportData.automationOpportunities.length}} high-impact automation opportunities that can deliver significant business value with strategic implementation.
+            </div>
+            
+            <div class="subsection-title">Priority Initiatives</div>
+            
+            {{#each reportData.automationOpportunities}}
+            {{#if (eq @index 0)}}
+            <div class="highlight-box">
+                <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                    <div style="flex: 1;">
+                        <div style="font-size: 14pt; font-weight: 600; color: #1f2937;">{{this.stepDescription}}</div>
+                        <div style="font-size: 10pt; color: #6b7280; margin-top: 4px;">Highest Priority Initiative</div>
+                    </div>
+                    <div class="priority-badge priority-high">HIGH PRIORITY</div>
+                </div>
+                
+                <div style="font-size: 11pt; margin-bottom: 16px; line-height: 1.5;">
+                    <strong>Solution:</strong> {{this.solution}}
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; font-size: 10pt;">
+                    <div>
+                        <strong>Time Savings:</strong><br>
+                        {{this.timeSavings}}
+                    </div>
+                    <div>
+                        <strong>Implementation:</strong><br>
+                        {{this.effort}}
+                    </div>
+                    <div>
+                        <strong>Investment:</strong><br>
+                        {{this.estimatedCost}}
+                    </div>
+                </div>
+            </div>
+            {{/if}}
+            {{/each}}
+            
+            <div class="subsection-title">Additional Opportunities</div>
+            <ul class="recommendation-list">
+                {{#each reportData.automationOpportunities}}
+                {{#unless (eq @index 0)}}
+                <li class="recommendation-item">
+                    <div class="recommendation-title">{{this.stepDescription}}</div>
+                    <div class="recommendation-detail">{{this.solution}}</div>
+                </li>
+                {{/unless}}
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Implementation Timeline -->
+    <div class="page page-break">
+        <div class="section">
+            <h1 class="section-title">Implementation Roadmap</h1>
+            
+            {{#if reportData.roadmap.overview}}
+            <div class="content">
+                {{reportData.roadmap.overview}}
+            </div>
+            {{/if}}
+            
+            <div class="subsection-title">Investment Summary</div>
+            
+            <div class="investment-grid">
+                <div class="investment-card">
+                    <div class="investment-amount">{{reportData.executiveSummary.implementationCost}}</div>
+                    <div class="investment-label">Total Investment</div>
+                </div>
+                
+                <div class="investment-card">
+                    <div class="investment-amount">{{reportData.executiveSummary.paybackPeriod}}</div>
+                    <div class="investment-label">Payback Period</div>
+                </div>
+            </div>
+            
+            {{#if reportData.roadmap.phases}}
+            <div class="subsection-title">Implementation Phases</div>
+            {{#each reportData.roadmap.phases}}
+            <div class="timeline-item">
+                <div class="timeline-title">{{this.name}}</div>
+                <div class="timeline-duration">{{this.duration}}</div>
+                <div style="font-size: 10pt; color: #6b7280; margin-top: 8px;">
+                    {{this.description}}
+                </div>
+            </div>
+            {{/each}}
+            {{/if}}
+        </div>
+    </div>
+
+    <!-- Immediate Next Steps -->
+    <div class="page page-break">
+        <div class="section">
+            <h1 class="section-title">Recommended Next Steps</h1>
+            
+            <div class="subsection-title">Immediate Actions (Next 30 Days)</div>
+            <ol style="padding-left: 20px; margin-bottom: 32px;">
+                {{#if reportData.implementationGuidance.nextSteps}}
+                {{#each reportData.implementationGuidance.nextSteps}}
+                <li style="margin-bottom: 12px; font-size: 11pt; line-height: 1.5;">{{this}}</li>
+                {{/each}}
+                {{else}}
+                <li style="margin-bottom: 12px; font-size: 11pt; line-height: 1.5;">Review analysis findings with key stakeholders</li>
+                <li style="margin-bottom: 12px; font-size: 11pt; line-height: 1.5;">Prioritize automation opportunities by business impact</li>
+                <li style="margin-bottom: 12px; font-size: 11pt; line-height: 1.5;">Secure budget approval for priority initiatives</li>
+                {{/if}}
+            </ol>
+            
+            {{#if reportData.implementationGuidance.bestPractices}}
+            <div class="subsection-title">Critical Success Factors</div>
+            <ul style="padding-left: 20px; margin-bottom: 32px;">
+                {{#each reportData.implementationGuidance.bestPractices}}
+                <li style="margin-bottom: 12px; font-size: 11pt; line-height: 1.5;">{{this}}</li>
+                {{/each}}
+            </ul>
+            {{/if}}
+            
+            <div class="highlight-box">
+                <div style="font-weight: 600; margin-bottom: 12px; color: #0369a1; font-size: 12pt;">
+                    Expected Outcomes
+                </div>
+                <ul style="padding-left: 16px; font-size: 10pt; color: #374151;">
+                    <li style="margin-bottom: 8px;">{{reportData.executiveSummary.timeSavings}} in operational time savings</li>
+                    <li style="margin-bottom: 8px;">{{reportData.executiveSummary.estimatedROI}} annual return on investment</li>
+                    <li style="margin-bottom: 8px;">Improved process standardization and compliance</li>
+                    <li style="margin-bottom: 8px;">Enhanced operational efficiency and scalability</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add page numbers
+        document.addEventListener('DOMContentLoaded', function() {
+            const pageNumbers = document.querySelectorAll('.page-number');
+            pageNumbers.forEach((element, index) => {
+                element.textContent = index + 1;
+            });
+        });
+    </script>
+</body>
+</html>
