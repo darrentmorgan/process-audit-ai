@@ -1,0 +1,50 @@
+# Page snapshot
+
+```yaml
+- img "ProcessAudit AI Logo"
+- heading "ProcessAudit AI" [level=1]
+- paragraph: Discover automation opportunities in your business processes with AI-powered analysis
+- button "Sign In"
+- button "Sign Up"
+- img
+- text: Demo Mode • Try the tool freely •
+- button "Sign up to save your results"
+- img
+- heading "Quick Analysis" [level=3]
+- paragraph: Get actionable insights in minutes
+- img
+- heading "Targeted Recommendations" [level=3]
+- paragraph: Prioritized by impact and effort
+- img
+- heading "ROI Calculations" [level=3]
+- paragraph: Quantified time and cost savings
+- text: "1"
+- paragraph: Process Input
+- paragraph: Describe or upload process
+- text: "2"
+- paragraph: Analysis
+- paragraph: AI processing & SOP creation
+- text: "3"
+- paragraph: Optimization
+- paragraph: Review improvements
+- text: "4"
+- paragraph: Automations
+- paragraph: Generate workflows
+- text: Step 1 of 4 25% Complete
+- heading "Describe Your Process" [level=2]
+- paragraph: Tell us about the business process you'd like to optimize. You can describe it manually or upload a document. We'll automatically detect if it's a Standard Operating Procedure or general process.
+- text: Upload Process Document (Optional)
+- button "Choose File"
+- img
+- paragraph: Drag and drop your file here
+- paragraph: or click to browse
+- paragraph: Supports PDF, DOC, DOCX, TXT (max 10MB)
+- text: Process Description
+- textbox "Describe your business process in detail. Include what steps are involved, who does what, what tools you use, and any pain points you experience. If it's a Standard Operating Procedure, we'll automatically detect it!": Customer support ticket management process that handles incoming customer inquiries through email, chat, and phone. The process involves ticket categorization, assignment to appropriate teams, resolution tracking, and customer follow-up.
+- paragraph: The more detail you provide, the better we can analyze your process and identify automation opportunities.
+- img
+- text: General Process Detected
+- button "Continue to Questions"
+- paragraph: Powered by AI • Built for Technical Founders
+- alert
+```
