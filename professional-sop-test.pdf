@@ -1,1 +1,0 @@
-{"success":false,"error":"Internal server error during professional PDF generation","details":"PDF generation failed: An `executablePath` or `channel` must be specified for `puppeteer-core`"}
