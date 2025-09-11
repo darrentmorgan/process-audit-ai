@@ -1,0 +1,74 @@
+# ProcessAudit AI - Vercel Deployment Exclusions
+
+# Large files and folders that shouldn't be deployed
+workers/
+docs/brands/HospoDojo_BrandGuide.pdf
+*.pdf
+*.zip
+
+# Development and testing files
+__tests__/
+coverage/
+.nyc_output/
+.coverage/
+*.test.js
+*.test.jsx
+*.test.ts
+*.test.tsx
+*.spec.js
+*.spec.jsx
+*.spec.ts
+*.spec.tsx
+
+# IDE and development files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build artifacts
+.next/
+build/
+dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies
+node_modules/
+
+# Environment files (added via Vercel Dashboard)
+.env*
+!.env.example
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git files
+.git/
+.gitignore
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Disabled API files
+*.disabled
