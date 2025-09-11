@@ -206,6 +206,11 @@
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   }
   
+  /* Hospo Dojo specific gradient override */
+  [data-brand="hospo-dojo"] .gradient-bg {
+    background: linear-gradient(135deg, #1C1C1C 0%, #42551C 100%);
+  }
+  
   /* Theme-aware text colors */
   .text-theme-primary {
     color: var(--color-primary);

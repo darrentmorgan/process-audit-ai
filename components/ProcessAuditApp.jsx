@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import StepIndicator from './StepIndicator'
 import ProcessInput from './ProcessInput'
 import QuestionForm from './QuestionForm'
@@ -25,7 +25,8 @@ const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
       return {
         name: 'HOSPO DOJO',
         tagline: 'Prep For Success - AI-powered process analysis for hospitality professionals',
-        logo: '🥋',
+        logo: '/Hospo-Dojo-Logo.svg',
+        logoType: 'svg',
         theme: {
           primary: '#1C1C1C', // Official Black
           secondary: '#EAE8DD', // Official Ivory
@@ -60,6 +61,25 @@ const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
   
   const brandConfig = getBrandConfig()
   const [currentStep, setCurrentStep] = useState(1)
+  
+  // Set data-brand attribute on document root for CSS theming
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const root = document.documentElement
+      if (isHospoDojo) {
+        root.setAttribute('data-brand', 'hospo-dojo')
+      } else {
+        root.removeAttribute('data-brand')
+      }
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.documentElement.removeAttribute('data-brand')
+      }
+    }
+  }, [isHospoDojo])
   const [processData, setProcessData] = useState({
     processDescription: '',
     fileContent: '',
@@ -398,7 +418,16 @@ const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
             <div className="flex items-center justify-center mb-4">
               {/* Dynamic Logo and Branding */}
               {brandConfig.logo ? (
-                <span className="text-4xl mr-4">{brandConfig.logo}</span>
+                brandConfig.logoType === 'svg' ? (
+                  <img 
+                    src={brandConfig.logo} 
+                    alt={`${brandConfig.name} Logo`}
+                    className="w-24 h-12 mr-4 object-contain"
+                    style={{ filter: 'brightness(0) invert(1)' }}
+                  />
+                ) : (
+                  <span className="text-4xl mr-4">{brandConfig.logo}</span>
+                )
               ) : (
                 <Logo className="w-16 h-16 text-white mr-4" color="currentColor" />
               )}

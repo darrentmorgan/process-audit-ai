@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useClerk } from '@clerk/nextjs'
 import { 
@@ -22,6 +22,19 @@ const HospoDojoBrandedLanding = ({ onSignUp }) => {
   const [email, setEmail] = useState('')
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Set brand attribute for theming
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-brand', 'hospo-dojo')
+    }
+    
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.documentElement.removeAttribute('data-brand')
+      }
+    }
+  }, [])
 
   const handleSignUp = async (e) => {
     e.preventDefault()
@@ -69,7 +82,12 @@ const HospoDojoBrandedLanding = ({ onSignUp }) => {
         <div className="flex justify-between items-center mb-16">
           <div className="flex items-center">
             <div className="w-12 h-12 text-white mr-3 flex items-center justify-center">
-              <span className="text-2xl">🥋</span>
+              <img 
+                src="/Hospo-Dojo-Logo.svg" 
+                alt="Hospo Dojo Logo"
+                className="w-12 h-6 object-contain"
+                style={{ filter: 'brightness(0) invert(1)' }}
+              />
             </div>
             <h1 
               className="text-2xl font-bold text-white"

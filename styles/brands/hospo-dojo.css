@@ -1,10 +1,10 @@
 /* Hospo Dojo Custom Brand Styles */
 
 :root[data-brand="hospo-dojo"] {
-  /* Color Variables */
-  --color-primary: #42551C;        /* Khaki Green */
-  --color-secondary: #1C1C1C;      /* Black */
-  --color-accent: #42551C;         /* Khaki Green */
+  /* Official Hospo Dojo Color Variables */
+  --color-primary: #1C1C1C;        /* Official Black */
+  --color-secondary: #EAE8DD;      /* Official Ivory */
+  --color-accent: #42551C;         /* Official Khaki Green */
   --color-background: #FFFFFF;     /* White */
   --color-surface: #EAE8DD;        /* Ivory */
   
@@ -75,6 +75,35 @@
 
 .hd-button--secondary {
   @apply bg-hd-ivory text-hd-black hover:bg-opacity-80;
+}
+
+/* Component-specific Hospo Dojo overrides */
+[data-brand="hospo-dojo"] .gradient-bg {
+  background: linear-gradient(135deg, #1C1C1C 0%, #42551C 100%) !important;
+}
+
+[data-brand="hospo-dojo"] .btn-primary {
+  background-color: #42551C !important;
+  color: #FFFFFF !important;
+}
+
+[data-brand="hospo-dojo"] .btn-secondary {
+  background-color: #EAE8DD !important;
+  color: #1C1C1C !important;
+}
+
+[data-brand="hospo-dojo"] .card {
+  background-color: #EAE8DD !important;
+  color: #1C1C1C !important;
+  border-color: rgba(66, 85, 28, 0.2) !important;
+}
+
+[data-brand="hospo-dojo"] .text-blue-100 {
+  color: #EAE8DD !important;
+}
+
+[data-brand="hospo-dojo"] .text-white {
+  color: #FFFFFF !important;
 }
 
 /* Accessibility Enhancements */

@@ -192,6 +192,40 @@ class PDFBrandingService {
   }
 
   /**
+   * Get stamp/watermark configuration for PDF
+   * @param {Object} branding - Branding configuration
+   * @returns {Promise<Object>} Stamp configuration
+   */
+  async getStampConfiguration(branding) {
+    if (!branding.stamp) {
+      return null
+    }
+    
+    try {
+      // Process stamp (validate, resize, convert format if needed)
+      const stampData = await this._processLogo(branding.stamp)
+      
+      // Return null if stamp processing failed
+      if (!stampData) {
+        return null
+      }
+      
+      return {
+        data: stampData,
+        width: 80, // Default stamp width in points
+        height: 80, // Default stamp height in points
+        position: 'bottom-right', // Default position
+        opacity: 0.3, // Semi-transparent
+        margin: 20
+      }
+      
+    } catch (error) {
+      console.error('Failed to process stamp:', error)
+      return null
+    }
+  }
+
+  /**
    * Clear branding cache
    */
   clearCache() {
@@ -235,6 +269,24 @@ class PDFBrandingService {
    * @private
    */
   async _fetchOrganizationBranding(organizationId) {
+    // Handle specific organization branding
+    if (organizationId === 'hospo-dojo') {
+      return {
+        companyName: 'HOSPO DOJO',
+        primaryColor: '#1C1C1C', // Official Black
+        secondaryColor: '#EAE8DD', // Official Ivory
+        accentColor: '#42551C', // Official Khaki Green
+        logo: '/Hospo-Dojo-Logo.svg',
+        stamp: '/dojo-stamp.png',
+        tagline: 'Prep For Success - AI-powered process analysis for hospitality professionals',
+        metadata: {
+          website: 'https://hospo-dojo.com',
+          email: 'support@hospo-dojo.com',
+          tagline: 'Prep For Success - AI-powered process analysis for hospitality professionals'
+        }
+      }
+    }
+    
     // Default organization branding implementation
     // Extended via registerOrganizationBranding() for custom branding
     return {
@@ -320,10 +372,24 @@ class PDFBrandingService {
       if (logoUrl.startsWith('data:')) {
         // Base64 encoded image
         return logoUrl
+      } else if (logoUrl.startsWith('/')) {
+        // Public path - convert to full URL or file system path for PDF generation
+        const path = require('path')
+        const fs = require('fs')
+        
+        // For local file processing in PDF generation
+        const publicPath = path.join(process.cwd(), 'public', logoUrl.substring(1))
+        
+        if (fs.existsSync(publicPath)) {
+          // Return the file system path for Puppeteer PDF generation
+          return publicPath
+        } else {
+          console.warn(`Logo file not found at: ${publicPath}`)
+          return null
+        }
       } else {
-        // URL - would need to fetch and process
-        // Logo processing implementation
-        console.warn('Logo URL processing not implemented yet')
+        // External URL - would need to fetch and process
+        console.warn('External URL logo processing not implemented yet')
         return null
       }
     } catch (error) {

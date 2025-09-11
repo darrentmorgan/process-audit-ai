@@ -237,6 +237,8 @@ class PuppeteerPDFGenerator {
         companyName: 'ProcessAudit AI',
         primaryColor: '#2563eb',
         secondaryColor: '#64748b',
+        logo: null,
+        stamp: null,
         ...options.branding
       },
       
