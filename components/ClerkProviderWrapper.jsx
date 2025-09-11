@@ -19,9 +19,36 @@ const ClerkProviderWrapper = ({ children }) => {
     return <>{children}</>
   }
 
+  // Determine if this is a satellite domain (Hospo-Dojo subdomain)
+  const isSatellite = process.env.NEXT_PUBLIC_CLERK_IS_SATELLITE === 'true'
+  const satelliteDomain = process.env.NEXT_PUBLIC_CLERK_DOMAIN
+  const primarySignInUrl = process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL || '/sign-in'
+  const primarySignUpUrl = process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL || '/sign-up'
+  
+  // Configure allowed redirect origins for cross-domain auth
+  const allowedRedirectOrigins = []
+  if (process.env.NEXT_PUBLIC_CLERK_ALLOWED_REDIRECT_ORIGINS) {
+    allowedRedirectOrigins.push(...process.env.NEXT_PUBLIC_CLERK_ALLOWED_REDIRECT_ORIGINS.split(','))
+  }
+
+  // Satellite domain configuration based on Clerk documentation
+  const satelliteConfig = isSatellite ? {
+    isSatellite: true,
+    domain: (url) => url.host,
+    signInUrl: primarySignInUrl,
+    signUpUrl: primarySignUpUrl,
+  } : {}
+
+  // Primary domain configuration 
+  const primaryConfig = !isSatellite && allowedRedirectOrigins.length > 0 ? {
+    allowedRedirectOrigins: allowedRedirectOrigins
+  } : {}
+
   return (
     <ClerkProviderPagesRouter
       publishableKey={publishableKey}
+      {...satelliteConfig}
+      {...primaryConfig}
       appearance={{
         baseTheme: undefined, // Use light theme by default
         variables: {

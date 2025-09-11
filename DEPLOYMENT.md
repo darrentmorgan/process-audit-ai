@@ -59,15 +59,53 @@ vercel env add NEXT_PUBLIC_APP_URL production
    Type: CNAME Name: www            Value: cname.vercel-dns.com
    ```
 
-### 5. Update Clerk Configuration
-1. Go to Clerk Dashboard → Your Application → Settings
-2. Update **Allowed origins** to include:
-   - `https://your-project.vercel.app`
-   - `https://hospodojo.your-project.vercel.app`
+### 5. Configure Custom Domain (REQUIRED for Clerk Production)
+**⚠️ CRITICAL: Clerk requires a custom domain for production - cannot use *.vercel.app**
 
-3. Update **Allowed redirect URLs**:
-   - `https://your-project.vercel.app`
-   - `https://hospodojo.your-project.vercel.app`
+1. **Purchase/Configure Domain** (e.g., `processaudit.com`)
+2. **Add Domain to Vercel:**
+   - Go to Vercel Dashboard → Project → Settings → Domains
+   - Add: `processaudit.com`
+   - Add: `hospodojo.processaudit.com`
+
+3. **Configure DNS Records:**
+   ```
+   Type: A     Name: @              Value: 76.76.19.61
+   Type: CNAME Name: hospodojo      Value: cname.vercel-dns.com  
+   Type: CNAME Name: www            Value: cname.vercel-dns.com
+   ```
+
+### 6. Update Clerk Dashboard Configuration
+**🔧 Mandatory Clerk Production Setup:**
+
+1. **Go to Clerk Dashboard → Your Application:**
+
+2. **Update Domain Settings:**
+   - Navigate to: Settings → General
+   - Update "Home URL" to: `https://processaudit.com`
+
+3. **Configure Allowed Origins:**
+   - Add: `https://processaudit.com`
+   - Add: `https://hospodojo.processaudit.com`
+
+4. **Update Redirect URLs:**
+   - Sign-in redirect: `https://processaudit.com`
+   - Sign-up redirect: `https://processaudit.com`
+   - Add satellite redirect: `https://hospodojo.processaudit.com`
+
+5. **Production Environment Variables in Vercel:**
+   ```bash
+   # Primary Domain Configuration
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_your_prod_key
+   CLERK_SECRET_KEY=sk_live_your_prod_secret
+   NEXT_PUBLIC_APP_URL=https://processaudit.com
+   NEXT_PUBLIC_CLERK_ALLOWED_REDIRECT_ORIGINS=https://hospodojo.processaudit.com
+   
+   # Multi-tenant Domain Setup  
+   NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+   NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+   NEXT_PUBLIC_CLERK_IS_SATELLITE=false
+   ```
 
 ### 6. Deploy to Production
 ```bash
