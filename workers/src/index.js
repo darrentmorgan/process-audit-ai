@@ -5,7 +5,7 @@
  */
 
 import { processAutomationJob } from './processor';
-import { validateN8nWorkflow } from './generators/n8n';
+// import { validateN8nWorkflow } from './generators/n8n'; // Removed: n8n generation disabled
 import { 
   validateOrganizationAccess, 
   checkOrganizationLimits,

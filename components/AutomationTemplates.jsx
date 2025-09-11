@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Download, ExternalLink, Play, Settings, CheckCircle, Clock, DollarSign, Zap, Cpu } from 'lucide-react'
 import { 
-  generateAutomationSummary,
-  generateImplementationGuide
+  generateAutomationRecommendations
 } from '../utils/automationTemplates'
 // import AutomationGenerator from './AutomationGenerator' // Removed: Now showing recommendations instead
 
@@ -19,8 +18,7 @@ const AutomationTemplates = ({ automationOpportunities, sopData, processData, au
     )
   }
 
-  const automationSummary = generateAutomationSummary(automationOpportunities, sopData)
-  const implementationGuide = generateImplementationGuide(automationOpportunities)
+  const automationRecommendations = generateAutomationRecommendations(automationOpportunities, sopData)
 
   const getPriorityColor = (priority) => {
     if (priority >= 80) return 'bg-red-100 text-red-800'

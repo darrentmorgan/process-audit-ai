@@ -754,29 +754,37 @@ export async function generateSOPRevision(originalSOP, analysis, improvements = 
 export async function generateQuestions(processDescription, fileContent = '') {
 
   try {
-    if (process.env.CLAUDE_API_KEY) {
-      console.log('🤖 generateQuestions: Using Claude API for question generation')
+    // Prioritize OpenAI GPT-5, fallback to Claude
+    if (process.env.OPENAI_API_KEY) {
+      console.log('🤖 generateQuestions: Using OpenAI GPT-5 for question generation')
+      
+      const { callModelWithFallback, getOptimalModelConfig } = await import('./openai.js');
       
       const prompt = QUESTION_GENERATION_PROMPT
         .replace('{processDescription}', processDescription)
         .replace('{fileContent}', fileContent)
       
+      const modelConfig = getOptimalModelConfig('question-generation');
+      
       console.log('📋 generateQuestions: Generated prompt length:', prompt.length)
-      console.log('📤 generateQuestions: Calling Claude API...')
+      console.log('📤 generateQuestions: Calling OpenAI GPT-5...')
       
       const startTime = Date.now()
-      const response = await callClaudeAPI(prompt)
+      const response = await callModelWithFallback(prompt, {
+        ...modelConfig,
+        tier: 'agent'
+      })
       const endTime = Date.now()
       
-      console.log('⏱️ generateQuestions: Claude API response time:', `${endTime - startTime}ms`)
-      console.log('📥 generateQuestions: Raw Claude response:', response)
+      console.log('⏱️ generateQuestions: OpenAI API response time:', `${endTime - startTime}ms`)
+      console.log('📥 generateQuestions: Raw OpenAI response:', response)
       
       // Check if response is an array (successful parsing) or has error
       if (Array.isArray(response)) {
         console.log('✅ generateQuestions: Successfully parsed questions array:', response.length)
         return response
       } else if (response.error) {
-        console.error('❌ generateQuestions: Claude API parsing error:', response.error)
+        console.error('❌ generateQuestions: OpenAI API parsing error:', response.error)
         console.log('📄 generateQuestions: Raw response was:', response.rawResponse)
         return null // Fall back to sample data
       } else {

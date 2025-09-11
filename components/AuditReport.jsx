@@ -1082,7 +1082,134 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
           </div>
         )}
 
-        {/* SOP Automations Tab */}
+        {/* Recommendations Tab */}
+        {isSOPMode && activeTab === 'recommendations' && (
+          <div className="space-y-6">
+            {/* Automation Platform Recommendations */}
+            <div className="card">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                Recommended Automation Platforms
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Based on your SOP analysis, here are the best platforms for implementing automation opportunities:
+              </p>
+              
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-center mb-3">
+                    <div className="w-8 h-8 bg-orange-500 rounded text-white flex items-center justify-center text-sm font-bold">Z</div>
+                    <h4 className="font-semibold ml-2">Zapier</h4>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">Best for quick integrations between popular apps</p>
+                  <div className="text-xs text-gray-500">
+                    <div>Pricing: Starts at $20/month</div>
+                    <div>Complexity: Low to Medium</div>
+                    <div>Setup time: 1-2 weeks</div>
+                  </div>
+                </div>
+                
+                <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-center mb-3">
+                    <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center text-sm font-bold">PA</div>
+                    <h4 className="font-semibold ml-2">Power Automate</h4>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">Ideal for Office 365 environments</p>
+                  <div className="text-xs text-gray-500">
+                    <div>Pricing: Included with Office 365</div>
+                    <div>Complexity: Medium</div>
+                    <div>Setup time: 2-4 weeks</div>
+                  </div>
+                </div>
+                
+                <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-center mb-3">
+                    <div className="w-8 h-8 bg-pink-500 rounded text-white flex items-center justify-center text-sm font-bold">n8n</div>
+                    <h4 className="font-semibold ml-2">n8n</h4>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">For custom workflows and advanced automation</p>
+                  <div className="text-xs text-gray-500">
+                    <div>Pricing: Free self-hosted</div>
+                    <div>Complexity: Medium to High</div>
+                    <div>Setup time: 3-6 weeks</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Implementation Guidance */}
+            <div className="card">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Implementation Strategy</h3>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3">Recommended Approach</h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li className="flex items-center">
+                      <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                      Start with highest-impact, lowest-effort opportunities
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                      Choose platform based on existing tools and expertise
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                      Implement pilot automation before full deployment
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                      Plan for user training and change management
+                    </li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3">Success Metrics</h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li className="flex items-center">
+                      <Target className="w-4 h-4 text-blue-600 mr-2" />
+                      Time reduction per process execution
+                    </li>
+                    <li className="flex items-center">
+                      <Target className="w-4 h-4 text-blue-600 mr-2" />
+                      Error rate improvement
+                    </li>
+                    <li className="flex items-center">
+                      <Target className="w-4 h-4 text-blue-600 mr-2" />
+                      User adoption and satisfaction
+                    </li>
+                    <li className="flex items-center">
+                      <Target className="w-4 h-4 text-blue-600 mr-2" />
+                      ROI achievement timeline
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Automation Opportunities from Analysis */}
+            {sopData?.analysis?.automationOpportunities && (
+              <div className="card">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Your Automation Opportunities</h3>
+                <div className="space-y-4">
+                  {sopData.analysis.automationOpportunities.slice(0, 3).map((opportunity, index) => (
+                    <div key={index} className="border-l-4 border-blue-500 pl-4 py-2">
+                      <h4 className="font-semibold text-gray-900">{opportunity.stepDescription}</h4>
+                      <p className="text-sm text-gray-600 mb-2">{opportunity.automationSolution}</p>
+                      <div className="flex gap-4 text-xs text-gray-500">
+                        <span>💰 {opportunity.annualSavings}</span>
+                        <span>⏱️ {opportunity.timeSavings}</span>
+                        <span>📊 Priority: {opportunity.priority}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Legacy SOP Automations Tab (keeping for compatibility) */}
         {isSOPMode && activeTab === 'automations' && sopData?.analysis?.automationOpportunities && (
           <AutomationTemplates 
             automationOpportunities={sopData.analysis.automationOpportunities}
