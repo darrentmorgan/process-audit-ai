@@ -421,17 +421,16 @@ const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
                 brandConfig.logoType === 'svg' ? (
                   <img 
                     src={brandConfig.logo} 
-                    alt={`${brandConfig.name} Logo`}
-                    className="w-24 h-12 mr-4 object-contain"
+                    alt={`${brandConfig.name} - Hospitality Operations Platform`}
+                    className="h-12 w-auto object-contain"
                     style={{ filter: 'brightness(0) invert(1)' }}
                   />
                 ) : (
-                  <span className="text-4xl mr-4">{brandConfig.logo}</span>
+                  <span className="text-4xl">{brandConfig.logo}</span>
                 )
               ) : (
-                <Logo className="w-16 h-16 text-white mr-4" color="currentColor" />
+                <Logo className="w-16 h-16 text-white" color="currentColor" />
               )}
-              <h1 className="text-4xl font-bold text-white">{brandConfig.name}</h1>
             </div>
             <p className="text-xl text-blue-100 max-w-2xl mx-auto">
               {brandConfig.tagline}

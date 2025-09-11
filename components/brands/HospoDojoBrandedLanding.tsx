@@ -81,22 +81,12 @@ const HospoDojoBrandedLanding = ({ onSignUp }) => {
         {/* Header */}
         <div className="flex justify-between items-center mb-16">
           <div className="flex items-center">
-            <div className="w-12 h-12 text-white mr-3 flex items-center justify-center">
-              <img 
-                src="/Hospo-Dojo-Logo.svg" 
-                alt="Hospo Dojo Logo"
-                className="w-12 h-6 object-contain"
-                style={{ filter: 'brightness(0) invert(1)' }}
-              />
-            </div>
-            <h1 
-              className="text-2xl font-bold text-white"
-              style={{ 
-                fontFamily: '"Gefika", "Bebas Neue", "Oswald", Impact, sans-serif'
-              }}
-            >
-              HOSPO DOJO
-            </h1>
+            <img 
+              src="/Hospo-Dojo-Logo.svg" 
+              alt="Hospo Dojo - Hospitality Operations Platform"
+              className="h-8 w-auto object-contain"
+              style={{ filter: 'brightness(0) invert(1)' }}
+            />
           </div>
           
           {/* Auth Buttons */}
