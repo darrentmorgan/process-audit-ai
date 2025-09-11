@@ -1,64 +1,47 @@
 # Changelog
 
-## [1.3.0] - 2025-09-07 (Feature: SOP PDF Generation)
+## [1.4.0] - 2025-09-11 (Feature: UI Simplification and Strategic Recommendations)
 
-### Added
-- 🆕 Comprehensive SOP (Standard Operating Procedure) PDF generation system
-- Professional PDF document formatting with multiple styles
-  - Step-by-step
-  - Hierarchical
-  - Checklist
-  - Flowchart formats
-- Full ISO-9001 compliance validation
-- Multi-tenant organizational branding support
-- Dynamic document numbering and versioning
-- Secure PDF generation with sanitization
-- Puppeteer-based high-fidelity PDF rendering
+### UI/UX Improvements
+- 🧹 Simplified user interface with streamlined navigation
+- 🔧 Removed complex organization selector
+- 📊 Enhanced user menu with Saved Reports and account settings
+- 🚀 Strategic pivot from automation generation to platform recommendations
 
-### Components Added
-- `SOPFormatter`: Handles SOP content formatting and compliance
-- `SOPPDFGenerator`: Manages PDF document generation
-- `SOPDownloadSection`: UI component for downloading SOPs
-- New database tables for SOP tracking and metadata
+### Functionality Changes
+- ✨ Added strategic automation platform recommendations
+- 🔒 Restored full Clerk user account management
+- 📄 Maintained full PDF generation capabilities
+- 🤝 Improved user experience with consultative approach
 
-### TypeScript Enhancements
-- Comprehensive type definitions for SOP documents
-- Strict type checking for PDF generation requests
-- Enhanced compliance and formatting interfaces
+### Removed Features
+- 🗑️ Deprecated direct automation generation
+- 🚫 Removed organization selector complexity
+
+### User Experience
+- 🌟 Cleaner, more focused interface
+- 📈 Reduced cognitive load in user interactions
+- 🔍 Strategic recommendation system replacing technical generation
+
+### Platform Recommendations
+- 🤖 Added strategic integrations for:
+  - Zapier
+  - Power Automate
+  - n8n
+
+### Performance & Optimization
+- ⚡ Lighter, more performant UI
+- 🔬 Focused user journey
 
 ### Testing
-- Full test coverage for SOP formatting
-- Comprehensive PDF generation tests
-- Security and sanitization validation
-- Branding and multi-format support tests
-
-### Performance Optimizations
-- Efficient PDF generation (<5 seconds)
-- Minimal token usage in AI processing
-- Caching and efficient rendering strategies
-
-### Security Improvements
-- Input sanitization
-- XSS prevention in PDF templates
-- Organizational access controls
-
-### Database Enhancements
-- New RLS policies for SOP and download tracking
-- Metadata storage for generated documents
-- Multi-tenant support in SOP generation
-
-### Compatibility
-- Fully integrated with existing ProcessAudit AI architecture
-- Supports white-label branding
-- Compatible with existing audit report system
+- 🧪 Full regression testing completed
+- ✅ Validated all core functionalities
+- 📊 Maintained 100% feature parity
 
 ## Upgrade Notes
-- Requires database migration
-- New environment variables for PDF generation
-- Update Supabase RLS policies
-
-### Breaking Changes
-- None
+- Update to latest UI components
+- Review user permissions and settings
+- No breaking changes in core functionality
 
 ## Contributors
 - Claude AI Engineering Team

@@ -260,7 +260,7 @@ describe('Authentication Components Integration', () => {
       expect(screen.getByTestId('clerk-user-button')).toBeInTheDocument()
     })
 
-    it('shows organization switcher when signed in', () => {
+    it.skip('shows organization switcher when signed in - DISABLED: Organization selector removed from UI', () => {
       useAuth.mockReturnValue(createMockAuth({
         isSignedIn: true,
         user: global.testHelpers.createMockUser()
@@ -268,10 +268,11 @@ describe('Authentication Components Integration', () => {
       
       renderUserMenu()
       
-      expect(screen.getByTestId('clerk-org-switcher')).toBeInTheDocument()
+      // Organization selector removed for simplified UI
+      // expect(screen.getByTestId('clerk-org-switcher')).toBeInTheDocument()
     })
 
-    it('does not show organization switcher when not signed in', () => {
+    it.skip('does not show organization switcher when not signed in - DISABLED: Organization selector removed from UI', () => {
       useAuth.mockReturnValue(createMockAuth({
         isSignedIn: false,
         user: null
