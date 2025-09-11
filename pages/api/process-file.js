@@ -21,7 +21,14 @@ export default async function handler(req, res) {
     }
 
     // Validate file type
-    const allowedTypes = ['text/plain', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    const allowedTypes = [
+      'text/plain', 
+      'application/pdf', 
+      'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/markdown',
+      'text/x-markdown'
+    ]
     if (fileType && !allowedTypes.includes(fileType)) {
       return res.status(400).json({ error: 'Unsupported file type' })
     }

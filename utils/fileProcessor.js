@@ -9,6 +9,10 @@ export async function processFile(fileData, fileType) {
       case 'text/plain':
         return processTextFile(bytes)
       
+      case 'text/markdown':
+      case 'text/x-markdown':
+        return processMarkdownFile(bytes)
+      
       case 'application/pdf':
         return processPdfFile(bytes)
       
@@ -33,6 +37,41 @@ function processTextFile(bytes) {
     return text.trim()
   } catch (error) {
     throw new Error('Failed to read text file')
+  }
+}
+
+function processMarkdownFile(bytes) {
+  try {
+    const MarkdownIt = require('markdown-it')
+    const md = new MarkdownIt()
+    
+    // Convert bytes to text first
+    const decoder = new TextDecoder('utf-8')
+    const markdownText = decoder.decode(bytes)
+    
+    // Parse markdown to HTML then extract plain text for AI analysis
+    const htmlContent = md.render(markdownText)
+    
+    // Convert HTML to plain text while preserving structure
+    const plainText = htmlContent
+      .replace(/<h([1-6])>/gi, '\n\n') // Headers get double line breaks
+      .replace(/<\/h[1-6]>/gi, '\n')
+      .replace(/<p>/gi, '\n')
+      .replace(/<\/p>/gi, '\n')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<li>/gi, '\n• ')
+      .replace(/<\/li>/gi, '')
+      .replace(/<[^>]*>/g, '') // Remove all other HTML tags
+      .replace(/\n{3,}/g, '\n\n') // Normalize multiple line breaks
+      .trim()
+    
+    console.log('✅ Successfully processed Markdown file:', plainText.length, 'characters')
+    return plainText || markdownText.trim() // Fallback to original if parsing fails
+  } catch (error) {
+    console.error('❌ Error processing Markdown file:', error)
+    // Fallback: treat as plain text
+    const decoder = new TextDecoder('utf-8')
+    return decoder.decode(bytes).trim()
   }
 }
 
@@ -99,6 +138,8 @@ For demonstration purposes, you can paste your SOP content directly into the tex
 export function validateFileType(file) {
   const allowedTypes = [
     'text/plain',
+    'text/markdown',
+    'text/x-markdown',
     'application/pdf',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document'

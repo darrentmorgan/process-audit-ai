@@ -74,10 +74,17 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
     })
 
     // Validate file type
-    const allowedTypes = ['text/plain', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    const allowedTypes = [
+      'text/plain', 
+      'text/markdown', 
+      'text/x-markdown', 
+      'application/pdf', 
+      'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ]
     if (!allowedTypes.includes(file.type)) {
       console.log('❌ File Upload: Invalid file type:', file.type)
-      setUploadError('Please upload a PDF, DOC, DOCX, or TXT file')
+      setUploadError('Please upload a PDF, DOC, DOCX, TXT, or MD file')
       return
     }
 
@@ -264,7 +271,7 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
               ref={fileInputRef}
               type="file"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              accept=".pdf,.doc,.docx,.txt"
+              accept=".pdf,.doc,.docx,.txt,.md"
               onChange={(e) => e.target.files[0] && handleFileUpload(e.target.files[0])}
               disabled={isUploading}
             />
@@ -299,7 +306,7 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
                     or click to browse
                   </p>
                   <p className="text-xs text-gray-500">
-                    Supports PDF, DOC, DOCX, TXT (max 10MB)
+                    Supports PDF, DOC, DOCX, TXT, MD (max 10MB)
                   </p>
                 </div>
               </div>
