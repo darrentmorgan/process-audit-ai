@@ -217,7 +217,7 @@ const DatabaseCleanup = ({ isOpen, onClose }) => {
                 {duplicates.map((group, index) => (
                   <div key={index} className="mb-4 last:mb-0">
                     <h4 className="font-medium text-gray-900 mb-2">
-                      Group {index + 1}: "{group[0].title}"
+                      Group {index + 1}: &quot;{group[0].title}&quot;
                     </h4>
                     <div className="space-y-2 ml-4">
                       {group.map((report, reportIndex) => (
@@ -275,7 +275,7 @@ const DatabaseCleanup = ({ isOpen, onClose }) => {
                   The newest copy of each report will be kept.
                 </p>
                 <p className="text-red-600 text-xs mt-2">
-                  💡 Large batches are processed quickly in the background - you won't need to wait!
+                  💡 Large batches are processed quickly in the background - you won&apos;t need to wait!
                 </p>
                 
                 {/* Progress Bar */}

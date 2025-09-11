@@ -185,7 +185,7 @@ const LandingPage = ({ onSignUp }) => {
                   ) : (
                     <div className="text-center bg-green-500 bg-opacity-20 border border-green-400 rounded-lg p-4">
                       <CheckCircle className="w-6 h-6 text-green-400 mx-auto mb-2" />
-                      <p className="text-green-200">You're on the waitlist!</p>
+                      <p className="text-green-200">You&apos;re on the waitlist!</p>
                     </div>
                   )}
                 </div>
@@ -200,7 +200,7 @@ const LandingPage = ({ onSignUp }) => {
             <div className="relative">
               <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-3xl p-8 border border-white border-opacity-20">
                 <div className="mb-6">
-                  <h3 className="text-xl font-semibold text-white mb-4">See What You'll Get:</h3>
+                  <h3 className="text-xl font-semibold text-white mb-4">See What You&apos;ll Get:</h3>
                 </div>
 
                 {/* Mock Analysis Results */}
@@ -341,8 +341,8 @@ const LandingPage = ({ onSignUp }) => {
                 </div>
               </div>
               <p className="text-blue-100 italic">
-                "ProcessAudit AI identified $50K in annual savings we never knew existed. 
-                The implementation roadmap was spot-on."
+                &quot;ProcessAudit AI identified $50K in annual savings we never knew existed. 
+                The implementation roadmap was spot-on.&quot;
               </p>
             </div>
 
@@ -357,8 +357,8 @@ const LandingPage = ({ onSignUp }) => {
                 </div>
               </div>
               <p className="text-blue-100 italic">
-                "Finally, an AI tool that actually understands our business processes. 
-                Saved us 20 hours per week!"
+                &quot;Finally, an AI tool that actually understands our business processes. 
+                Saved us 20 hours per week!&quot;
               </p>
             </div>
 
@@ -373,8 +373,8 @@ const LandingPage = ({ onSignUp }) => {
                 </div>
               </div>
               <p className="text-blue-100 italic">
-                "The ROI calculations were incredibly accurate. We implemented 3 automations 
-                and hit the projected savings within 2 months."
+                &quot;The ROI calculations were incredibly accurate. We implemented 3 automations 
+                and hit the projected savings within 2 months.&quot;
               </p>
             </div>
           </div>

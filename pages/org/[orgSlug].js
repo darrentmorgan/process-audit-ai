@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useUnifiedAuth } from '../../contexts/UnifiedAuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import Head from 'next/head'
+import Link from 'next/link'
 
 // Mock organization data for demonstration
 const DEMO_ORGANIZATIONS = {
@@ -98,7 +99,7 @@ export default function OrganizationPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Organization Not Found</h1>
-          <p className="text-gray-600 mb-8">The organization "{orgSlug}" could not be found.</p>
+          <p className="text-gray-600 mb-8">The organization &quot;{orgSlug}&quot; could not be found.</p>
           <button 
             onClick={() => router.push('/')}
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -277,7 +278,7 @@ export default function OrganizationPage() {
                 <div><strong>Path-based:</strong> /org/{orgSlug} (current)</div>
                 <div><strong>Subdomain:</strong> {orgSlug}.localhost:3000 (requires DNS setup)</div>
                 <div><strong>Custom Domain:</strong> {currentOrg.branding.customDomain || 'Not configured'}</div>
-                <div><strong>Main App:</strong> <a href="/" className="text-blue-600 hover:underline">processaudit.ai</a></div>
+                <div><strong>Main App:</strong> <Link href="/" className="text-blue-600 hover:underline">processaudit.ai</Link></div>
               </div>
             </div>
           </div>

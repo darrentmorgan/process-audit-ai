@@ -172,7 +172,7 @@ const AnalysisLoader = ({ processData, onComplete }) => {
         {/* Progress Information */}
         <div className="bg-gray-50 rounded-lg p-6">
           <h4 className="font-semibold text-gray-900 mb-3">
-            What We're Analyzing
+            What We&apos;re Analyzing
           </h4>
           <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
             <div className="flex items-center">

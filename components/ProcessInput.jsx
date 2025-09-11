@@ -233,8 +233,8 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
           Describe Your Process
         </h2>
         <p className="text-lg text-gray-600">
-          Tell us about the business process you'd like to optimize. You can describe it manually or upload a document. 
-          We'll automatically detect if it's a Standard Operating Procedure or general process.
+          Tell us about the business process you&apos;d like to optimize. You can describe it manually or upload a document. 
+          We&apos;ll automatically detect if it&apos;s a Standard Operating Procedure or general process.
         </p>
       </div>
 

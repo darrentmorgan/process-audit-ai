@@ -224,7 +224,7 @@ const FontSelector = ({ value, onChange, disabled = false }) => {
           <p className="font-medium text-blue-800 mb-1">Custom Font Instructions:</p>
           <ul className="space-y-1 text-blue-700">
             <li>• Ensure the font is loaded via CSS or web font service</li>
-            <li>• Include fallback fonts (e.g., '"My Font", Arial, sans-serif')</li>
+            <li>• Include fallback fonts (e.g., &apos;&quot;My Font&quot;, Arial, sans-serif&apos;)</li>
             <li>• Test across different devices and browsers</li>
           </ul>
         </div>

@@ -81,7 +81,7 @@ const ClerkAuthModal = ({ isOpen, onClose, defaultMode = 'signin' }) => {
         <div className="px-6 pb-6 text-center text-sm border-t border-gray-200 pt-6">
           {mode === 'signin' ? (
             <p className="text-gray-600">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <button
                 onClick={() => setMode('signup')}
                 className="text-blue-600 hover:underline font-medium"

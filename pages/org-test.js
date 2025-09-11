@@ -158,7 +158,7 @@ export default function OrganizationTestPage() {
                 <div className="mb-6">
                   <h3 className="font-medium text-gray-900 mb-3">No Organization</h3>
                   <p className="text-gray-600 mb-4">
-                    You haven't joined any organizations yet. Create one to get started with team features.
+                    You haven&apos;t joined any organizations yet. Create one to get started with team features.
                   </p>
                   <CreateOrganizationButton />
                 </div>

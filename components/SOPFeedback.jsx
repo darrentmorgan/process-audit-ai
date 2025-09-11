@@ -121,7 +121,7 @@ const SOPFeedback = ({ analysis, originalSOP, onProceedToRevision, onBack }) => 
           Improvement Recommendations
         </h3>
         <p className="text-sm text-gray-600 mb-4">
-          Select the improvements you'd like to include in the revised SOP:
+          Select the improvements you&apos;d like to include in the revised SOP:
         </p>
 
         <div className="space-y-3">

@@ -205,7 +205,7 @@ const HospoDojoBrandedLanding = ({ onSignUp }) => {
                       }}
                     >
                       <CheckCircle className="w-6 h-6 mx-auto mb-2" style={{ color: '#EAE8DD' }} />
-                      <p style={{ color: '#EAE8DD' }}>You're on the waitlist!</p>
+                      <p style={{ color: '#EAE8DD' }}>You&apos;re on the waitlist!</p>
                     </div>
                   )}
                 </div>
@@ -226,7 +226,7 @@ const HospoDojoBrandedLanding = ({ onSignUp }) => {
                 }}
               >
                 <div className="mb-6">
-                  <h3 className="text-xl font-semibold text-white mb-4">See What You'll Get:</h3>
+                  <h3 className="text-xl font-semibold text-white mb-4">See What You&apos;ll Get:</h3>
                 </div>
 
                 {/* Mock Analysis Results - Hospitality Focused */}
@@ -432,8 +432,8 @@ const HospoDojoBrandedLanding = ({ onSignUp }) => {
                 <p className="text-sm" style={{ color: '#42551C' }}>Hotel Manager, Boutique Stays</p>
               </div>
               <p style={{ color: '#1C1C1C' }}>
-                "Hospo Dojo identified $45K in annual savings we never knew existed. 
-                The implementation roadmap was perfect for our hotel operations."
+                &quot;Hospo Dojo identified $45K in annual savings we never knew existed. 
+                The implementation roadmap was perfect for our hotel operations.&quot;
               </p>
             </div>
 
@@ -446,8 +446,8 @@ const HospoDojoBrandedLanding = ({ onSignUp }) => {
                 <p className="text-sm" style={{ color: '#42551C' }}>Restaurant Owner, Fine Dining Co</p>
               </div>
               <p style={{ color: '#1C1C1C' }}>
-                "Finally, an AI tool that actually understands hospitality workflows. 
-                Saved us 25 hours per week on staff scheduling and inventory!"
+                &quot;Finally, an AI tool that actually understands hospitality workflows. 
+                Saved us 25 hours per week on staff scheduling and inventory!&quot;
               </p>
             </div>
 
@@ -460,8 +460,8 @@ const HospoDojoBrandedLanding = ({ onSignUp }) => {
                 <p className="text-sm" style={{ color: '#42551C' }}>Operations Director, Resort Group</p>
               </div>
               <p style={{ color: '#1C1C1C' }}>
-                "The ROI calculations were incredibly accurate. We implemented 4 automations 
-                and hit the projected savings within 6 weeks."
+                &quot;The ROI calculations were incredibly accurate. We implemented 4 automations 
+                and hit the projected savings within 6 weeks.&quot;
               </p>
             </div>
           </div>
