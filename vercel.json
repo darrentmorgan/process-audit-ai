@@ -9,6 +9,47 @@
     },
     "pages/api/process-file.js": {
       "maxDuration": 30
+    },
+    "pages/api/analyze-sop.js": {
+      "maxDuration": 45
+    },
+    "pages/api/generate-sop-questions.js": {
+      "maxDuration": 30
+    },
+    "pages/api/revise-sop.js": {
+      "maxDuration": 45
+    },
+    "pages/api/generate-pdf.js": {
+      "maxDuration": 60
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/$1",
+      "has": [
+        {
+          "type": "host",
+          "value": "hospodojo.(?<domain>.*)"
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Organization-Context",
+          "value": "hospo-dojo"
+        }
+      ],
+      "has": [
+        {
+          "type": "host",
+          "value": "hospodojo.(?<domain>.*)"
+        }
+      ]
+    }
+  ]
 }
