@@ -1,0 +1,77 @@
+{
+  "color": {
+    "base": {
+      "white": "#FFFFFF",
+      "ivory": "#EAE8DD",
+      "black": "#1C1C1C"
+    },
+    "accent": {
+      "khakiGreen": "#42551C",
+      "brownLeather": "asset:HospoDojo_LeatherTexture"
+    }
+  },
+  "typography": {
+    "headline": {
+      "family": "Gefika",
+      "style": "Regular",
+      "transform": "uppercase",
+      "leading": 1.0
+    },
+    "subheading": {
+      "family": "Nimbus Sans",
+      "weight": 700,
+      "leading": 1.0,
+      "case": "title"
+    },
+    "body": {
+      "family": "DM Sans",
+      "weight": 500,
+      "leading": "auto"
+    }
+  },
+  "logo": {
+    "minClearance": {
+      "iconEmblemCombo": ">= diameter of icon dot from edges/other elements",
+      "wordmark": ">= width of 'H' from edges/other elements"
+    },
+    "donts": [
+      "No rotation",
+      "No stretching",
+      "No reflection",
+      "No drop shadow (except deboss on leather texture)",
+      "No non-brand colours",
+      "No outlines",
+      "Avoid busy backgrounds"
+    ]
+  },
+  "designElements": {
+    "wavePatterns": [
+      "White",
+      "Ivory",
+      "Black"
+    ],
+    "scribbles": "Use brand colour combos only",
+    "splitBackgrounds": "Horizontal/vertical splits using patterns or solid fills"
+  },
+  "voice": {
+    "tagline": "Prep For Success",
+    "tone": [
+      "Firm",
+      "Upfront",
+      "Empowering",
+      "Relatable"
+    ]
+  },
+  "accessibility": {
+    "contrastRatios": {
+      "black_on_white": 17.04,
+      "black_on_ivory": 13.87,
+      "khaki_on_white": 8.24,
+      "khaki_on_ivory": 6.71,
+      "white_on_black": 17.04,
+      "ivory_on_black": 13.87,
+      "white_on_khaki": 8.24,
+      "ivory_on_khaki": 6.71
+    }
+  }
+}

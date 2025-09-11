@@ -15,7 +15,16 @@ export default function Home() {
   const { user, loading: authLoading, isLoaded } = useUnifiedAuth();
 
   useEffect(() => {
-    // Check for organization cookie or subdomain
+    // Detect organization from hostname (domain-based routing)
+    let orgFromHostname = null;
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname.includes('hospo-dojo')) {
+        orgFromHostname = 'hospo-dojo';
+      }
+    }
+    
+    // Check for organization cookie or subdomain  
     const orgFromCookie = document.cookie.includes('organization=hospo-dojo') 
       ? 'hospo-dojo' 
       : null;
@@ -25,7 +34,15 @@ export default function Home() {
       ? 'hospo-dojo' 
       : null;
 
-    setOrganization(orgFromCookie || orgFromQuery);
+    // Priority: hostname > cookie > query parameter
+    const detectedOrg = orgFromHostname || orgFromCookie || orgFromQuery;
+    setOrganization(detectedOrg);
+    
+    console.log('Domain detection:', {
+      hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
+      detectedOrg,
+      source: orgFromHostname ? 'hostname' : orgFromCookie ? 'cookie' : orgFromQuery ? 'query' : 'none'
+    });
   }, [router.query]);
 
   // Access control logic - check if user has access via parameter or authentication
@@ -66,7 +83,7 @@ export default function Home() {
 
   // Show main app if user has access via parameter or authentication
   if (showApp) {
-    return <ProcessAuditApp isDemoMode={!user} />;
+    return <ProcessAuditApp isDemoMode={!user} organization={organization} />;
   }
 
   // Default ProcessAudit AI landing page

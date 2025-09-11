@@ -14,7 +14,51 @@ import DatabaseCleanup from './DatabaseCleanup'
 import Logo from './Logo'
 import { Zap, Target, BarChart3 } from 'lucide-react'
 
-const ProcessAuditApp = ({ isDemoMode = false }) => {
+const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
+  
+  // Determine if this is Hospo-Dojo branded experience
+  const isHospoDojo = organization === 'hospo-dojo'
+  
+  // Get branding configuration based on organization
+  const getBrandConfig = () => {
+    if (isHospoDojo) {
+      return {
+        name: 'HOSPO DOJO',
+        tagline: 'Prep For Success - AI-powered process analysis for hospitality professionals',
+        logo: '🥋',
+        theme: {
+          primary: '#1C1C1C', // Official Black
+          secondary: '#EAE8DD', // Official Ivory
+          accent: '#42551C' // Official Khaki Green
+        },
+        terminology: {
+          analysis: 'Prepping Your Success Strategy',
+          progress: 'Battle Plan Progress', 
+          results: 'Your Hospitality Battle Plan',
+          recommendations: 'Strategic Moves for Excellence'
+        }
+      }
+    } else {
+      return {
+        name: 'ProcessAudit AI',
+        tagline: 'Discover automation opportunities in your business processes with AI-powered analysis',
+        logo: null,
+        theme: {
+          primary: '#2563eb',
+          secondary: '#64748b', 
+          accent: '#8b5cf6'
+        },
+        terminology: {
+          analysis: 'Analyzing Your Process',
+          progress: 'Analysis Progress',
+          results: 'Your Process Audit Report', 
+          recommendations: 'Automation Recommendations'
+        }
+      }
+    }
+  }
+  
+  const brandConfig = getBrandConfig()
   const [currentStep, setCurrentStep] = useState(1)
   const [processData, setProcessData] = useState({
     processDescription: '',
@@ -352,11 +396,16 @@ const ProcessAuditApp = ({ isDemoMode = false }) => {
         <div className="relative mb-12">
           <div className="text-center">
             <div className="flex items-center justify-center mb-4">
-              <Logo className="w-16 h-16 text-white mr-4" color="currentColor" />
-              <h1 className="text-4xl font-bold text-white">ProcessAudit AI</h1>
+              {/* Dynamic Logo and Branding */}
+              {brandConfig.logo ? (
+                <span className="text-4xl mr-4">{brandConfig.logo}</span>
+              ) : (
+                <Logo className="w-16 h-16 text-white mr-4" color="currentColor" />
+              )}
+              <h1 className="text-4xl font-bold text-white">{brandConfig.name}</h1>
             </div>
             <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-              Discover automation opportunities in your business processes with AI-powered analysis
+              {brandConfig.tagline}
             </p>
           </div>
           
@@ -430,8 +479,13 @@ const ProcessAuditApp = ({ isDemoMode = false }) => {
               <div className="animate-pulse">
                 <div className="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-6 animate-bounce"></div>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-4">Analyzing Your Process</h2>
-              <p className="text-blue-100">Creating optimized SOP and identifying automation opportunities...</p>
+              <h2 className="text-2xl font-bold text-white mb-4">{brandConfig.terminology.analysis}</h2>
+              <p className="text-blue-100">
+                {isHospoDojo 
+                  ? 'Crafting your operational battle plan and identifying automation opportunities for hospitality excellence...'
+                  : 'Creating optimized SOP and identifying automation opportunities...'
+                }
+              </p>
             </div>
           )}
 
@@ -530,7 +584,7 @@ const ProcessAuditApp = ({ isDemoMode = false }) => {
         {/* Footer */}
         <div className="text-center mt-16 text-white">
           <p className="text-sm text-blue-100">
-            Powered by AI • Built for Technical Founders
+{isHospoDojo ? 'Powered by AI • Built for Hospitality Professionals' : 'Powered by AI • Built for Technical Founders'}
           </p>
         </div>
 

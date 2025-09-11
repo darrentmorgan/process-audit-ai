@@ -1,0 +1,24 @@
+
+/* Hospo Dojo — Web Tokens
+   Add @font-face for Gefika, Nimbus Sans, DM Sans in your app. */
+:root{
+  --hd-white:#FFFFFF;--hd-ivory:#EAE8DD;--hd-black:#1C1C1C;--hd-khaki-green:#42551C;
+  --hd-surface:var(--hd-white);--hd-surface-muted:var(--hd-ivory);--hd-text:var(--hd-black);--hd-accent:var(--hd-khaki-green);
+  --hd-radius:12px;--hd-gap:24px
+}
+.section--ivory{background:var(--hd-ivory);color:var(--hd-black)}
+.section--khaki{background:var(--hd-khaki-green);color:var(--hd-white)}
+.hd-leather{background-size:cover;background-repeat:no-repeat}
+:root{
+  --font-headline:"Gefika","Bebas Neue","Oswald",Impact,sans-serif;
+  --font-subheading:"Nimbus Sans","Nimbus Sans L","Helvetica Neue",Arial,sans-serif;
+  --font-body:"DM Sans",Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif
+}
+.hd-h1{font-family:var(--font-headline);text-transform:uppercase;line-height:1;letter-spacing:.02em}
+.hd-h2{font-family:var(--font-subheading);font-weight:700;line-height:1}
+.hd-body{font-family:var(--font-body);font-weight:500}
+.hd-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.8rem 1.1rem;border-radius:var(--hd-radius);border:1px solid transparent;font-family:var(--font-subheading);font-weight:700}
+.hd-btn--primary{background:var(--hd-khaki-green);color:var(--hd-white)}
+.hd-btn--ghost{background:transparent;color:var(--hd-khaki-green);border-color:var(--hd-khaki-green)}
+a{color:var(--hd-khaki-green)}a:hover{text-decoration:underline}
+/* Accessibility: prefer black on white/ivory for long text; khaki on ivory for short UI text only (AA). */
