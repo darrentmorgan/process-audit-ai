@@ -127,7 +127,7 @@ export const useAuditReports = () => {
 
 // Hook for managing user profile
 export const useProfile = () => {
-  const { user, updateProfile, isConfigured } = useAuth()
+  const { user, updateProfile, isConfigured } = useUnifiedAuth()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(false)
 
