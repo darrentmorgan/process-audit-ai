@@ -97,7 +97,7 @@ test.describe('PDF Generation E2E Tests', () => {
   test('Direct API Test: Generate Audit Report PDF', async ({ request }) => {
     console.log('Testing direct PDF API for audit report...');
     
-    const response = await request.post('http://localhost:3000/api/generate-pdf', {
+    const response = await request.post('http://localhost:3000/api/generate-pdf-v2', {
       data: {
         documentType: 'audit-report',
         reportData: testReportData,
@@ -131,7 +131,7 @@ test.describe('PDF Generation E2E Tests', () => {
 
     // Verify PDF content is not empty
     const buffer = await response.body();
-    expect(buffer.length).toBeGreaterThan(1000); // PDF should be substantial size
+    expect(buffer.length).toBeGreaterThan(300000); // Professional PDF, 300-600KB // PDF should be substantial size
     
     // Verify it starts with PDF signature
     const pdfHeader = buffer.slice(0, 4).toString();
@@ -143,7 +143,7 @@ test.describe('PDF Generation E2E Tests', () => {
   test('Direct API Test: Generate Executive Summary PDF', async ({ request }) => {
     console.log('Testing direct PDF API for executive summary...');
     
-    const response = await request.post('http://localhost:3000/api/generate-pdf', {
+    const response = await request.post('http://localhost:3000/api/generate-pdf-v2', {
       data: {
         documentType: 'executive-summary',
         reportData: testReportData,
@@ -172,7 +172,7 @@ test.describe('PDF Generation E2E Tests', () => {
     expect(response.headers()['content-type']).toBe('application/pdf');
 
     const buffer = await response.body();
-    expect(buffer.length).toBeGreaterThan(500);
+    expect(buffer.length).toBeGreaterThan(300000); // Professional PDF, 300-600KB
     expect(buffer.slice(0, 4).toString()).toBe('%PDF');
 
     console.log(`✅ Executive Summary PDF generated successfully (${buffer.length} bytes)`);
@@ -181,7 +181,7 @@ test.describe('PDF Generation E2E Tests', () => {
   test('Direct API Test: Generate SOP Document PDF', async ({ request }) => {
     console.log('Testing direct PDF API for SOP document...');
     
-    const response = await request.post('http://localhost:3000/api/generate-pdf', {
+    const response = await request.post('http://localhost:3000/api/generate-pdf-v2', {
       data: {
         documentType: 'sop-document',
         sopData: testSOPData,
@@ -207,7 +207,7 @@ test.describe('PDF Generation E2E Tests', () => {
     expect(response.headers()['content-type']).toBe('application/pdf');
 
     const buffer = await response.body();
-    expect(buffer.length).toBeGreaterThan(500);
+    expect(buffer.length).toBeGreaterThan(300000); // Professional PDF, 300-600KB
     expect(buffer.slice(0, 4).toString()).toBe('%PDF');
 
     console.log(`✅ SOP Document PDF generated successfully (${buffer.length} bytes)`);
@@ -239,7 +239,7 @@ test.describe('PDF Generation E2E Tests', () => {
   });
 
   test('Error Handling: Missing Document Type', async ({ request }) => {
-    const response = await request.post('http://localhost:3000/api/generate-pdf', {
+    const response = await request.post('http://localhost:3000/api/generate-pdf-v2', {
       data: {
         reportData: testReportData,
         options: {
@@ -256,7 +256,7 @@ test.describe('PDF Generation E2E Tests', () => {
   });
 
   test('Error Handling: Missing Options', async ({ request }) => {
-    const response = await request.post('http://localhost:3000/api/generate-pdf', {
+    const response = await request.post('http://localhost:3000/api/generate-pdf-v2', {
       data: {
         documentType: 'audit-report',
         reportData: testReportData
@@ -270,7 +270,7 @@ test.describe('PDF Generation E2E Tests', () => {
   });
 
   test('Error Handling: Invalid Document Type', async ({ request }) => {
-    const response = await request.post('http://localhost:3000/api/generate-pdf', {
+    const response = await request.post('http://localhost:3000/api/generate-pdf-v2', {
       data: {
         documentType: 'invalid-type',
         reportData: testReportData,
@@ -290,7 +290,7 @@ test.describe('PDF Generation E2E Tests', () => {
   test('Performance Test: PDF Generation Time', async ({ request }) => {
     const startTime = Date.now();
     
-    const response = await request.post('http://localhost:3000/api/generate-pdf', {
+    const response = await request.post('http://localhost:3000/api/generate-pdf-v2', {
       data: {
         documentType: 'audit-report',
         reportData: testReportData,
@@ -314,7 +314,7 @@ test.describe('PDF Generation E2E Tests', () => {
   });
 
   test('Link Delivery Method Test', async ({ request }) => {
-    const response = await request.post('http://localhost:3000/api/generate-pdf?delivery=link', {
+    const response = await request.post('http://localhost:3000/api/generate-pdf-v2?delivery=link', {
       data: {
         documentType: 'audit-report',
         reportData: testReportData,
@@ -338,7 +338,7 @@ test.describe('PDF Generation E2E Tests', () => {
 
   test('File Download and Validation', async ({ request }) => {
     // Generate PDF and save to test directory
-    const response = await request.post('http://localhost:3000/api/generate-pdf', {
+    const response = await request.post('http://localhost:3000/api/generate-pdf-v2', {
       data: {
         documentType: 'audit-report',
         reportData: testReportData,

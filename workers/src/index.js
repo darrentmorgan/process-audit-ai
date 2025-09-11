@@ -1,6 +1,7 @@
 /**
  * Cloudflare Worker for Processing Automation Jobs
- * Handles long-running automation generation tasks
+ * NOTE: Automation generation disabled - now provides recommendations only
+ * Handles long-running automation analysis tasks
  */
 
 import { processAutomationJob } from './processor';

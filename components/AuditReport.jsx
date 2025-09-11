@@ -24,7 +24,7 @@ import { useUnifiedAuth } from '../contexts/UnifiedAuthContext'
 import { useAuditReports } from '../hooks/useSupabase'
 import AutoSaveNotification from './AutoSaveNotification'
 import AutomationTemplates from './AutomationTemplates'
-import AutomationGenerator from './AutomationGenerator'
+// import AutomationGenerator from './AutomationGenerator' // Removed: Now showing suggestions instead of generation
 
 const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopData }) => {
   const [activeTab, setActiveTab] = useState('overview')
@@ -38,7 +38,7 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
   const [showNotification, setShowNotification] = useState(false)
   const [notificationMessage, setNotificationMessage] = useState('')
   const [notificationType, setNotificationType] = useState('success')
-  const [showAutomationGenerator, setShowAutomationGenerator] = useState(false)
+  // const [showAutomationGenerator, setShowAutomationGenerator] = useState(false) // Removed: Now showing suggestions
   
   // PDF Export state
   const [showPDFExportMenu, setShowPDFExportMenu] = useState(false)
@@ -312,7 +312,7 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
       return [
         { id: 'overview', label: 'SOP Summary', icon: BarChart3 },
         { id: 'opportunities', label: 'Improvements', icon: Zap },
-        { id: 'automations', label: 'Automations', icon: Target },
+        { id: 'recommendations', label: 'Recommendations', icon: Target },
         { id: 'guidance', label: 'Implementation', icon: Users }
       ]
     } else {
@@ -849,27 +849,24 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
         {/* Opportunities Tab */}
         {activeTab === 'opportunities' && (
           <div className="space-y-4">
-            {/* Advanced Automation Button */}
-            <div className="card bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+            {/* Automation Recommendations Card */}
+            <div className="card bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-blue-600 rounded-lg">
-                    <Cpu className="w-6 h-6 text-white" />
+                  <div className="p-3 bg-green-600 rounded-lg">
+                    <Target className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Generate n8n Workflow</h3>
+                    <h3 className="font-semibold text-gray-900">Automation Recommendations</h3>
                     <p className="text-sm text-gray-600">
-                      Create a complete automation workflow that you can import into n8n
+                      Strategic recommendations for implementing these automation opportunities
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setShowAutomationGenerator(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
-                >
-                  <Zap className="w-4 h-4" />
-                  Generate Workflow
-                </button>
+                <div className="text-right">
+                  <div className="text-lg font-semibold text-green-700">{automationOpportunities?.length || 0} Opportunities</div>
+                  <div className="text-sm text-green-600">Ready for implementation</div>
+                </div>
               </div>
             </div>
             
@@ -972,13 +969,65 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
           </div>
         )}
 
-        {/* Roadmap Tab */}
+        {/* Implementation Guide Tab */}
         {activeTab === 'roadmap' && (
           <div className="space-y-6">
+            {/* Automation Platform Recommendations */}
+            <div className="card">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                Recommended Automation Platforms
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Based on your automation opportunities, here are the best platforms for implementation:
+              </p>
+              
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-center mb-3">
+                    <div className="w-8 h-8 bg-orange-500 rounded text-white flex items-center justify-center text-sm font-bold">Z</div>
+                    <h4 className="font-semibold ml-2">Zapier</h4>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">Best for quick integrations between popular apps</p>
+                  <div className="text-xs text-gray-500">
+                    <div>Pricing: Starts at $20/month</div>
+                    <div>Complexity: Low to Medium</div>
+                    <div>Setup time: 1-2 weeks</div>
+                  </div>
+                </div>
+                
+                <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-center mb-3">
+                    <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center text-sm font-bold">PA</div>
+                    <h4 className="font-semibold ml-2">Power Automate</h4>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">Ideal for Office 365 environments</p>
+                  <div className="text-xs text-gray-500">
+                    <div>Pricing: Included with Office 365</div>
+                    <div>Complexity: Medium</div>
+                    <div>Setup time: 2-4 weeks</div>
+                  </div>
+                </div>
+                
+                <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-center mb-3">
+                    <div className="w-8 h-8 bg-pink-500 rounded text-white flex items-center justify-center text-sm font-bold">n8n</div>
+                    <h4 className="font-semibold ml-2">n8n</h4>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">For custom workflows and advanced automation</p>
+                  <div className="text-xs text-gray-500">
+                    <div>Pricing: Free self-hosted</div>
+                    <div>Complexity: Medium to High</div>
+                    <div>Setup time: 3-6 weeks</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Implementation Timeline */}
             {(roadmap || []).map((phase, index) => (
               <div key={index} className="card">
                 <div className="flex items-start">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary text-white font-bold text-lg mr-4 flex-shrink-0">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-600 text-white font-bold text-lg mr-4 flex-shrink-0">
                     {index + 1}
                   </div>
                   
@@ -989,11 +1038,11 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
                     
                     <div className="grid md:grid-cols-3 gap-6 mt-4">
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-3">Automation Items</h4>
+                        <h4 className="font-semibold text-gray-900 mb-3">Implementation Steps</h4>
                         <ul className="space-y-2">
                           {phase.items.map((item, itemIndex) => (
                             <li key={itemIndex} className="flex items-center">
-                              <CheckCircle className="w-4 h-4 text-secondary mr-2" />
+                              <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
                               <span className="text-gray-700">{item}</span>
                             </li>
                           ))}
@@ -1154,16 +1203,7 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
         onClose={() => setShowNotification(false)}
       />
 
-      {/* Automation Generator Modal */}
-      {showAutomationGenerator && (
-        <AutomationGenerator
-          auditReportId={reportId}
-          processData={processData}
-          automationOpportunities={automationOpportunities}
-          userId={user?.id}
-          onClose={() => setShowAutomationGenerator(false)}
-        />
-      )}
+      {/* Automation Generator Removed - Now showing recommendations instead of generation */}
     </div>
   )
 }

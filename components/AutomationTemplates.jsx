@@ -4,11 +4,11 @@ import {
   generateAutomationSummary,
   generateImplementationGuide
 } from '../utils/automationTemplates'
-import AutomationGenerator from './AutomationGenerator'
+// import AutomationGenerator from './AutomationGenerator' // Removed: Now showing recommendations instead
 
 const AutomationTemplates = ({ automationOpportunities, sopData, processData, auditReportId, userId }) => {
   const [activeTab, setActiveTab] = useState('overview')
-  const [showAutomationGenerator, setShowAutomationGenerator] = useState(false)
+  // const [showAutomationGenerator, setShowAutomationGenerator] = useState(false) // Removed: Now showing recommendations
 
   if (!automationOpportunities || automationOpportunities.length === 0) {
     return (
@@ -169,24 +169,21 @@ const AutomationTemplates = ({ automationOpportunities, sopData, processData, au
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setShowAutomationGenerator(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
-                >
-                  <Zap className="w-4 h-4" />
-                  Generate Workflow
-                </button>
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-green-700 mb-1">Implementation Ready</div>
+                  <div className="text-sm text-green-600">Use platform recommendations above</div>
+                </div>
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-semibold text-blue-900 mb-2">AI-Powered Generation Features</h4>
-              <ul className="text-sm text-blue-800 space-y-1">
-                <li>• Complete n8n workflow JSON with optimized node connections</li>
-                <li>• Intelligent automation logic based on your specific process</li>
-                <li>• Real-time progress tracking during generation</li>
-                <li>• Ready-to-import workflow with setup instructions</li>
-                <li>• Customized for your automation opportunities and constraints</li>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h4 className="font-semibold text-green-900 mb-2">Implementation Guidance</h4>
+              <ul className="text-sm text-green-800 space-y-1">
+                <li>• Choose platform based on your technical expertise and existing tools</li>
+                <li>• Start with highest-impact, lowest-effort opportunities first</li>
+                <li>• Consider pilot implementations before full deployment</li>
+                <li>• Plan for user training and change management</li>
+                <li>• Measure results and iterate on automation workflows</li>
               </ul>
             </div>
           </div>
@@ -241,16 +238,7 @@ const AutomationTemplates = ({ automationOpportunities, sopData, processData, au
         )}
       </div>
 
-      {/* Automation Generator Modal */}
-      {showAutomationGenerator && (
-        <AutomationGenerator
-          auditReportId={auditReportId}
-          processData={processData}
-          automationOpportunities={automationOpportunities}
-          userId={userId}
-          onClose={() => setShowAutomationGenerator(false)}
-        />
-      )}
+      {/* Automation Generator Removed - Now showing platform recommendations instead */}
     </div>
   )
 }

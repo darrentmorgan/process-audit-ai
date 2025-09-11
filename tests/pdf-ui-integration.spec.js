@@ -115,7 +115,7 @@ test.describe('PDF UI Integration Tests', () => {
         };
 
         try {
-          const response = await fetch('/api/generate-pdf', {
+          const response = await fetch('/api/generate-pdf-v2', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -196,7 +196,7 @@ test.describe('PDF UI Integration Tests', () => {
         statusEl.textContent = 'Generating...';
         
         try {
-          const response = await fetch('/api/generate-pdf', {
+          const response = await fetch('/api/generate-pdf-v2', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -283,7 +283,7 @@ test.describe('PDF UI Integration Tests', () => {
         statusEl.textContent = 'Generating SOP PDF...';
         
         try {
-          const response = await fetch('/api/generate-pdf', {
+          const response = await fetch('/api/generate-pdf-v2', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -356,7 +356,7 @@ test.describe('PDF UI Integration Tests', () => {
         statusEl.textContent = 'Testing error handling...';
         
         try {
-          const response = await fetch('/api/generate-pdf', {
+          const response = await fetch('/api/generate-pdf-v2', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -414,7 +414,7 @@ test.describe('PDF UI Integration Tests', () => {
         statusEl.textContent = 'Starting performance test...';
         
         try {
-          const response = await fetch('/api/generate-pdf', {
+          const response = await fetch('/api/generate-pdf-v2', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
