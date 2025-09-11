@@ -1,0 +1,44 @@
+{
+  "mcpServers": {
+    "Context7": {
+      "command": "node",
+      "args": [
+        "/Users/darrenmorgan/mcp-servers/context7/dist/index.js"
+      ],
+      "env": {
+        "CONTEXT7_API_KEY": "ctx7sk-b9008b41-aaa6-4353-9cd6-9835bae3ba0a"
+      }
+    },
+    "firecrawl": {
+      "command": "node",
+      "args": [
+        "/Users/darrenmorgan/mcp-servers/firecrawl-mcp-server/dist/index.js"
+      ],
+      "env": {
+        "FIRECRAWL_API_KEY": "fc-bf3ed61e05874ba2a46837a95ee2d72e"
+      }
+    },
+    "supabase": {
+      "command": "node",
+      "args": [
+        "/Users/darrenmorgan/mcp-servers/supabase-mcp/packages/mcp-server-supabase/dist/transports/stdio.js"
+      ],
+      "env": {
+        "SUPABASE_URL": "https://khodniyhethjyomscyjw.supabase.co",
+        "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtob2RuaXloZXRoanlvbXNjeWp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxOTAwODAsImV4cCI6MjA2OTc2NjA4MH0.RF_NylRqCD1ex6UuuGEVZs0xsk7_U1F-OGMAY34qo5w"
+      }
+    },
+    "clickup": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "github:darrentmorgan/clickup-mcp-server"
+      ],
+      "env": {
+        "CLICKUP_API_KEY": "pk_282797850_TWEYBB2P5BY0FRJRR4LP1TURF96YF1BP",
+        "CLICKUP_TEAM_ID": "90161066625",
+        "DOCUMENT_SUPPORT": "true"
+      }
+    }
+  }
+}
