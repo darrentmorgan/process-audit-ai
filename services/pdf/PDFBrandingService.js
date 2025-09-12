@@ -135,25 +135,35 @@ class PDFBrandingService {
   getFontConfiguration(branding) {
     const fontFamily = branding.fontFamily || this.defaultBranding.fontFamily
     
+    // Use mobile-optimized font sizes if available
+    const mobileSizes = branding.mobileOptimizations?.fontSize
+    const defaultSizes = {
+      title: 24,
+      heading1: 20,
+      heading2: 16,
+      heading3: 14,
+      body: 12,
+      small: 10,
+      caption: 8
+    }
+    
     return {
       primary: fontFamily,
       heading: fontFamily,
       body: fontFamily,
       mono: 'Courier',
-      sizes: {
-        title: 24,
-        heading1: 20,
-        heading2: 16,
-        heading3: 14,
-        body: 12,
-        small: 10,
-        caption: 8
-      },
+      sizes: mobileSizes ? { ...defaultSizes, ...mobileSizes } : defaultSizes,
       weights: {
         light: 300,
         normal: 400,
         medium: 500,
         bold: 700
+      },
+      // Mobile-specific font optimizations
+      mobileOptimizations: {
+        lineHeight: 1.4, // Better readability on mobile
+        letterSpacing: 0.01, // Slight letter spacing for clarity
+        antialiasing: true
       }
     }
   }
@@ -177,12 +187,20 @@ class PDFBrandingService {
         return null
       }
       
+      // Apply mobile optimizations if available
+      const mobileScale = branding.mobileOptimizations?.logoScale || 1
+      const baseWidth = 120
+      const baseHeight = 40
+      
       return {
         data: logoData,
-        width: 120, // Default logo width in points
-        height: 40, // Default logo height in points
-        position: 'header-left', // Default position
-        margin: 10
+        width: Math.round(baseWidth * mobileScale),
+        height: Math.round(baseHeight * mobileScale), 
+        position: 'header-left',
+        margin: 10,
+        // Mobile-specific enhancements
+        highDPI: true, // Ensure crisp rendering on mobile displays
+        vectorOptimized: branding.logo.endsWith('.svg')
       }
       
     } catch (error) {
@@ -210,13 +228,19 @@ class PDFBrandingService {
         return null
       }
       
+      // Apply mobile optimizations if available
+      const stampOpacity = branding.mobileOptimizations?.stampOpacity || 0.3
+      
       return {
         data: stampData,
-        width: 80, // Default stamp width in points
-        height: 80, // Default stamp height in points
-        position: 'bottom-right', // Default position
-        opacity: 0.3, // Semi-transparent
-        margin: 20
+        width: 80,
+        height: 80, 
+        position: 'bottom-right',
+        opacity: stampOpacity,
+        margin: 20,
+        // Mobile-friendly positioning
+        mobilePosition: 'bottom-center', // Better for mobile viewing
+        responsiveSize: true // Adjust size based on page dimensions
       }
       
     } catch (error) {
@@ -279,10 +303,28 @@ class PDFBrandingService {
         logo: '/Hospo-Dojo-Logo.svg',
         stamp: '/dojo-stamp.png',
         tagline: 'Prep For Success - AI-powered process analysis for hospitality professionals',
+        terminology: {
+          analysis: 'Hospitality Battle Plan Analysis',
+          recommendations: 'Strategic Moves for Excellence',
+          battle_plan: 'Your Operational Battle Plan',
+          excellence: 'Excellence Through Discipline'
+        },
+        mobileOptimizations: {
+          logoScale: 1.2, // Slightly larger logo for mobile PDFs
+          stampOpacity: 0.2, // More subtle stamp for mobile viewing
+          fontSize: {
+            title: 18,
+            heading: 14,
+            body: 10,
+            caption: 8
+          },
+          touchFriendly: true // Generate touch-friendly interactive elements
+        },
         metadata: {
           website: 'https://hospo-dojo.com',
           email: 'support@hospo-dojo.com',
-          tagline: 'Prep For Success - AI-powered process analysis for hospitality professionals'
+          tagline: 'Prep For Success - AI-powered process analysis for hospitality professionals',
+          keywords: ['hospitality', 'restaurant', 'hotel', 'automation', 'process-optimization', 'dojo']
         }
       }
     }

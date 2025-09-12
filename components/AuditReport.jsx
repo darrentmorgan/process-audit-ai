@@ -581,21 +581,21 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="card mb-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+    <div className="max-w-6xl mx-auto px-2 sm:px-0">
+      {/* Header - Mobile Responsive */}
+      <div className="card mb-6 sm:mb-8">
+        <div className="flex flex-col gap-4 sm:gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 leading-tight">
               Your Process Audit Report
             </h1>
-            <div className="flex items-center space-x-4">
-              <p className="text-gray-600">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:space-x-4">
+              <p className="text-gray-600 text-sm sm:text-base">
                 AI-powered analysis with actionable automation recommendations
               </p>
               {autoSaveStatus && (
                 <div className="flex items-center">
-                  <span className={`text-sm px-3 py-1 rounded-full ${
+                  <span className={`text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full ${
                     autoSaveStatus.includes('✅') 
                       ? 'bg-green-100 text-green-700' 
                       : autoSaveStatus.includes('failed')
@@ -608,19 +608,22 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
               )}
             </div>
           </div>
-          <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             {user && isConfigured ? (
               <button
                 onClick={handleSaveReport}
-                className={`btn-secondary flex items-center ${autoSaved ? 'opacity-75' : ''}`}
+                className={`btn-secondary flex items-center justify-center w-full sm:w-auto ${autoSaved ? 'opacity-75' : ''}`}
+                style={{ minHeight: '44px' }}
               >
-                <Save className="w-4 h-4 mr-2" />
-                {autoSaved ? 'Save Another Copy' : 'Save Report'}
+                <Save className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="text-sm sm:text-base">
+                  {autoSaved ? 'Save Another Copy' : 'Save Report'}
+                </span>
               </button>
             ) : isConfigured && (
-              <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
-                <Save className="w-4 h-4 text-blue-600 mr-2" />
-                <span className="text-sm text-blue-700">
+              <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 sm:px-4 py-2 sm:py-3 w-full sm:w-auto justify-center sm:justify-start">
+                <Save className="w-4 h-4 text-blue-600 mr-2 flex-shrink-0" />
+                <span className="text-xs sm:text-sm text-blue-700">
                   Sign in to auto-save reports
                 </span>
               </div>
@@ -719,49 +722,50 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
             </div>
             <button
               onClick={onRestart}
-              className="btn-primary flex items-center"
+              className="btn-primary flex items-center justify-center w-full sm:w-auto"
+              style={{ minHeight: '44px' }}
             >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              New Audit
+              <RefreshCw className="w-4 h-4 mr-2 flex-shrink-0" />
+              <span className="text-sm sm:text-base">New Audit</span>
             </button>
           </div>
         </div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <Clock className="w-8 h-8 text-primary mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-900">
+        {/* Key Metrics - Mobile Responsive */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="text-center p-3 sm:p-4 bg-blue-50 rounded-lg">
+            <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-primary mx-auto mb-1 sm:mb-2" />
+            <div className="text-lg sm:text-2xl font-bold text-gray-900">
               {executiveSummary?.totalTimeSavings || 'N/A'}
             </div>
-            <div className="text-sm text-gray-600">Potential Savings</div>
+            <div className="text-xs sm:text-sm text-gray-600">Potential Savings</div>
           </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <Zap className="w-8 h-8 text-secondary mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-900">
+          <div className="text-center p-3 sm:p-4 bg-green-50 rounded-lg">
+            <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-secondary mx-auto mb-1 sm:mb-2" />
+            <div className="text-lg sm:text-2xl font-bold text-gray-900">
               {executiveSummary?.quickWins || 'N/A'}
             </div>
-            <div className="text-sm text-gray-600">Quick Wins</div>
+            <div className="text-xs sm:text-sm text-gray-600">Quick Wins</div>
           </div>
-          <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <Target className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-900">
+          <div className="text-center p-3 sm:p-4 bg-purple-50 rounded-lg">
+            <Target className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 mx-auto mb-1 sm:mb-2" />
+            <div className="text-lg sm:text-2xl font-bold text-gray-900">
               {executiveSummary?.strategicOpportunities || 'N/A'}
             </div>
-            <div className="text-sm text-gray-600">Strategic Items</div>
+            <div className="text-xs sm:text-sm text-gray-600">Strategic Items</div>
           </div>
-          <div className="text-center p-4 bg-orange-50 rounded-lg">
-            <TrendingUp className="w-8 h-8 text-warning mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-900">
+          <div className="text-center p-3 sm:p-4 bg-orange-50 rounded-lg">
+            <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-warning mx-auto mb-1 sm:mb-2" />
+            <div className="text-lg sm:text-2xl font-bold text-gray-900">
               {executiveSummary?.estimatedROI || 'N/A'}
             </div>
-            <div className="text-sm text-gray-600">Est. ROI</div>
+            <div className="text-xs sm:text-sm text-gray-600">Est. ROI</div>
           </div>
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      {/* Tab Navigation - Mobile Responsive */}
+      <div className="flex flex-wrap gap-1 sm:gap-2 mb-4 sm:mb-6 overflow-x-auto pb-2">
         {tabs.map((tab) => {
           const Icon = tab.icon
           return (
@@ -769,63 +773,65 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`
-                flex items-center px-4 py-2 rounded-lg font-medium transition-colors duration-200
+                flex items-center px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors duration-200 text-sm sm:text-base whitespace-nowrap
                 ${activeTab === tab.id
                   ? 'bg-primary text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                  : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 active:bg-gray-100'
                 }
               `}
+              style={{ minHeight: '44px', minWidth: '44px' }}
             >
-              <Icon className="w-4 h-4 mr-2" />
-              {tab.label}
+              <Icon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden text-xs">{tab.label}</span>
             </button>
           )
         })}
       </div>
 
-      {/* Tab Content */}
-      <div className="space-y-6">
-        {/* Executive Summary Tab */}
+      {/* Tab Content - Mobile Responsive */}
+      <div className="space-y-4 sm:space-y-6">
+        {/* Executive Summary Tab - Mobile Optimized */}
         {activeTab === 'overview' && (
           <div className="card">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Executive Summary</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Executive Summary</h2>
             
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Current State</h3>
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div className="flex justify-between">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+              <div className="p-3 sm:p-4 bg-blue-50 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">Current State</h3>
+                <div className="space-y-2 text-xs sm:text-sm text-gray-600">
+                  <div className="flex justify-between items-center">
                     <span>Process Frequency:</span>
-                    <span className="font-medium">{executiveSummary?.frequency || 'Unknown'}</span>
+                    <span className="font-medium text-right">{executiveSummary?.frequency || 'Unknown'}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span>Time per Iteration:</span>
-                    <span className="font-medium">{executiveSummary?.currentTimeSpent || 'Unknown'}</span>
+                    <span className="font-medium text-right">{executiveSummary?.currentTimeSpent || 'Unknown'}</span>
                   </div>
                 </div>
               </div>
               
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Optimization Potential</h3>
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div className="flex justify-between">
+              <div className="p-3 sm:p-4 bg-green-50 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">Optimization Potential</h3>
+                <div className="space-y-2 text-xs sm:text-sm text-gray-600">
+                  <div className="flex justify-between items-center">
                     <span>Automation Opportunities:</span>
-                    <span className="font-medium">{automationOpportunities?.length || 0}</span>
+                    <span className="font-medium text-right">{automationOpportunities?.length || 0}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span>Est. Implementation Time:</span>
-                    <span className="font-medium">2-12 weeks</span>
+                    <span className="font-medium text-right">2-12 weeks</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-blue-50 rounded-lg p-6">
-              <h3 className="font-semibold text-gray-900 mb-3">Key Recommendations</h3>
-              <ul className="space-y-2">
+            <div className="bg-blue-50 rounded-lg p-4 sm:p-6">
+              <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">Key Recommendations</h3>
+              <ul className="space-y-2 sm:space-y-3">
                 <li className="flex items-start">
-                  <CheckCircle className="w-5 h-5 text-secondary mt-0.5 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700">
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-secondary mt-0.5 mr-2 sm:mr-3 flex-shrink-0" />
+                  <span className="text-gray-700 text-sm sm:text-base leading-relaxed">
                     Start with {executiveSummary?.quickWins || 'available'} quick-win opportunities for immediate impact
                   </span>
                 </li>
@@ -846,26 +852,26 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
           </div>
         )}
 
-        {/* Opportunities Tab */}
+        {/* Opportunities Tab - Mobile Optimized */}
         {activeTab === 'opportunities' && (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {/* Automation Recommendations Card */}
             <div className="card bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-green-600 rounded-lg">
-                    <Target className="w-6 h-6 text-white" />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="p-2 sm:p-3 bg-green-600 rounded-lg flex-shrink-0">
+                    <Target className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">Automation Recommendations</h3>
-                    <p className="text-sm text-gray-600">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Automation Recommendations</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                       Strategic recommendations for implementing these automation opportunities
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-lg font-semibold text-green-700">{automationOpportunities?.length || 0} Opportunities</div>
-                  <div className="text-sm text-green-600">Ready for implementation</div>
+                <div className="text-left sm:text-right flex-shrink-0 ml-8 sm:ml-0">
+                  <div className="text-base sm:text-lg font-semibold text-green-700">{automationOpportunities?.length || 0} Opportunities</div>
+                  <div className="text-xs sm:text-sm text-green-600">Ready for implementation</div>
                 </div>
               </div>
             </div>
@@ -879,16 +885,17 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
               return (
                 <div key={opportunityId} className="card">
                   <div
-                    className="flex items-center justify-between cursor-pointer"
+                    className="flex items-center justify-between cursor-pointer active:bg-gray-50 -mx-2 sm:-mx-4 px-2 sm:px-4 py-2 rounded-lg transition-colors duration-200"
                     onClick={() => setExpandedOpportunity(isExpanded ? null : opportunityId)}
+                    style={{ minHeight: '44px' }}
                   >
-                    <div className="flex items-center flex-1">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary text-white mr-4">
-                        <CategoryIcon className="w-5 h-5" />
+                    <div className="flex items-center flex-1 min-w-0">
+                      <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary text-white mr-3 sm:mr-4 flex-shrink-0">
+                        <CategoryIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
                       
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
                           {opportunity.processStep || opportunity.stepDescription}
                         </h3>
                         <p className="text-gray-600 text-sm">
@@ -897,15 +904,17 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-3 mr-4">
-                      <span className={`px-2 py-1 rounded text-xs font-medium border ${getPriorityColor(opportunity.priority)}`}>
-                        {opportunity.priority}% Priority
-                      </span>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${getEffortColor(opportunity.effort)}`}>
-                        {opportunity.effort} Effort
-                      </span>
-                      <div className="text-right">
-                        <div className="font-semibold text-gray-900">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mr-2 sm:mr-4">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`px-2 py-1 rounded text-xs font-medium border ${getPriorityColor(opportunity.priority)}`}>
+                          {opportunity.priority}%
+                        </span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${getEffortColor(opportunity.effort)}`}>
+                          {opportunity.effort}
+                        </span>
+                      </div>
+                      <div className="text-left sm:text-right">
+                        <div className="font-semibold text-gray-900 text-sm sm:text-base">
                           {opportunity.timeSavings}
                         </div>
                         <div className="text-xs text-gray-500">time saved</div>
@@ -913,28 +922,28 @@ const AuditReport = ({ report, onRestart, processData, isSOPMode = false, sopDat
                     </div>
 
                     <ChevronRight 
-                      className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
+                      className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-90' : ''}`} 
                     />
                   </div>
 
                   {isExpanded && (
-                    <div className="mt-6 pt-6 border-t border-gray-200">
-                      <div className="grid md:grid-cols-2 gap-6">
+                    <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <div>
-                          <h4 className="font-semibold text-gray-900 mb-3">Implementation Steps</h4>
-                          <ol className="space-y-2">
+                          <h4 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">Implementation Steps</h4>
+                          <ol className="space-y-2 sm:space-y-3">
                             {(opportunity.implementationSteps || []).map((step, index) => (
                               <li key={index} className="flex items-start">
-                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-medium mr-3 mt-0.5 flex-shrink-0">
+                                <span className="flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary text-white text-xs font-medium mr-2 sm:mr-3 mt-0.5 flex-shrink-0">
                                   {index + 1}
                                 </span>
-                                <span className="text-gray-700">{step}</span>
+                                <span className="text-gray-700 text-sm sm:text-base leading-relaxed">{step}</span>
                               </li>
                             ))}
                           </ol>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-3 sm:space-y-4 mt-4 md:mt-0">
                           <div>
                             <h4 className="font-semibold text-gray-900 mb-2">Recommended Tools</h4>
                             <div className="flex flex-wrap gap-2">

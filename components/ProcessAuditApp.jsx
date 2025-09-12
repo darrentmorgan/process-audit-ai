@@ -1,20 +1,68 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import StepIndicator from './StepIndicator'
 import ProcessInput from './ProcessInput'
-import QuestionForm from './QuestionForm'
-import AnalysisLoader from './AnalysisLoader'
-import AuditReport from './AuditReport'
-import SOPFeedback from './SOPFeedback'
-import SOPQuestionForm from './SOPQuestionForm'
-import SOPRevision from './SOPRevision'
 import UserMenu from './UserMenu'
-import ClerkAuthModal from './ClerkAuthModal'
-import SavedReportsModal from './SavedReportsModal'
-import DatabaseCleanup from './DatabaseCleanup'
 import Logo from './Logo'
 import { Zap, Target, BarChart3 } from 'lucide-react'
+import useMobileOptimization from '../hooks/useMobileOptimization'
+import { 
+  ReportLoadingSkeleton, 
+  AuthModalLoadingSkeleton, 
+  SavedReportsLoadingSkeleton,
+  ProcessingLoadingSkeleton 
+} from './MobileLoadingSkeletons'
+
+// Dynamic imports for heavy components - mobile optimization
+const AuditReport = dynamic(() => import('./AuditReport'), {
+  loading: () => <ReportLoadingSkeleton />,
+  ssr: false
+})
+
+const ClerkAuthModal = dynamic(() => import('./ClerkAuthModal'), {
+  loading: () => <AuthModalLoadingSkeleton />,
+  ssr: false
+})
+
+const SavedReportsModal = dynamic(() => import('./SavedReportsModal'), {
+  loading: () => <SavedReportsLoadingSkeleton />,
+  ssr: false
+})
+
+// Lazy load SOP-specific components (only when needed)
+const SOPFeedback = dynamic(() => import('./SOPFeedback'), {
+  loading: () => <ProcessingLoadingSkeleton message="Loading feedback..." />,
+  ssr: false
+})
+
+const SOPQuestionForm = dynamic(() => import('./SOPQuestionForm'), {
+  loading: () => <ProcessingLoadingSkeleton message="Loading questions..." />,
+  ssr: false
+})
+
+const SOPRevision = dynamic(() => import('./SOPRevision'), {
+  loading: () => <ProcessingLoadingSkeleton message="Loading revision..." />,
+  ssr: false
+})
+
+// Database cleanup is rarely used - lazy load
+const DatabaseCleanup = dynamic(() => import('./DatabaseCleanup'), {
+  loading: () => <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"><div className="bg-white rounded-xl p-6">Loading...</div></div>,
+  ssr: false
+})
 
 const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
+  
+  // Mobile optimization hook
+  const { 
+    isMobile, 
+    shouldLoadHeavyAssets, 
+    handleTouchStart, 
+    handleTouchEnd, 
+    trackPerformanceMetric,
+    isSlowNetwork,
+    isLowMemoryDevice 
+  } = useMobileOptimization()
   
   // Determine if this is Hospo-Dojo branded experience
   const isHospoDojo = organization === 'hospo-dojo'
@@ -411,34 +459,40 @@ const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
 
   return (
     <div className="min-h-screen gradient-bg">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="relative mb-12">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
+        {/* Header - Mobile Responsive */}
+        <div className="relative mb-6 sm:mb-8 lg:mb-12">
           <div className="text-center">
-            <div className="flex items-center justify-center mb-4">
-              {/* Dynamic Logo and Branding */}
+            <div className="flex items-center justify-center mb-3 sm:mb-4">
+              {/* Dynamic Logo and Branding - Mobile Touch Optimized */}
               {brandConfig.logo ? (
                 brandConfig.logoType === 'svg' ? (
                   <img 
                     src={brandConfig.logo} 
                     alt={`${brandConfig.name} - Hospitality Operations Platform`}
-                    className="h-12 w-auto object-contain"
-                    style={{ filter: 'brightness(0) invert(1)' }}
+                    className="hd-logo-mobile transition-transform duration-200 hover:scale-105"
+                    style={{ 
+                      filter: 'brightness(0) invert(1)',
+                      imageRendering: '-webkit-optimize-contrast',
+                      imageRendering: 'crisp-edges'
+                    }}
+                    loading="eager"
+                    decoding="async"
                   />
                 ) : (
-                  <span className="text-4xl">{brandConfig.logo}</span>
+                  <span className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">{brandConfig.logo}</span>
                 )
               ) : (
-                <Logo className="w-16 h-16 text-white" color="currentColor" />
+                <Logo className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 text-white transition-transform duration-200 hover:scale-105" color="currentColor" />
               )}
             </div>
-            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base lg:text-lg text-blue-100 max-w-2xl mx-auto hd-mobile-spacing leading-relaxed font-medium">
               {brandConfig.tagline}
             </p>
           </div>
           
-          {/* User Menu - positioned absolutely in top right */}
-          <div className="absolute top-0 right-0">
+          {/* User Menu - Mobile Responsive Positioning */}
+          <div className="absolute top-0 right-0 sm:right-0">
             <UserMenu 
               onOpenAuth={openAuthModal} 
               onOpenSavedReports={openSavedReports}
@@ -447,43 +501,60 @@ const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
           </div>
         </div>
 
-        {/* Demo Mode Banner */}
+        {/* Demo Mode Banner - Mobile Touch Optimized */}
         {isDemoMode && (
-          <div className="bg-yellow-500 bg-opacity-90 text-yellow-900 px-6 py-3 rounded-lg mb-8 text-center">
-            <div className="flex items-center justify-center gap-2">
-              <Zap className="w-5 h-5" />
-              <span className="font-semibold">Demo Mode</span>
-              <span>•</span>
-              <span>Try the tool freely</span>
-              <span>•</span>
+          <div className="bg-yellow-500 bg-opacity-90 backdrop-blur-sm text-yellow-900 px-3 sm:px-4 lg:px-6 py-3 rounded-xl mb-6 sm:mb-8 text-center hd-mobile-spacing border border-yellow-400 border-opacity-30">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2 text-sm sm:text-base">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
+                <span className="font-semibold tracking-wide">{isHospoDojo ? 'Dojo Demo Mode' : 'Demo Mode'}</span>
+              </div>
+              <div className="hidden sm:block">•</div>
+              <span className="hidden sm:inline">Try the tool freely</span>
+              <div className="hidden sm:block">•</div>
               <button 
                 onClick={() => openAuthModal('signup')}
-                className="underline font-semibold hover:no-underline"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                className="hd-touch-feedback underline font-semibold hover:no-underline mt-1 sm:mt-0 px-2 py-1 rounded transition-colors duration-200 touch-target"
+                style={{ minHeight: '44px' }}
               >
-                Sign up to save your results
+                {isHospoDojo ? 'Join the Dojo to save results' : 'Sign up to save your results'}
               </button>
             </div>
           </div>
         )}
 
-        {/* Features Banner */}
+        {/* Features Banner - Mobile Touch Optimized */}
         {currentStep === 1 && (
-          <div className="max-w-4xl mx-auto mb-12">
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="text-center text-white">
-                <Zap className="w-8 h-8 mx-auto mb-3 text-yellow-300" />
-                <h3 className="font-semibold mb-2">Quick Analysis</h3>
-                <p className="text-sm text-blue-100">Get actionable insights in minutes</p>
+          <div className="max-w-4xl mx-auto mb-8 sm:mb-10 lg:mb-12 hd-mobile-spacing">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+              <div className="text-center text-white bg-white bg-opacity-10 rounded-xl p-4 sm:p-6 backdrop-blur-md border border-white border-opacity-20 transition-all duration-300 hover:bg-opacity-15 hover:transform hover:scale-105">
+                <Zap className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 sm:mb-3 text-yellow-300 drop-shadow-lg" />
+                <h3 className="font-semibold mb-1 sm:mb-2 text-sm sm:text-base tracking-wide">
+                  {isHospoDojo ? 'Lightning Fast Analysis' : 'Quick Analysis'}
+                </h3>
+                <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
+                  {isHospoDojo ? 'Battle-tested insights for hospitality excellence' : 'Get actionable insights in minutes'}
+                </p>
               </div>
-              <div className="text-center text-white">
-                <Target className="w-8 h-8 mx-auto mb-3 text-green-300" />
-                <h3 className="font-semibold mb-2">Targeted Recommendations</h3>
-                <p className="text-sm text-blue-100">Prioritized by impact and effort</p>
+              <div className="text-center text-white bg-white bg-opacity-10 rounded-xl p-4 sm:p-6 backdrop-blur-md border border-white border-opacity-20 transition-all duration-300 hover:bg-opacity-15 hover:transform hover:scale-105">
+                <Target className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 sm:mb-3 text-green-300 drop-shadow-lg" />
+                <h3 className="font-semibold mb-1 sm:mb-2 text-sm sm:text-base tracking-wide">
+                  {isHospoDojo ? 'Strategic Moves' : 'Targeted Recommendations'}
+                </h3>
+                <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
+                  {isHospoDojo ? 'Precision-targeted hospitality optimizations' : 'Prioritized by impact and effort'}
+                </p>
               </div>
-              <div className="text-center text-white">
-                <BarChart3 className="w-8 h-8 mx-auto mb-3 text-purple-300" />
-                <h3 className="font-semibold mb-2">ROI Calculations</h3>
-                <p className="text-sm text-blue-100">Quantified time and cost savings</p>
+              <div className="text-center text-white bg-white bg-opacity-10 rounded-xl p-4 sm:p-6 backdrop-blur-md border border-white border-opacity-20 transition-all duration-300 hover:bg-opacity-15 hover:transform hover:scale-105">
+                <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 sm:mb-3 text-purple-300 drop-shadow-lg" />
+                <h3 className="font-semibold mb-1 sm:mb-2 text-sm sm:text-base tracking-wide">
+                  {isHospoDojo ? 'Victory Metrics' : 'ROI Calculations'}
+                </h3>
+                <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
+                  {isHospoDojo ? 'Quantified success for hospitality warriors' : 'Quantified time and cost savings'}
+                </p>
               </div>
             </div>
           </div>
@@ -501,20 +572,12 @@ const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
             />
           )}
 
-          {/* Step 2: Analysis (Loading) */}
+          {/* Step 2: Analysis (Loading) - Mobile Touch Optimized */}
           {currentStep === 2 && (
-            <div className="text-center py-12">
-              <div className="animate-pulse">
-                <div className="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-6 animate-bounce"></div>
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-4">{brandConfig.terminology.analysis}</h2>
-              <p className="text-blue-100">
-                {isHospoDojo 
-                  ? 'Crafting your operational battle plan and identifying automation opportunities for hospitality excellence...'
-                  : 'Creating optimized SOP and identifying automation opportunities...'
-                }
-              </p>
-            </div>
+            <ProcessingLoadingSkeleton 
+              isHospoDojo={isHospoDojo}
+              message={brandConfig.terminology.analysis}
+            />
           )}
 
           {/* Step 3: SOP Discovery Questions */}
@@ -535,14 +598,14 @@ const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
                 />
               ) : (
                 <div className="card max-w-2xl mx-auto text-center">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Processing Analysis...</h2>
-                  <p className="text-gray-600 mb-6">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Processing Analysis...</h2>
+                  <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
                     Preparing your SOP analysis results...
                   </p>
                   <div className="animate-pulse">
-                    <div className="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-6 animate-bounce"></div>
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-blue-500 rounded-full mx-auto mb-4 sm:mb-6 animate-bounce"></div>
                   </div>
-                  <button onClick={() => setCurrentStep(4)} className="btn-primary">
+                  <button onClick={() => setCurrentStep(4)} className="btn-primary w-full sm:w-auto">
                     Skip to Results
                   </button>
                 </div>
@@ -579,14 +642,14 @@ const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
                 />
               ) : (
                 <div className="card max-w-2xl mx-auto text-center">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Processing Improvements...</h2>
-                  <p className="text-gray-600 mb-6">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Processing Improvements...</h2>
+                  <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
                     Preparing your improvement recommendations...
                   </p>
                   <div className="animate-pulse">
-                    <div className="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-6 animate-bounce"></div>
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-blue-500 rounded-full mx-auto mb-4 sm:mb-6 animate-bounce"></div>
                   </div>
-                  <button onClick={() => setCurrentStep(4)} className="btn-primary">
+                  <button onClick={() => setCurrentStep(4)} className="btn-primary w-full sm:w-auto">
                     Skip to Results
                   </button>
                 </div>
@@ -609,11 +672,37 @@ const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
           )}
         </div>
 
-        {/* Footer */}
-        <div className="text-center mt-16 text-white">
-          <p className="text-sm text-blue-100">
-{isHospoDojo ? 'Powered by AI • Built for Hospitality Professionals' : 'Powered by AI • Built for Technical Founders'}
-          </p>
+        {/* Footer - Mobile Touch Optimized */}
+        <div className="text-center mt-8 sm:mt-12 lg:mt-16 text-white hd-mobile-spacing">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            {isHospoDojo && (
+              <img 
+                src="/dojo-stamp.png" 
+                alt="Hospo Dojo Stamp" 
+                className="w-4 h-4 opacity-60"
+                style={{ filter: 'brightness(0) invert(1)' }}
+              />
+            )}
+            <p className="text-xs sm:text-sm text-blue-100 font-medium tracking-wide">
+              {isHospoDojo 
+                ? 'Powered by AI • Built for Hospitality Warriors' 
+                : 'Powered by AI • Built for Technical Founders'
+              }
+            </p>
+            {isHospoDojo && (
+              <img 
+                src="/dojo-stamp.png" 
+                alt="Hospo Dojo Stamp" 
+                className="w-4 h-4 opacity-60"
+                style={{ filter: 'brightness(0) invert(1)' }}
+              />
+            )}
+          </div>
+          {isHospoDojo && (
+            <p className="text-xs text-blue-200 opacity-75 mt-1 font-medium tracking-widest uppercase">
+              Excellence Through Discipline
+            </p>
+          )}
         </div>
 
         {/* Auth Modal */}

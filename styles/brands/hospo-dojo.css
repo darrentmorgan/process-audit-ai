@@ -1,4 +1,4 @@
-/* Hospo Dojo Custom Brand Styles */
+/* Hospo Dojo Custom Brand Styles - Mobile Optimized */
 
 :root[data-brand="hospo-dojo"] {
   /* Official Hospo Dojo Color Variables */
@@ -13,20 +13,33 @@
   --color-text-secondary: #42551C; /* Khaki Green */
   --color-text-accent: #42551C;    /* Khaki Green */
   
-  /* Typography Variables */
+  /* Typography Variables - Mobile Optimized */
   --font-family: "DM Sans", Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   --font-family-headlines: "Gefika", "Bebas Neue", "Oswald", Impact, sans-serif;
   --font-family-subheadlines: "Nimbus Sans", "Nimbus Sans L", "Helvetica Neue", Arial, sans-serif;
   
-  /* Design System Overrides */
+  /* Design System Overrides - Mobile Friendly */
   --border-radius-base: 12px;
   --spacing-base: 24px;
+  --touch-target-min: 44px;        /* iOS/Android minimum touch target */
+  --mobile-padding: 16px;
+  --tablet-padding: 24px;
   
-  /* Animation & Transitions */
+  /* Mobile Responsive Typography Scale */
+  --font-size-mobile-xs: 12px;
+  --font-size-mobile-sm: 14px;
+  --font-size-mobile-base: 16px;    /* Prevents zoom on iOS */
+  --font-size-mobile-lg: 18px;
+  --font-size-mobile-xl: 24px;
+  --font-size-mobile-2xl: 32px;
+  
+  /* Animation & Transitions - Touch Optimized */
   --transition-colors: color 0.3s ease, background-color 0.3s ease;
+  --transition-touch: transform 0.15s ease, box-shadow 0.15s ease;
+  --active-scale: 0.95;             /* Touch feedback scale */
 }
 
-/* Hospo Dojo Specific Design Elements */
+/* Hospo Dojo Specific Design Elements - Mobile Optimized */
 .hd-wave-background {
   background-image: linear-gradient(
     135deg, 
@@ -37,8 +50,19 @@
   animation: waveBackground 15s ease infinite;
 }
 
+/* Mobile-specific gradient backgrounds */
+.hd-mobile-hero {
+  background: linear-gradient(180deg, #42551C 0%, #1C1C1C 100%);
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
+}
+
+.hd-mobile-gradient {
+  background: linear-gradient(135deg, #42551C 0%, #1C1C1C 50%, #EAE8DD 100%);
+}
+
 .hd-section {
-  @apply py-16 px-4 md:px-8 lg:px-16;
+  @apply py-8 px-3 sm:py-12 sm:px-4 md:py-16 md:px-8 lg:px-16;
 }
 
 .hd-section--ivory {
@@ -47,6 +71,17 @@
 
 .hd-section--khaki {
   @apply bg-hd-khaki text-hd-white;
+}
+
+/* Mobile-specific section padding */
+.hd-section--mobile {
+  padding: var(--mobile-padding);
+}
+
+@media (min-width: 768px) {
+  .hd-section--mobile {
+    padding: var(--tablet-padding);
+  }
 }
 
 @keyframes waveBackground {
@@ -64,17 +99,47 @@
   letter-spacing: 0.05em;
 }
 
-/* CTA Button Styles */
+/* CTA Button Styles - Mobile Touch Optimized */
 .hd-button {
-  @apply rounded-hd transition-all duration-300 ease-in-out;
+  @apply rounded-xl transition-all duration-200 ease-in-out;
+  min-height: var(--touch-target-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  letter-spacing: 0.025em;
 }
 
 .hd-button--primary {
-  @apply bg-hd-khaki text-hd-white hover:bg-opacity-90;
+  @apply bg-hd-khaki text-white;
+  background: linear-gradient(135deg, #42551C 0%, #1C1C1C 100%);
+  border: 2px solid #EAE8DD;
+  box-shadow: 0 4px 12px rgba(66, 85, 28, 0.3);
+}
+
+.hd-button--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(66, 85, 28, 0.4);
+}
+
+.hd-button--primary:active {
+  transform: scale(var(--active-scale));
+  box-shadow: 0 2px 8px rgba(66, 85, 28, 0.3);
 }
 
 .hd-button--secondary {
-  @apply bg-hd-ivory text-hd-black hover:bg-opacity-80;
+  @apply bg-opacity-20 text-white backdrop-blur-md;
+  background-color: rgba(234, 232, 221, 0.2);
+  border: 1px solid rgba(234, 232, 221, 0.3);
+  transition: var(--transition-touch);
+}
+
+.hd-button--secondary:hover {
+  background-color: rgba(234, 232, 221, 0.3);
+}
+
+.hd-button--secondary:active {
+  transform: scale(var(--active-scale));
 }
 
 /* Component-specific Hospo Dojo overrides */
@@ -106,10 +171,125 @@
   color: #FFFFFF !important;
 }
 
-/* Accessibility Enhancements */
+/* Mobile Logo Optimization */
+.hd-logo-mobile {
+  height: 24px;
+  width: auto;
+  filter: brightness(0) invert(1);
+  object-fit: contain;
+}
+
+@media (min-width: 640px) {
+  .hd-logo-mobile {
+    height: 28px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hd-logo-mobile {
+    height: 32px;
+  }
+}
+
+/* Mobile Touch Feedback */
+.hd-touch-feedback {
+  -webkit-tap-highlight-color: rgba(66, 85, 28, 0.3);
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.hd-touch-feedback:active {
+  transform: scale(var(--active-scale));
+  transition: transform 0.1s ease-out;
+}
+
+/* Mobile Form Inputs */
+.hd-input-mobile {
+  font-size: var(--font-size-mobile-base); /* Prevents zoom on iOS */
+  min-height: var(--touch-target-min);
+  background-color: rgba(234, 232, 221, 0.1);
+  border: 1px solid rgba(234, 232, 221, 0.3);
+  color: white;
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: var(--transition-colors);
+}
+
+.hd-input-mobile::placeholder {
+  color: rgba(234, 232, 221, 0.7);
+}
+
+.hd-input-mobile:focus {
+  outline: none;
+  border-color: #42551C;
+  box-shadow: 0 0 0 2px rgba(66, 85, 28, 0.2);
+}
+
+/* Mobile Navigation */
+.hd-nav-mobile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+@media (min-width: 640px) {
+  .hd-nav-mobile {
+    gap: 12px;
+    padding: 12px 0;
+  }
+}
+
+/* Mobile Content Spacing */
+.hd-mobile-spacing {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+@media (min-width: 640px) {
+  .hd-mobile-spacing {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hd-mobile-spacing {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* Accessibility & Performance Enhancements */
 @media (prefers-reduced-motion: reduce) {
   .hd-wave-background {
     animation: none;
     background-position: center;
+  }
+  
+  .hd-button,
+  .hd-touch-feedback {
+    transition: none;
+  }
+  
+  .hd-touch-feedback:active {
+    transform: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root[data-brand="hospo-dojo"] {
+    --color-primary: #000000;
+    --color-secondary: #FFFFFF;
+    --color-accent: #006600;
+  }
+}
+
+/* Dark mode considerations for mobile */
+@media (prefers-color-scheme: dark) {
+  .hd-input-mobile {
+    background-color: rgba(28, 28, 28, 0.8);
+    border-color: rgba(66, 85, 28, 0.4);
   }
 }

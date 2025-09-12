@@ -87,14 +87,18 @@ const QuestionForm = ({ questions, onComplete, onBack }) => {
         return (
           <div>
             <textarea
-              className={`textarea-field ${error ? 'border-red-500' : ''}`}
-              rows={4}
+              className={`textarea-field text-base ${error ? 'border-red-500' : ''}`}
+              rows={6} // More rows on mobile for better UX
               placeholder="Please provide details..."
               value={value}
               onChange={(e) => updateAnswer(question.id, e.target.value)}
+              style={{ 
+                fontSize: '16px', // Prevents zoom on iOS
+                minHeight: '100px' // Better touch area
+              }}
             />
             {error && (
-              <p className="mt-2 text-sm text-red-600">{error}</p>
+              <p className="mt-2 text-sm text-red-600 px-1">{error}</p>
             )}
           </div>
         )

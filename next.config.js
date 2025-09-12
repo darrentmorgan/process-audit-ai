@@ -55,6 +55,8 @@ const nextConfig = {
   swcMinify: true,
   experimental: {
     serverComponentsExternalPackages: [],
+    // Mobile-specific optimizations  
+    optimizePackageImports: ['lucide-react'],
   },
   
   // Temporarily allow deployment with linting warnings

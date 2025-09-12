@@ -55,6 +55,11 @@ const customJestConfig = {
       displayName: 'PDF Generation Tests',
       testMatch: ['<rootDir>/__tests__/services/pdf/**/*.(test|spec).(js|jsx|ts|tsx)', '<rootDir>/__tests__/services/sop/**/*.(test|spec).(js|jsx|ts|tsx)'],
       testEnvironment: 'node'
+    },
+    {
+      displayName: 'Mobile Optimization Tests',
+      testMatch: ['<rootDir>/__tests__/mobile/**/*.test.js'],
+      testEnvironment: 'jsdom'
     }
   ],
   

@@ -235,30 +235,30 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
 
   return (
     <div className="card max-w-3xl mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+      <div className="text-center mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
           Describe Your Process
         </h2>
-        <p className="text-lg text-gray-600">
+        <p className="text-base sm:text-lg text-gray-600 px-2 sm:px-0 leading-relaxed">
           Tell us about the business process you&apos;d like to optimize. You can describe it manually or upload a document. 
           We&apos;ll automatically detect if it&apos;s a Standard Operating Procedure or general process.
         </p>
       </div>
 
-      <div className="space-y-6">
-        {/* File Upload Section */}
+      <div className="space-y-4 sm:space-y-6">
+        {/* File Upload Section - Mobile Optimized */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3 px-1">
             Upload Process Document (Optional)
           </label>
           <div
             className={`
-              relative border-2 border-dashed rounded-lg p-6 text-center transition-colors duration-200
+              relative border-2 border-dashed rounded-lg p-4 sm:p-6 text-center transition-colors duration-200 touch-manipulation
               ${dragActive 
                 ? 'border-primary bg-blue-50' 
                 : uploadedFile 
                   ? 'border-secondary bg-green-50' 
-                  : 'border-gray-300 hover:border-gray-400'
+                  : 'border-gray-300 hover:border-gray-400 active:border-primary'
               }
               ${isUploading ? 'opacity-50 pointer-events-none' : ''}
             `}
@@ -270,40 +270,45 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
             <input
               ref={fileInputRef}
               type="file"
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer touch-manipulation"
               accept=".pdf,.doc,.docx,.txt,.md"
               onChange={(e) => e.target.files[0] && handleFileUpload(e.target.files[0])}
               disabled={isUploading}
+              style={{ minHeight: '44px' }} // iOS touch target size
             />
 
             {isUploading ? (
-              <div className="flex flex-col items-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2"></div>
+              <div className="flex flex-col items-center py-2">
+                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-primary mb-2"></div>
                 <p className="text-sm text-gray-600">Processing file...</p>
               </div>
             ) : uploadedFile ? (
-              <div className="flex items-center justify-center">
-                <FileText className="w-8 h-8 text-secondary mr-3" />
-                <div className="text-left">
-                  <p className="font-medium text-gray-900">{uploadedFile.name}</p>
-                  <p className="text-sm text-gray-600">File uploaded successfully</p>
+              <div className="flex flex-col sm:flex-row items-center justify-center p-2">
+                <div className="flex items-center mb-2 sm:mb-0">
+                  <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-secondary mr-3 flex-shrink-0" />
+                  <div className="text-center sm:text-left">
+                    <p className="font-medium text-gray-900 text-sm sm:text-base truncate max-w-[200px] sm:max-w-none">{uploadedFile.name}</p>
+                    <p className="text-xs sm:text-sm text-gray-600">File uploaded successfully</p>
+                  </div>
                 </div>
                 <button
                   onClick={removeFile}
-                  className="ml-4 p-1 text-gray-400 hover:text-gray-600"
+                  className="ml-0 sm:ml-4 mt-2 sm:mt-0 p-2 text-gray-400 hover:text-gray-600 active:text-gray-800 touch-manipulation"
+                  style={{ minHeight: '44px', minWidth: '44px' }} // iOS touch target
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             ) : (
-              <div>
-                <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <div className="py-2">
+                <Upload className="mx-auto h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-gray-400 mb-3 sm:mb-4" />
                 <div>
-                  <p className="text-lg font-medium text-gray-900 mb-1">
-                    Drag and drop your file here
+                  <p className="text-base sm:text-lg font-medium text-gray-900 mb-1 sm:mb-2">
+                    <span className="hidden sm:inline">Drag and drop your file here</span>
+                    <span className="sm:hidden">Tap to upload your file</span>
                   </p>
                   <p className="text-sm text-gray-600 mb-2">
-                    or click to browse
+                    <span className="hidden sm:inline">or </span>click to browse
                   </p>
                   <p className="text-xs text-gray-500">
                     Supports PDF, DOC, DOCX, TXT, MD (max 10MB)
@@ -314,20 +319,20 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
           </div>
 
           {uploadError && (
-            <div className="mt-3 flex items-center text-red-600">
-              <AlertCircle className="w-4 h-4 mr-2" />
-              <span className="text-sm">{uploadError}</span>
+            <div className="mt-3 flex items-start text-red-600 px-2 sm:px-0">
+              <AlertCircle className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
+              <span className="text-sm leading-relaxed">{uploadError}</span>
             </div>
           )}
           
-          {/* SOP Structure Detection Feedback */}
+          {/* SOP Structure Detection Feedback - Mobile Optimized */}
           {sopStructure && sopStructure.isSOP && (
-            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
+            <div className="mt-3 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-md mx-2 sm:mx-0">
               <div className="flex items-center text-green-800 mb-2">
-                <FileCheck className="w-4 h-4 mr-2" />
+                <FileCheck className="w-4 h-4 mr-2 flex-shrink-0" />
                 <span className="text-sm font-medium">SOP Structure Detected</span>
               </div>
-              <div className="text-xs text-green-700 space-y-1">
+              <div className="text-xs sm:text-sm text-green-700 space-y-1">
                 <p>• {sopStructure.stepCount} procedure steps identified</p>
                 {sopStructure.hasObjective && <p>• Objective/Purpose section found</p>}
                 {sopStructure.hasResponsibilities && <p>• Responsibilities section found</p>}
@@ -337,14 +342,14 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
           )}
         </div>
 
-        {/* Manual Description Section */}
+        {/* Manual Description Section - Mobile Optimized */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3 px-1">
             Process Description
           </label>
           <textarea
-            className="textarea-field"
-            rows={6}
+            className="textarea-field text-base sm:rows-6 rows-8" // Larger text for mobile
+            rows={8} // More rows on mobile for better UX
             placeholder="Describe your business process in detail. Include what steps are involved, who does what, what tools you use, and any pain points you experience. If it's a Standard Operating Procedure, we'll automatically detect it!"
             value={processDescription}
             onChange={(e) => {
@@ -352,30 +357,31 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
               // Auto-detect content type as user types
               detectAndSetSOPStructure(e.target.value)
             }}
+            style={{ fontSize: '16px' }} // Prevents zoom on iOS
           />
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-gray-500 px-1 sm:px-0 leading-relaxed">
             The more detail you provide, the better we can analyze your process and identify automation opportunities.
           </p>
           
-          {/* SOP Detection Indicator */}
+          {/* SOP Detection Indicator - Mobile Optimized */}
           {sopStructure && processDescription.length > 50 && (
-            <div className={`mt-3 p-3 rounded-lg border ${
+            <div className={`mt-3 p-3 sm:p-4 rounded-lg border mx-2 sm:mx-0 ${
               sopStructure.isSOP 
                 ? 'bg-blue-50 border-blue-200' 
                 : 'bg-gray-50 border-gray-200'
             }`}>
               <div className="flex items-center">
-                <FileCheck className={`w-5 h-5 mr-2 ${
+                <FileCheck className={`w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0 ${
                   sopStructure.isSOP ? 'text-blue-600' : 'text-gray-600'
                 }`} />
-                <span className={`font-medium ${
+                <span className={`font-medium text-sm sm:text-base ${
                   sopStructure.isSOP ? 'text-blue-800' : 'text-gray-700'
                 }`}>
                   {sopStructure.isSOP ? 'SOP Structure Detected' : 'General Process Detected'}
                 </span>
               </div>
               {sopStructure.isSOP && (
-                <div className="mt-2 text-sm text-blue-700">
+                <div className="mt-2 text-xs sm:text-sm text-blue-700 space-y-1">
                   <p>• {sopStructure.stepCount || 0} procedure steps identified</p>
                   <p>• {sopStructure.hasObjective ? 'Objective/Purpose section found' : 'No clear purpose section'}</p>
                   <p>• {sopStructure.hasResponsibilities ? 'Responsibilities section found' : 'No responsibilities section'}</p>
@@ -386,20 +392,21 @@ const ProcessInput = ({ onNext, onFileUpload }) => {
           )}
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-end pt-6 border-t border-gray-200">
+        {/* Action Buttons - Mobile Optimized */}
+        <div className="flex justify-center sm:justify-end pt-6 border-t border-gray-200">
           <button
             onClick={handleNext}
             disabled={(!processDescription.trim() && !uploadedFile) || isSubmitting}
-            className="btn-primary"
+            className="btn-primary w-full sm:w-auto py-3 sm:py-2 text-base sm:text-sm font-semibold"
+            style={{ minHeight: '44px' }} // iOS touch target
           >
             {isSubmitting ? (
-              <div className="flex items-center">
+              <div className="flex items-center justify-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Processing...
+                <span className="text-sm sm:text-base">Processing...</span>
               </div>
             ) : (
-              'Continue to Questions'
+              <span className="text-sm sm:text-base">Continue to Questions</span>
             )}
           </button>
         </div>
