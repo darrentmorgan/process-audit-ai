@@ -80,14 +80,12 @@ const HospoDojoBrandedLanding = ({ onSignUp }) => {
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
         {/* Header - Mobile Responsive */}
         <div className="flex justify-between items-center mb-8 sm:mb-12 lg:mb-16">
-          <div className="flex items-center flex-shrink-0">
-            <img 
-              src="/Hospo-Dojo-Logo.svg" 
-              alt="Hospo Dojo - Hospitality Operations Platform"
-              className="h-6 sm:h-7 lg:h-8 w-auto object-contain max-w-[120px] sm:max-w-none"
-              style={{ filter: 'brightness(0) invert(1)' }}
-            />
-          </div>
+          <img 
+            src="/Hospo-Dojo-Logo.svg" 
+            alt="Hospo Dojo - Hospitality Operations Platform"
+            className="h-6 sm:h-7 lg:h-8 w-auto object-contain max-w-[120px] sm:max-w-none flex-shrink-0"
+            style={{ filter: 'brightness(0) invert(1)' }}
+          />
           
           {/* Auth Buttons - Mobile Touch Optimized */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
