@@ -260,6 +260,103 @@
   }
 }
 
+/* Mobile Header Layout Improvements */
+.hd-header-mobile {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 52px;
+  padding: 8px 16px;
+  gap: 16px;
+}
+
+/* Mobile Logo Container */
+.hd-logo-container {
+  flex-shrink: 0;
+  margin-right: 16px;
+}
+
+@media (min-width: 640px) {
+  .hd-logo-container {
+    margin-right: 24px;
+  }
+}
+
+/* Mobile Auth Button Container */
+.hd-auth-container {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0; /* Allows text truncation if needed */
+}
+
+@media (min-width: 640px) {
+  .hd-auth-container {
+    gap: 16px;
+  }
+}
+
+/* Enhanced Mobile Button Spacing */
+.hd-mobile-button {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ultra-small screen handling (320px) */
+@media (max-width: 375px) {
+  .hd-logo-container {
+    margin-right: 12px;
+  }
+  
+  .hd-auth-container {
+    gap: 8px;
+  }
+  
+  .hd-mobile-button span {
+    font-size: 13px;
+  }
+  
+  /* Ensure logo doesn't get too small */
+  .hd-logo-container img {
+    min-width: 100px;
+    max-width: 120px;
+  }
+}
+
+/* Mobile Header Gap Enforcement */
+@media (max-width: 640px) {
+  .hd-header-gap {
+    gap: 16px !important;
+    min-height: 48px;
+    padding: 8px 0;
+  }
+  
+  .hd-header-gap > :first-child {
+    margin-right: auto;
+  }
+  
+  .hd-header-gap > :last-child {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+}
+
+/* Progressive Enhancement for Button Text */
+@media (max-width: 320px) {
+  .hd-mobile-button {
+    font-size: 12px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  
+  .hd-mobile-button .lucide {
+    width: 12px;
+    height: 12px;
+  }
+}
+
 /* Accessibility & Performance Enhancements */
 @media (prefers-reduced-motion: reduce) {
   .hd-wave-background {

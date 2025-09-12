@@ -77,32 +77,35 @@ const HospoDojoBrandedLanding = ({ onSignUp }) => {
       }}
     >
       {/* Hero Section - Mobile Optimized */}
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
-        {/* Header - Mobile Responsive */}
-        <div className="flex justify-between items-center mb-8 sm:mb-12 lg:mb-16">
-          <img 
-            src="/Hospo-Dojo-Logo.svg" 
-            alt="Hospo Dojo - Hospitality Operations Platform"
-            className="h-6 sm:h-7 lg:h-8 w-auto object-contain max-w-[120px] sm:max-w-none flex-shrink-0"
-            style={{ filter: 'brightness(0) invert(1)' }}
-          />
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 lg:py-8">
+        {/* Header - Mobile Responsive with Professional Spacing */}
+        <div className="hd-header-gap flex justify-between items-center mb-8 sm:mb-12 lg:mb-16 min-h-[52px] gap-4 sm:gap-6">
+          {/* Logo Container - Mobile Optimized with Better Sizing */}
+          <div className="flex-shrink-0">
+            <img 
+              src="/Hospo-Dojo-Logo.svg" 
+              alt="Hospo Dojo - Hospitality Operations Platform"
+              className="h-4 xs:h-5 sm:h-6 md:h-7 lg:h-8 w-auto object-contain max-w-[120px] xs:max-w-[140px] sm:max-w-[160px] lg:max-w-none"
+              style={{ filter: 'brightness(0) invert(1)' }}
+            />
+          </div>
           
-          {/* Auth Buttons - Mobile Touch Optimized */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          {/* Auth Buttons - Mobile Touch Optimized with Progressive Enhancement */}
+          <div className="flex items-center gap-2 xs:gap-3 sm:gap-4 flex-shrink-0">
             <button
               onClick={handleSignIn}
-              className="hd-touch-feedback flex items-center px-2 sm:px-3 lg:px-4 py-2 text-white hover:text-yellow-200 transition-all duration-200 text-sm sm:text-base rounded-lg"
-              style={{ minHeight: '44px' }}
+              className="hd-touch-feedback hd-mobile-button flex items-center px-2 xs:px-3 sm:px-4 py-2 text-white hover:text-yellow-200 transition-all duration-200 text-xs xs:text-sm sm:text-base rounded-lg"
+              style={{ minHeight: '40px' }}
             >
-              <LogIn className="w-4 h-4 mr-1 sm:mr-2 flex-shrink-0" />
+              <LogIn className="w-3 h-3 xs:w-4 xs:h-4 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
               <span className="font-medium">Sign In</span>
             </button>
             <button
               onClick={handleAuthSignUp}
-              className="hd-button hd-button--secondary flex items-center px-3 sm:px-4 lg:px-6 py-2 text-sm sm:text-base font-semibold"
-              style={{ minHeight: '44px' }}
+              className="hd-button hd-button--secondary hd-mobile-button flex items-center px-2 xs:px-3 sm:px-4 lg:px-6 py-2 text-xs xs:text-sm sm:text-base font-semibold"
+              style={{ minHeight: '40px' }}
             >
-              <UserPlus className="w-4 h-4 mr-1 sm:mr-2 flex-shrink-0" />
+              <UserPlus className="w-3 h-3 xs:w-4 xs:h-4 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
               <span className="hidden sm:inline">Join the Dojo</span>
               <span className="sm:hidden">Join</span>
             </button>
