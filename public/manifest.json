@@ -1,0 +1,131 @@
+{
+  "name": "ProcessAudit AI - Field Operations",
+  "short_name": "ProcessAudit AI",
+  "description": "Mobile-first operational excellence platform for field operations with industry-specific SOPs, compliance tracking, and offline capabilities",
+  "start_url": "/mobile/sops?pwa=true",
+  "display": "standalone",
+  "background_color": "#2563eb",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-US",
+  "categories": ["business", "productivity", "utilities"],
+  "screenshots": [
+    {
+      "src": "/pwa-screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "platform": "mobile",
+      "label": "ProcessAudit AI mobile interface for field operations"
+    },
+    {
+      "src": "/pwa-screenshot-tablet.png",
+      "sizes": "768x1024",
+      "type": "image/png",
+      "platform": "tablet",
+      "label": "ProcessAudit AI tablet interface for supervisors"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "View SOPs",
+      "short_name": "SOPs",
+      "description": "Quick access to mobile SOPs for field operations",
+      "url": "/mobile/sops?shortcut=sops",
+      "icons": [
+        {
+          "src": "/icons/shortcut-sops.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Compliance Tracking",
+      "short_name": "Compliance",
+      "description": "Quick access to compliance documentation and tracking",
+      "url": "/mobile/compliance?shortcut=compliance",
+      "icons": [
+        {
+          "src": "/icons/shortcut-compliance.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Analytics Dashboard",
+      "short_name": "Analytics",
+      "description": "Supervisor dashboard for field operations analytics",
+      "url": "/mobile/analytics?shortcut=analytics",
+      "icons": [
+        {
+          "src": "/icons/shortcut-analytics.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+processaudit",
+      "url": "/mobile/sops?handler=%s"
+    }
+  ]
+}
