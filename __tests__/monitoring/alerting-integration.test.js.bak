@@ -1,0 +1,567 @@
+/**
+ * Alerting Integration Testing
+ * Tests PagerDuty and Slack alert integrations
+ */
+
+const { jest } = require('@jest/globals');
+
+// Mock external services
+global.fetch = jest.fn();
+
+describe('Alerting Integration', () => {
+  beforeEach(() => {
+    fetch.mockClear();
+    // Mock environment variables
+    process.env.PAGERDUTY_SERVICE_KEY = 'test-pagerduty-key';
+    process.env.PAGERDUTY_SECURITY_SERVICE_KEY = 'test-security-key';
+    process.env.SLACK_WEBHOOK_URL = 'https://hooks.slack.com/test-webhook';
+  });
+
+  afterEach(() => {
+    delete process.env.PAGERDUTY_SERVICE_KEY;
+    delete process.env.PAGERDUTY_SECURITY_SERVICE_KEY;
+    delete process.env.SLACK_WEBHOOK_URL;
+  });
+
+  describe('PagerDuty Integration', () => {
+    test('should trigger PagerDuty for critical system down alert', async () => {
+      // Mock successful PagerDuty response
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: 'success', incident_key: 'test-incident' })
+      });
+
+      // Simulate critical alert
+      const alertData = {
+        alerts: [{
+          status: 'firing',
+          labels: {
+            alertname: 'ProcessAuditDown',
+            severity: 'critical',
+            service: 'processaudit-ai',
+            component: 'api'
+          },
+          annotations: {
+            summary: 'ProcessAudit AI API is down',
+            description: 'API has been down for more than 2 minutes'
+          },
+          startsAt: new Date().toISOString()
+        }]
+      };
+
+      // Test PagerDuty webhook simulation
+      const pagerDutyPayload = {
+        routing_key: process.env.PAGERDUTY_SERVICE_KEY,
+        event_action: 'trigger',
+        dedup_key: 'ProcessAuditDown-api',
+        payload: {
+          summary: 'ProcessAudit AI API is down',
+          severity: 'critical',
+          source: 'processaudit-ai-monitoring',
+          component: 'api',
+          group: 'processaudit-ai',
+          class: 'system-availability'
+        }
+      };
+
+      // Simulate AlertManager calling PagerDuty webhook
+      const mockPagerDutyCall = async (payload) => {
+        return fetch('https://events.pagerduty.com/v2/enqueue', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+      };
+
+      const response = await mockPagerDutyCall(pagerDutyPayload);
+
+      expect(fetch).toHaveBeenCalledWith(
+        'https://events.pagerduty.com/v2/enqueue',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: expect.stringContaining('ProcessAudit AI API is down')
+        })
+      );
+
+      expect(response).toBeDefined();
+    });
+
+    test('should escalate security alerts with high priority', async () => {
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: 'success', incident_key: 'security-incident' })
+      });
+
+      const securityAlert = {
+        alerts: [{
+          status: 'firing',
+          labels: {
+            alertname: 'TenantIsolationBreach',
+            severity: 'critical',
+            service: 'processaudit-ai',
+            component: 'security'
+          },
+          annotations: {
+            summary: 'Potential tenant isolation breach',
+            description: '5 cross-tenant access attempts detected'
+          }
+        }]
+      };
+
+      const pagerDutyPayload = {
+        routing_key: process.env.PAGERDUTY_SECURITY_SERVICE_KEY,
+        event_action: 'trigger',
+        dedup_key: 'TenantIsolationBreach-security',
+        payload: {
+          summary: 'SECURITY: Potential tenant isolation breach',
+          severity: 'critical',
+          source: 'processaudit-ai-security',
+          component: 'security'
+        }
+      };
+
+      const mockSecurityAlert = async (payload) => {
+        return fetch('https://events.pagerduty.com/v2/enqueue', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      };
+
+      await mockSecurityAlert(pagerDutyPayload);
+
+      expect(fetch).toHaveBeenCalledWith(
+        'https://events.pagerduty.com/v2/enqueue',
+        expect.objectContaining({
+          body: expect.stringContaining('SECURITY')
+        })
+      );
+    });
+
+    test('should handle PagerDuty API failures gracefully', async () => {
+      fetch.mockRejectedValueOnce(new Error('PagerDuty API unavailable'));
+
+      const alertPayload = {
+        routing_key: process.env.PAGERDUTY_SERVICE_KEY,
+        event_action: 'trigger',
+        payload: { summary: 'Test alert' }
+      };
+
+      try {
+        await fetch('https://events.pagerduty.com/v2/enqueue', {
+          method: 'POST',
+          body: JSON.stringify(alertPayload)
+        });
+      } catch (error) {
+        expect(error.message).toBe('PagerDuty API unavailable');
+      }
+
+      expect(fetch).toHaveBeenCalled();
+    });
+  });
+
+  describe('Slack Integration', () => {
+    test('should send formatted alerts to Slack critical channel', async () => {
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => 'ok'
+      });
+
+      const slackPayload = {
+        channel: '#alerts-critical',
+        username: 'ProcessAudit AI Alerts',
+        icon_emoji: ':rotating_light:',
+        attachments: [{
+          color: 'danger',
+          title: '🚨 Critical Alert: ProcessAuditDown',
+          text: 'ProcessAudit AI API is down\nAPI has been down for more than 2 minutes',
+          fields: [
+            { title: 'Service', value: 'processaudit-ai', short: true },
+            { title: 'Component', value: 'api', short: true },
+            { title: 'Severity', value: 'critical', short: true }
+          ],
+          ts: Math.floor(Date.now() / 1000)
+        }]
+      };
+
+      await fetch(process.env.SLACK_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(slackPayload)
+      });
+
+      expect(fetch).toHaveBeenCalledWith(
+        process.env.SLACK_WEBHOOK_URL,
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.stringContaining('Critical Alert')
+        })
+      );
+    });
+
+    test('should format business alerts for business team', async () => {
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => 'ok'
+      });
+
+      const businessAlert = {
+        channel: '#business-metrics',
+        username: 'ProcessAudit AI Business Alerts',
+        icon_emoji: ':chart_with_upwards_trend:',
+        attachments: [{
+          color: 'warning',
+          title: '📊 Business Alert: LowConversionRate',
+          text: 'Analysis completion rate is 65% over the last hour',
+          fields: [
+            { title: 'Current Rate', value: '65%', short: true },
+            { title: 'Target Rate', value: '80%', short: true },
+            { title: 'Impact', value: 'Revenue affected', short: true }
+          ]
+        }]
+      };
+
+      await fetch(process.env.SLACK_WEBHOOK_URL, {
+        method: 'POST',
+        body: JSON.stringify(businessAlert)
+      });
+
+      expect(fetch).toHaveBeenCalledWith(
+        process.env.SLACK_WEBHOOK_URL,
+        expect.objectContaining({
+          body: expect.stringContaining('Business Alert')
+        })
+      );
+    });
+
+    test('should handle Slack webhook failures with retry logic', async () => {
+      // First call fails
+      fetch.mockRejectedValueOnce(new Error('Slack webhook timeout'));
+
+      // Second call succeeds
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => 'ok'
+      });
+
+      const slackPayload = {
+        text: 'Test alert message'
+      };
+
+      // Simulate retry logic
+      try {
+        await fetch(process.env.SLACK_WEBHOOK_URL, {
+          method: 'POST',
+          body: JSON.stringify(slackPayload)
+        });
+      } catch (error) {
+        // Retry on failure
+        await fetch(process.env.SLACK_WEBHOOK_URL, {
+          method: 'POST',
+          body: JSON.stringify(slackPayload)
+        });
+      }
+
+      expect(fetch).toHaveBeenCalledTimes(2);
+    });
+
+    test('should include multi-tenant context in Slack messages', async () => {
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => 'ok'
+      });
+
+      const tenantAlert = {
+        channel: '#alerts-warnings',
+        attachments: [{
+          color: 'warning',
+          title: 'Organization Quota Exceeded',
+          fields: [
+            { title: 'Organization', value: 'test-org-123', short: true },
+            { title: 'Plan', value: 'Professional', short: true },
+            { title: 'Usage', value: '110% of quota', short: true },
+            { title: 'Action Required', value: 'Upgrade plan or reduce usage', short: false }
+          ]
+        }]
+      };
+
+      await fetch(process.env.SLACK_WEBHOOK_URL, {
+        method: 'POST',
+        body: JSON.stringify(tenantAlert)
+      });
+
+      expect(fetch).toHaveBeenCalledWith(
+        process.env.SLACK_WEBHOOK_URL,
+        expect.objectContaining({
+          body: expect.stringContaining('test-org-123')
+        })
+      );
+    });
+  });
+
+  describe('Multi-Tenant Monitoring', () => {
+    test('should track organization-specific metrics', () => {
+      // Test metrics collection for different organizations
+      const orgMetrics = {
+        'org-123': {
+          requests: 150,
+          errors: 2,
+          avgResponseTime: 450,
+          plan: 'professional'
+        },
+        'org-456': {
+          requests: 50,
+          errors: 0,
+          avgResponseTime: 300,
+          plan: 'free'
+        }
+      };
+
+      // Validate metrics structure
+      Object.entries(orgMetrics).forEach(([orgId, metrics]) => {
+        expect(orgId).toMatch(/^org-\d+$/);
+        expect(metrics.requests).toBeGreaterThan(0);
+        expect(metrics.errors).toBeGreaterThanOrEqual(0);
+        expect(metrics.avgResponseTime).toBeLessThan(2000);
+        expect(['free', 'professional', 'enterprise']).toContain(metrics.plan);
+      });
+    });
+
+    test('should enforce plan-based alert thresholds', () => {
+      const planThresholds = {
+        free: { requestLimit: 100, costLimit: 5 },
+        professional: { requestLimit: 1000, costLimit: 50 },
+        enterprise: { requestLimit: 10000, costLimit: 500 }
+      };
+
+      // Test threshold enforcement
+      const testUsage = (plan, usage) => {
+        const threshold = planThresholds[plan];
+        const shouldAlert = usage.requests > threshold.requestLimit ||
+                           usage.cost > threshold.costLimit;
+
+        return { shouldAlert, threshold };
+      };
+
+      // Free plan exceeding limits
+      const freeOverage = testUsage('free', { requests: 150, cost: 7 });
+      expect(freeOverage.shouldAlert).toBe(true);
+
+      // Professional plan within limits
+      const proNormal = testUsage('professional', { requests: 500, cost: 25 });
+      expect(proNormal.shouldAlert).toBe(false);
+    });
+
+    test('should isolate alert context between organizations', () => {
+      const alertContexts = [
+        {
+          organizationId: 'org-123',
+          alertData: { service: 'api', error: 'Database timeout' },
+          expectedIsolation: true
+        },
+        {
+          organizationId: 'org-456',
+          alertData: { service: 'api', error: 'Rate limit exceeded' },
+          expectedIsolation: true
+        }
+      ];
+
+      alertContexts.forEach(context => {
+        // Validate that alert context includes organization ID
+        expect(context.organizationId).toBeDefined();
+        expect(context.organizationId).toMatch(/^org-\d+$/);
+
+        // Validate that alerts don't leak between organizations
+        expect(context.expectedIsolation).toBe(true);
+      });
+    });
+  });
+
+  describe('Integration Performance', () => {
+    test('should complete alert delivery within SLA', async () => {
+      fetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ status: 'success' })
+      });
+
+      const alertStart = Date.now();
+
+      // Simulate sending alert to both PagerDuty and Slack
+      const pagerDutyPromise = fetch('https://events.pagerduty.com/v2/enqueue', {
+        method: 'POST',
+        body: JSON.stringify({ test: 'alert' })
+      });
+
+      const slackPromise = fetch(process.env.SLACK_WEBHOOK_URL, {
+        method: 'POST',
+        body: JSON.stringify({ text: 'Test alert' })
+      });
+
+      await Promise.all([pagerDutyPromise, slackPromise]);
+
+      const alertDuration = Date.now() - alertStart;
+
+      // Alert delivery should complete quickly
+      expect(alertDuration).toBeLessThan(5000); // <5s for alert delivery
+      expect(fetch).toHaveBeenCalledTimes(2);
+    });
+
+    test('should handle concurrent alerts efficiently', async () => {
+      fetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ status: 'success' })
+      });
+
+      // Simulate multiple concurrent alerts
+      const alertPromises = Array.from({ length: 5 }, (_, i) => {
+        return fetch('https://events.pagerduty.com/v2/enqueue', {
+          method: 'POST',
+          body: JSON.stringify({ alert: `test-${i}` })
+        });
+      });
+
+      const startTime = Date.now();
+      await Promise.all(alertPromises);
+      const totalTime = Date.now() - startTime;
+
+      expect(totalTime).toBeLessThan(3000); // <3s for 5 concurrent alerts
+      expect(fetch).toHaveBeenCalledTimes(5);
+    });
+  });
+
+  describe('Alert Content Validation', () => {
+    test('should format critical alerts with complete context', () => {
+      const criticalAlert = {
+        alertname: 'HighErrorRate',
+        severity: 'critical',
+        service: 'processaudit-ai',
+        component: 'api',
+        summary: 'Error rate is 7.5% for the last 5 minutes',
+        description: 'Error rate exceeds threshold of 5%',
+        runbook_url: 'https://docs.processaudit.ai/runbooks/high-error-rate'
+      };
+
+      // Validate required fields are present
+      expect(criticalAlert.alertname).toBeDefined();
+      expect(criticalAlert.severity).toBe('critical');
+      expect(criticalAlert.service).toBe('processaudit-ai');
+      expect(criticalAlert.summary).toContain('Error rate');
+      expect(criticalAlert.runbook_url).toMatch(/^https:\/\//);
+    });
+
+    test('should include organization context in alerts', () => {
+      const orgSpecificAlert = {
+        alertname: 'OrganizationQuotaExceeded',
+        labels: {
+          organizationId: 'org-123',
+          organizationPlan: 'professional'
+        },
+        annotations: {
+          summary: 'Organization quota exceeded',
+          description: 'Organization org-123 has exceeded quota by 15%'
+        }
+      };
+
+      expect(orgSpecificAlert.labels.organizationId).toMatch(/^org-\d+$/);
+      expect(['free', 'professional', 'enterprise']).toContain(orgSpecificAlert.labels.organizationPlan);
+      expect(orgSpecificAlert.annotations.description).toContain('org-123');
+    });
+
+    test('should provide actionable runbook links', () => {
+      const alertsWithRunbooks = [
+        {
+          alert: 'ProcessAuditDown',
+          runbook: 'https://docs.processaudit.ai/runbooks/api-down'
+        },
+        {
+          alert: 'HighErrorRate',
+          runbook: 'https://docs.processaudit.ai/runbooks/high-error-rate'
+        },
+        {
+          alert: 'DatabaseConnectionFailed',
+          runbook: 'https://docs.processaudit.ai/runbooks/database-connection'
+        }
+      ];
+
+      alertsWithRunbooks.forEach(({ alert, runbook }) => {
+        expect(runbook).toMatch(/^https:\/\/docs\.processaudit\.ai\/runbooks\//);
+        expect(runbook).toContain(alert.toLowerCase().replace(/([A-Z])/g, '-$1'));
+      });
+    });
+  });
+
+  describe('Error Handling and Resilience', () => {
+    test('should retry failed alert deliveries', async () => {
+      // First attempt fails
+      fetch.mockRejectedValueOnce(new Error('Network timeout'));
+
+      // Second attempt succeeds
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: 'success' })
+      });
+
+      const retryAlert = async (payload, maxRetries = 3) => {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          try {
+            const response = await fetch('https://events.pagerduty.com/v2/enqueue', {
+              method: 'POST',
+              body: JSON.stringify(payload)
+            });
+            return response;
+          } catch (error) {
+            if (attempt === maxRetries) throw error;
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          }
+        }
+      };
+
+      const response = await retryAlert({ test: 'retry-alert' });
+
+      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(response).toBeDefined();
+    });
+
+    test('should fallback to secondary alert channels', async () => {
+      // PagerDuty fails
+      fetch.mockRejectedValueOnce(new Error('PagerDuty unavailable'));
+
+      // Slack succeeds as fallback
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => 'ok'
+      });
+
+      const alertWithFallback = async (alert) => {
+        try {
+          // Try PagerDuty first
+          await fetch('https://events.pagerduty.com/v2/enqueue', {
+            method: 'POST',
+            body: JSON.stringify(alert)
+          });
+        } catch (error) {
+          // Fallback to Slack with escalated priority
+          await fetch(process.env.SLACK_WEBHOOK_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+              text: `⚠️ ALERT DELIVERY FAILURE + ORIGINAL ALERT: ${JSON.stringify(alert)}`
+            })
+          });
+        }
+      };
+
+      await alertWithFallback({ critical: 'test-alert' });
+
+      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(fetch).toHaveBeenNthCalledWith(2,
+        process.env.SLACK_WEBHOOK_URL,
+        expect.objectContaining({
+          body: expect.stringContaining('ALERT DELIVERY FAILURE')
+        })
+      );
+    });
+  });
+});

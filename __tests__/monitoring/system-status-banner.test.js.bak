@@ -1,0 +1,296 @@
+/**
+ * System Status Banner Component Testing
+ * Tests the real-time status banner and feature availability components
+ */
+
+const { render, screen, waitFor, fireEvent } = require('@testing-library/react');
+const { jest } = require('@jest/globals');
+const SystemStatusBanner = require('../../components/SystemStatusBanner').default;
+
+// Mock fetch for API calls
+global.fetch = jest.fn();
+
+describe('SystemStatusBanner Component', () => {
+  beforeEach(() => {
+    fetch.mockClear();
+    jest.clearAllTimers();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
+  test('should render operational status correctly', async () => {
+    // Mock operational system status
+    fetch.mockResolvedValueOnce({
+      json: async () => ({
+        overall: 'operational',
+        timestamp: new Date().toISOString(),
+        correlationId: 'test-correlation-id',
+        services: {
+          database: { status: 'operational' },
+          ai_providers: {
+            claude: { status: 'operational' },
+            openai: { status: 'operational' }
+          }
+        },
+        features: {
+          process_analysis: { available: true },
+          pdf_generation: { available: true }
+        },
+        message: {
+          title: 'All Systems Operational',
+          message: 'All features are available and functioning normally.',
+          color: 'green'
+        }
+      })
+    });
+
+    render(<SystemStatusBanner />);
+
+    // Should not show banner for operational status
+    await waitFor(() => {
+      expect(screen.queryByText('All Systems Operational')).not.toBeInTheDocument();
+    });
+  });
+
+  test('should display incident status banner', async () => {
+    // Mock incident system status
+    fetch.mockResolvedValueOnce({
+      json: async () => ({
+        overall: 'incident',
+        timestamp: new Date().toISOString(),
+        correlationId: 'test-correlation-id',
+        services: {
+          database: { status: 'incident', error: 'Connection failed' },
+          ai_providers: {
+            claude: { status: 'operational' },
+            openai: { status: 'operational' }
+          }
+        },
+        features: {
+          process_analysis: {
+            available: false,
+            reason: 'Database unavailable',
+            alternatives: ['Queue for later processing', 'Use template-based analysis']
+          },
+          pdf_generation: {
+            available: false,
+            reason: 'Database unavailable',
+            alternatives: ['HTML preview', 'Email delivery when restored']
+          }
+        },
+        message: {
+          title: 'Service Disruption',
+          message: 'We\'re experiencing technical difficulties and working to restore service.',
+          color: 'red'
+        }
+      })
+    });
+
+    render(<SystemStatusBanner />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Service Disruption')).toBeInTheDocument();
+      expect(screen.getByText(/technical difficulties/)).toBeInTheDocument();
+    });
+
+    // Should show feature availability status
+    expect(screen.getByText(/process analysis: ✗/)).toBeInTheDocument();
+    expect(screen.getByText(/pdf generation: ✗/)).toBeInTheDocument();
+  });
+
+  test('should display maintenance mode correctly', async () => {
+    // Mock maintenance status
+    fetch.mockResolvedValueOnce({
+      json: async () => ({
+        overall: 'maintenance',
+        timestamp: new Date().toISOString(),
+        correlationId: 'test-correlation-id',
+        services: {},
+        features: {},
+        maintenance: {
+          active: true,
+          type: 'scheduled',
+          message: 'Scheduled maintenance in progress',
+          estimatedDuration: '30 minutes',
+          startTime: new Date().toISOString()
+        },
+        message: {
+          title: 'Scheduled Maintenance',
+          message: 'Maintenance in progress to improve your experience.',
+          color: 'blue'
+        }
+      })
+    });
+
+    render(<SystemStatusBanner />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Scheduled Maintenance')).toBeInTheDocument();
+      expect(screen.getByText(/improve your experience/)).toBeInTheDocument();
+      expect(screen.getByText('Scheduled')).toBeInTheDocument();
+      expect(screen.getByText(/Est. duration: 30 minutes/)).toBeInTheDocument();
+    });
+  });
+
+  test('should auto-refresh status every 30 seconds', async () => {
+    fetch.mockResolvedValue({
+      json: async () => ({
+        overall: 'operational',
+        timestamp: new Date().toISOString(),
+        correlationId: 'test-correlation-id',
+        services: {},
+        features: {},
+        message: {
+          title: 'All Systems Operational',
+          message: 'All features are available.',
+          color: 'green'
+        }
+      })
+    });
+
+    render(<SystemStatusBanner />);
+
+    // Initial fetch
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    // Fast-forward 30 seconds
+    jest.advanceTimersByTime(30000);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledTimes(2);
+    });
+
+    // Fast-forward another 30 seconds
+    jest.advanceTimersByTime(30000);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledTimes(3);
+    });
+  });
+
+  test('should handle manual refresh', async () => {
+    fetch.mockResolvedValue({
+      json: async () => ({
+        overall: 'degraded',
+        timestamp: new Date().toISOString(),
+        correlationId: 'test-correlation-id',
+        services: {},
+        features: {},
+        message: {
+          title: 'Some Features Affected',
+          message: 'Some features may be slower than usual.',
+          color: 'yellow'
+        }
+      })
+    });
+
+    render(<SystemStatusBanner />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Some Features Affected')).toBeInTheDocument();
+    });
+
+    // Find and click refresh button
+    const refreshButton = screen.getByTitle('Refresh status');
+    fireEvent.click(refreshButton);
+
+    // Should trigger additional fetch
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  test('should allow dismissing non-critical alerts', async () => {
+    fetch.mockResolvedValueOnce({
+      json: async () => ({
+        overall: 'degraded',
+        timestamp: new Date().toISOString(),
+        correlationId: 'test-correlation-id',
+        services: {},
+        features: {},
+        message: {
+          title: 'Some Features Affected',
+          message: 'Some features may be slower than usual.',
+          color: 'yellow'
+        }
+      })
+    });
+
+    render(<SystemStatusBanner />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Some Features Affected')).toBeInTheDocument();
+    });
+
+    // Find and click dismiss button
+    const dismissButton = screen.getByTitle('Dismiss notification');
+    fireEvent.click(dismissButton);
+
+    // Banner should disappear
+    await waitFor(() => {
+      expect(screen.queryByText('Some Features Affected')).not.toBeInTheDocument();
+    });
+  });
+
+  test('should not allow dismissing critical incidents', async () => {
+    fetch.mockResolvedValueOnce({
+      json: async () => ({
+        overall: 'incident',
+        timestamp: new Date().toISOString(),
+        correlationId: 'test-correlation-id',
+        services: {},
+        features: {},
+        message: {
+          title: 'Service Disruption',
+          message: 'Critical system failure.',
+          color: 'red'
+        }
+      })
+    });
+
+    render(<SystemStatusBanner />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Service Disruption')).toBeInTheDocument();
+    });
+
+    // Should not have dismiss button for critical incidents
+    expect(screen.queryByTitle('Dismiss notification')).not.toBeInTheDocument();
+  });
+
+  test('should handle API failures gracefully', async () => {
+    fetch.mockRejectedValueOnce(new Error('Network error'));
+
+    render(<SystemStatusBanner />);
+
+    // Should not crash and should not show banner for failed status checks
+    await waitFor(() => {
+      expect(screen.queryByText('Service Disruption')).not.toBeInTheDocument();
+    });
+  });
+
+  test('should call onStatusChange callback when status changes', async () => {
+    const mockOnStatusChange = jest.fn();
+
+    fetch.mockResolvedValueOnce({
+      json: async () => ({
+        overall: 'degraded',
+        message: { title: 'Degraded', message: 'Some issues', color: 'yellow' }
+      })
+    });
+
+    render(<SystemStatusBanner onStatusChange={mockOnStatusChange} />);
+
+    await waitFor(() => {
+      expect(mockOnStatusChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          overall: 'degraded'
+        })
+      );
+    });
+  });
+});

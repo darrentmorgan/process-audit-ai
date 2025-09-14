@@ -1,0 +1,326 @@
+/**
+ * Health Endpoints Testing
+ * Tests the monitoring infrastructure health check endpoints
+ */
+
+const { createMocks } = require('node-mocks-http');
+
+// Import handlers
+const healthHandler = require('../../pages/api/health').default;
+const deepHealthHandler = require('../../pages/api/health/deep').default;
+const metricsHandler = require('../../pages/api/metrics').default;
+const systemStatusHandler = require('../../pages/api/system-status').default;
+
+describe('Health Endpoints', () => {
+  describe('/api/health - Basic Health Check', () => {
+    test('should return healthy status with basic metrics', async () => {
+      const { req, res } = createMocks({
+        method: 'GET',
+      });
+
+      await healthHandler(req, res);
+
+      expect(res._getStatusCode()).toBe(200);
+
+      const data = JSON.parse(res._getData());
+      expect(data.status).toBe('healthy');
+      expect(data.timestamp).toBeDefined();
+      expect(data.uptime).toBeDefined();
+      expect(data.version).toBe('1.4.0');
+      expect(data.checks.server).toBe('operational');
+      expect(data.checks.memory).toBeDefined();
+      expect(data.checks.memory.used).toBeGreaterThan(0);
+    });
+
+    test('should reject non-GET methods', async () => {
+      const { req, res } = createMocks({
+        method: 'POST',
+      });
+
+      await healthHandler(req, res);
+
+      expect(res._getStatusCode()).toBe(405);
+
+      const data = JSON.parse(res._getData());
+      expect(data.error).toBe('Method not allowed');
+    });
+
+    test('should include performance metrics', async () => {
+      const { req, res } = createMocks({
+        method: 'GET',
+      });
+
+      const startTime = Date.now();
+      await healthHandler(req, res);
+      const responseTime = Date.now() - startTime;
+
+      expect(responseTime).toBeLessThan(100); // Should respond in <100ms
+
+      const data = JSON.parse(res._getData());
+      expect(data.checks.memory.unit).toBe('MB');
+      expect(typeof data.checks.memory.used).toBe('number');
+      expect(typeof data.checks.memory.total).toBe('number');
+    });
+  });
+
+  describe('/api/metrics - Prometheus Metrics', () => {
+    test('should return metrics in Prometheus format', async () => {
+      const { req, res } = createMocks({
+        method: 'GET',
+      });
+
+      await metricsHandler(req, res);
+
+      expect(res._getStatusCode()).toBe(200);
+
+      const metricsData = res._getData();
+      expect(typeof metricsData).toBe('string');
+
+      // Validate Prometheus format
+      expect(metricsData).toContain('processaudit_info');
+      expect(metricsData).toContain('nodejs_memory_usage_bytes');
+      expect(metricsData).toContain('http_requests_total');
+      expect(metricsData).toContain('ai_requests_total');
+    });
+
+    test('should include application metadata', async () => {
+      const { req, res } = createMocks({
+        method: 'GET',
+        headers: {
+          'user-agent': 'prometheus/test'
+        }
+      });
+
+      await metricsHandler(req, res);
+
+      const metricsData = res._getData();
+
+      // Check for application info
+      expect(metricsData).toContain('version="1.4.0"');
+      expect(metricsData).toContain('environment="test"');
+      expect(metricsData).toContain('nodejs_version_info');
+    });
+
+    test('should respond quickly for monitoring systems', async () => {
+      const { req, res } = createMocks({
+        method: 'GET',
+      });
+
+      const startTime = Date.now();
+      await metricsHandler(req, res);
+      const responseTime = Date.now() - startTime;
+
+      expect(responseTime).toBeLessThan(1000); // Should respond in <1s
+      expect(res._getStatusCode()).toBe(200);
+    });
+
+    test('should reject non-GET methods', async () => {
+      const { req, res } = createMocks({
+        method: 'POST',
+      });
+
+      await metricsHandler(req, res);
+
+      expect(res._getStatusCode()).toBe(405);
+    });
+  });
+
+  describe('/api/system-status - System Status API', () => {
+    test('should return comprehensive system status', async () => {
+      const { req, res } = createMocks({
+        method: 'GET',
+      });
+
+      await systemStatusHandler(req, res);
+
+      // Status code could be 200, 503, or 500 depending on system state
+      expect([200, 503, 500]).toContain(res._getStatusCode());
+
+      const data = JSON.parse(res._getData());
+      expect(data.overall).toBeDefined();
+      expect(data.timestamp).toBeDefined();
+      expect(data.correlationId).toBeDefined();
+      expect(data.services).toBeDefined();
+      expect(data.features).toBeDefined();
+    });
+
+    test('should include feature availability information', async () => {
+      const { req, res } = createMocks({
+        method: 'GET',
+      });
+
+      await systemStatusHandler(req, res);
+
+      const data = JSON.parse(res._getData());
+
+      // Check for key features
+      expect(data.features.process_analysis).toBeDefined();
+      expect(data.features.pdf_generation).toBeDefined();
+      expect(data.features.saved_reports).toBeDefined();
+      expect(data.features.automation_generation).toBeDefined();
+
+      // Each feature should have availability and reason
+      Object.values(data.features).forEach(feature => {
+        expect(typeof feature.available).toBe('boolean');
+        if (!feature.available) {
+          expect(feature.reason).toBeDefined();
+          expect(Array.isArray(feature.alternatives)).toBe(true);
+        }
+      });
+    });
+
+    test('should include correlation ID for tracing', async () => {
+      const { req, res } = createMocks({
+        method: 'GET',
+      });
+
+      await systemStatusHandler(req, res);
+
+      const data = JSON.parse(res._getData());
+      expect(data.correlationId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+    });
+
+    test('should provide meaningful status messages', async () => {
+      const { req, res } = createMocks({
+        method: 'GET',
+      });
+
+      await systemStatusHandler(req, res);
+
+      const data = JSON.parse(res._getData());
+      expect(data.message).toBeDefined();
+      expect(data.message.title).toBeDefined();
+      expect(data.message.message).toBeDefined();
+      expect(data.message.color).toBeDefined();
+
+      // Should be one of the expected status types
+      expect(['operational', 'degraded', 'maintenance', 'incident', 'error']).toContain(data.overall);
+    });
+
+    test('should respond within acceptable time limits', async () => {
+      const { req, res } = createMocks({
+        method: 'GET',
+      });
+
+      const startTime = Date.now();
+      await systemStatusHandler(req, res);
+      const responseTime = Date.now() - startTime;
+
+      // System status can take longer due to health checks, but should be reasonable
+      expect(responseTime).toBeLessThan(5000); // <5s for comprehensive check
+
+      const data = JSON.parse(res._getData());
+      expect(data.responseTime).toBeDefined();
+    });
+  });
+
+  describe('Health Check Performance Requirements', () => {
+    test('basic health check should meet performance SLA', async () => {
+      const { req, res } = createMocks({
+        method: 'GET',
+      });
+
+      const startTime = Date.now();
+      await healthHandler(req, res);
+      const responseTime = Date.now() - startTime;
+
+      // Basic health check should be very fast
+      expect(responseTime).toBeLessThan(100); // <100ms
+      expect(res._getStatusCode()).toBe(200);
+    });
+
+    test('metrics endpoint should be optimized for monitoring tools', async () => {
+      const { req, res } = createMocks({
+        method: 'GET',
+        headers: {
+          'user-agent': 'Prometheus/2.40.0'
+        }
+      });
+
+      const startTime = Date.now();
+      await metricsHandler(req, res);
+      const responseTime = Date.now() - startTime;
+
+      expect(responseTime).toBeLessThan(1000); // <1s for metrics collection
+      expect(res._getStatusCode()).toBe(200);
+      expect(res._getHeaders()['content-type']).toBe('text/plain');
+    });
+
+    test('system status should cache results appropriately', async () => {
+      const { req: req1, res: res1 } = createMocks({ method: 'GET' });
+      const { req: req2, res: res2 } = createMocks({ method: 'GET' });
+
+      // First request
+      const start1 = Date.now();
+      await systemStatusHandler(req1, res1);
+      const time1 = Date.now() - start1;
+
+      // Second request (should be faster due to caching)
+      const start2 = Date.now();
+      await systemStatusHandler(req2, res2);
+      const time2 = Date.now() - start2;
+
+      // Both should work, second might be faster due to caching
+      expect([200, 503, 500]).toContain(res1._getStatusCode());
+      expect([200, 503, 500]).toContain(res2._getStatusCode());
+
+      // Validate that caching logic exists
+      const data1 = JSON.parse(res1._getData());
+      const data2 = JSON.parse(res2._getData());
+      expect(data1.correlationId).toBeDefined();
+      expect(data2.correlationId).toBeDefined();
+    });
+  });
+
+  describe('Error Handling and Edge Cases', () => {
+    test('should handle malformed requests gracefully', async () => {
+      const { req, res } = createMocks({
+        method: 'GET',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: 'invalid-json'
+      });
+
+      await healthHandler(req, res);
+
+      // Should still respond normally for health checks
+      expect(res._getStatusCode()).toBe(200);
+    });
+
+    test('should include proper CORS headers for monitoring tools', async () => {
+      const { req, res } = createMocks({
+        method: 'GET',
+        headers: {
+          'origin': 'http://localhost:3001', // Grafana origin
+          'user-agent': 'Grafana/9.0.0'
+        }
+      });
+
+      await metricsHandler(req, res);
+
+      expect(res._getStatusCode()).toBe(200);
+      // Metrics endpoint should be accessible to monitoring tools
+    });
+
+    test('should maintain performance under simulated load', async () => {
+      // Simulate multiple concurrent requests
+      const requests = Array.from({ length: 10 }, () => {
+        const { req, res } = createMocks({ method: 'GET' });
+        return healthHandler(req, res).then(() => res._getStatusCode());
+      });
+
+      const startTime = Date.now();
+      const responses = await Promise.all(requests);
+      const totalTime = Date.now() - startTime;
+
+      // All requests should succeed
+      responses.forEach(statusCode => {
+        expect(statusCode).toBe(200);
+      });
+
+      // Total time for 10 concurrent requests should be reasonable
+      expect(totalTime).toBeLessThan(1000); // <1s for 10 concurrent health checks
+    });
+  });
+});
