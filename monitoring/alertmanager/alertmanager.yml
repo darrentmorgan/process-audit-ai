@@ -1,0 +1,443 @@
+global:
+  smtp_smarthost: '${SMTP_HOST}:587'
+  smtp_from: 'alerts@processaudit.ai'
+  smtp_auth_username: '${SMTP_USERNAME}'
+  smtp_auth_password: '${SMTP_PASSWORD}'
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+  resolve_timeout: 5m
+
+# Alert templates for consistent formatting
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Intelligent routing with escalation paths
+route:
+  group_by: ['alertname', 'service', 'component', 'severity']
+  group_wait: 15s
+  group_interval: 2m
+  repeat_interval: 3h
+  receiver: 'default-notifications'
+
+  routes:
+    # CRITICAL SYSTEM OUTAGES - IMMEDIATE ESCALATION
+    - match:
+        severity: critical
+        escalation: immediate
+      receiver: critical-immediate
+      group_wait: 5s
+      group_interval: 1m
+      repeat_interval: 15m
+      continue: false
+
+    # SECURITY INCIDENTS - SPECIALIZED RESPONSE TEAM
+    - match:
+        component: security
+        escalation: security_incident
+      receiver: security-incident-team
+      group_wait: 0s
+      group_interval: 30s
+      repeat_interval: 10m
+      continue: false
+
+    # AI SERVICE DISRUPTIONS - SPECIALIZED AI TEAM
+    - match:
+        component: ai
+      receiver: ai-service-team
+      group_wait: 2m
+      group_interval: 5m
+      repeat_interval: 1h
+
+    # DATABASE ISSUES - DATABASE TEAM
+    - match:
+        component: database
+      receiver: database-team
+      group_wait: 1m
+      group_interval: 3m
+      repeat_interval: 30m
+
+    # BUSINESS METRICS - PRODUCT & CUSTOMER SUCCESS
+    - match:
+        component: business
+      receiver: business-team
+      group_wait: 10m
+      group_interval: 15m
+      repeat_interval: 4h
+
+    # MULTI-TENANT ISSUES - CUSTOMER SUCCESS
+    - match:
+        component: multi-tenant
+      receiver: customer-success-team
+      group_wait: 5m
+      group_interval: 10m
+      repeat_interval: 2h
+
+    # PERFORMANCE WARNINGS - ENGINEERING TEAM
+    - match:
+        escalation: engineering_team
+      receiver: engineering-alerts
+      group_wait: 5m
+      group_interval: 10m
+      repeat_interval: 2h
+
+    # INFRASTRUCTURE ISSUES - OPERATIONS TEAM
+    - match:
+        component: infrastructure
+      receiver: ops-team
+      group_wait: 3m
+      group_interval: 8m
+      repeat_interval: 1h
+
+    # FINANCE/COST ALERTS - FINANCE TEAM
+    - match:
+        escalation: finance_team
+      receiver: finance-team
+      group_wait: 15m
+      group_interval: 30m
+      repeat_interval: 6h
+
+receivers:
+  # Default catch-all receiver
+  - name: 'default-notifications'
+    slack_configs:
+      - channel: '#alerts-general'
+        username: 'ProcessAudit AI Monitoring'
+        title: '📢 General Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *{{ .Annotations.summary }}*
+          {{ .Annotations.description }}
+
+          *Service:* {{ .Labels.service }} | *Component:* {{ .Labels.component }}
+          {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        send_resolved: true
+        color: 'good'
+
+  # CRITICAL IMMEDIATE ESCALATION
+  - name: 'critical-immediate'
+    pagerduty_configs:
+      - service_key: '${PAGERDUTY_CRITICAL_SERVICE_KEY}'
+        description: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        details:
+          severity: 'CRITICAL'
+          environment: 'production'
+          service: '{{ .GroupLabels.service }}'
+          component: '{{ .GroupLabels.component }}'
+          impact: '{{ range .Alerts }}{{ .Annotations.impact }}{{ end }}'
+          action_required: '{{ range .Alerts }}{{ .Annotations.action_required }}{{ end }}'
+        client: 'ProcessAudit AI Monitoring'
+        client_url: 'https://grafana.processaudit.ai'
+
+    slack_configs:
+      - channel: '#alerts-critical'
+        username: 'ProcessAudit AI CRITICAL'
+        title: '🚨 CRITICAL SYSTEM ALERT: {{ .GroupLabels.alertname }}'
+        title_link: 'https://grafana.processaudit.ai'
+        text: |
+          *🚨 CRITICAL SYSTEM ISSUE - IMMEDIATE ACTION REQUIRED 🚨*
+
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Impact:* {{ .Annotations.impact }}
+          *Action Required:* {{ .Annotations.action_required }}
+
+          *Service:* {{ .Labels.service }}
+          *Component:* {{ .Labels.component }}
+          *Severity:* {{ .Labels.severity | toUpper }}
+
+          *🔗 Runbook:* {{ .Annotations.runbook_url }}
+          *📊 Grafana:* https://grafana.processaudit.ai
+          *⏰ Started:* {{ .StartsAt.Format "2006-01-02 15:04:05 MST" }}
+          {{ end }}
+
+          @channel - Immediate investigation required!
+        send_resolved: true
+        color: 'danger'
+
+    email_configs:
+      - to: 'critical-alerts@processaudit.ai'
+        from: 'alerts@processaudit.ai'
+        subject: '🚨 CRITICAL: ProcessAudit AI System Alert - {{ .GroupLabels.alertname }}'
+        headers:
+          Priority: 'urgent'
+        body: |
+          CRITICAL SYSTEM ALERT - ProcessAudit AI
+
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Impact: {{ .Annotations.impact }}
+          Action Required: {{ .Annotations.action_required }}
+
+          Service: {{ .Labels.service }}
+          Component: {{ .Labels.component }}
+          Severity: {{ .Labels.severity | upper }}
+          Started: {{ .StartsAt.Format "2006-01-02 15:04:05 MST" }}
+
+          Runbook: {{ .Annotations.runbook_url }}
+          Grafana: https://grafana.processaudit.ai
+          {{ end }}
+
+          This alert requires immediate attention.
+
+  # SECURITY INCIDENT TEAM
+  - name: 'security-incident-team'
+    pagerduty_configs:
+      - service_key: '${PAGERDUTY_SECURITY_SERVICE_KEY}'
+        description: '🔒 SECURITY INCIDENT: {{ .GroupLabels.alertname }}'
+        details:
+          incident_type: 'SECURITY_BREACH'
+          severity: 'CRITICAL'
+          service: '{{ .GroupLabels.service }}'
+          component: '{{ .GroupLabels.component }}'
+          threat_level: 'HIGH'
+        client: 'ProcessAudit AI Security'
+
+    slack_configs:
+      - channel: '#security-incidents'
+        username: 'ProcessAudit AI Security'
+        title: '🔒 SECURITY INCIDENT: {{ .GroupLabels.alertname }}'
+        text: |
+          *🔒 SECURITY INCIDENT DETECTED - IMMEDIATE RESPONSE REQUIRED*
+
+          {{ range .Alerts }}
+          *Security Alert:* {{ .Annotations.summary }}
+          *Threat Description:* {{ .Annotations.description }}
+          *Potential Impact:* {{ .Annotations.impact }}
+          *Response Required:* {{ .Annotations.action_required }}
+
+          *Service:* {{ .Labels.service }}
+          *Component:* {{ .Labels.component }}
+          *Detection Time:* {{ .StartsAt.Format "2006-01-02 15:04:05 MST" }}
+
+          *🚨 Security Runbook:* {{ .Annotations.runbook_url }}
+          {{ end }}
+
+          @security-team - Security incident response activated!
+        send_resolved: true
+        color: 'danger'
+
+    email_configs:
+      - to: 'security@processaudit.ai'
+        cc: 'cto@processaudit.ai,compliance@processaudit.ai'
+        subject: '🔒 SECURITY INCIDENT: {{ .GroupLabels.alertname }}'
+        body: |
+          SECURITY INCIDENT ALERT - ProcessAudit AI
+
+          {{ range .Alerts }}
+          Incident: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Impact: {{ .Annotations.impact }}
+          Response Required: {{ .Annotations.action_required }}
+
+          Detection Time: {{ .StartsAt.Format "2006-01-02 15:04:05 MST" }}
+          Service: {{ .Labels.service }}
+          Component: {{ .Labels.component }}
+
+          Security Runbook: {{ .Annotations.runbook_url }}
+          {{ end }}
+
+          Immediate security response required.
+
+  # AI SERVICE TEAM
+  - name: 'ai-service-team'
+    slack_configs:
+      - channel: '#ai-services'
+        username: 'ProcessAudit AI - AI Services'
+        title: '🤖 AI Service Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *🤖 AI Service Issue:* {{ .Annotations.summary }}
+          *Details:* {{ .Annotations.description }}
+          {{ if .Annotations.impact }}*Impact:* {{ .Annotations.impact }}{{ end }}
+
+          *Service:* {{ .Labels.service }}
+          *AI Component:* {{ .Labels.component }}
+          {{ if .Labels.provider }}*AI Provider:* {{ .Labels.provider }}{{ end }}
+
+          {{ if .Annotations.runbook_url }}*🔗 AI Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        send_resolved: true
+        color: 'warning'
+
+  # DATABASE TEAM
+  - name: 'database-team'
+    slack_configs:
+      - channel: '#database-alerts'
+        username: 'ProcessAudit AI - Database'
+        title: '🗄️ Database Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *🗄️ Database Issue:* {{ .Annotations.summary }}
+          *Details:* {{ .Annotations.description }}
+          {{ if .Annotations.impact }}*Impact:* {{ .Annotations.impact }}{{ end }}
+
+          *Service:* {{ .Labels.service }}
+          *Database Component:* {{ .Labels.component }}
+
+          {{ if .Annotations.runbook_url }}*🔗 Database Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        send_resolved: true
+        color: 'warning'
+
+  # BUSINESS INTELLIGENCE TEAM
+  - name: 'business-team'
+    slack_configs:
+      - channel: '#business-intelligence'
+        username: 'ProcessAudit AI - Business Intelligence'
+        title: '📊 Business Metric Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *📊 Business Alert:* {{ .Annotations.summary }}
+          *Details:* {{ .Annotations.description }}
+          {{ if .Annotations.impact }}*Business Impact:* {{ .Annotations.impact }}{{ end }}
+
+          *Metric Category:* {{ .Labels.component }}
+          {{ if .Annotations.action_required }}*Recommended Action:* {{ .Annotations.action_required }}{{ end }}
+
+          {{ if .Annotations.runbook_url }}*📈 Business Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        send_resolved: true
+        color: 'good'
+
+  # CUSTOMER SUCCESS TEAM
+  - name: 'customer-success-team'
+    slack_configs:
+      - channel: '#customer-success'
+        username: 'ProcessAudit AI - Customer Success'
+        title: '🏢 Customer Impact Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *🏢 Customer Issue:* {{ .Annotations.summary }}
+          *Details:* {{ .Annotations.description }}
+          {{ if .Annotations.impact }}*Customer Impact:* {{ .Annotations.impact }}{{ end }}
+
+          {{ if .Labels.organization_id }}*Organization:* {{ .Labels.organization_id }}{{ end }}
+          {{ if .Labels.plan }}*Plan Type:* {{ .Labels.plan }}{{ end }}
+
+          {{ if .Annotations.action_required }}*Customer Action Needed:* {{ .Annotations.action_required }}{{ end }}
+          {{ if .Annotations.runbook_url }}*🔗 CS Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        send_resolved: true
+        color: 'warning'
+
+  # ENGINEERING TEAM
+  - name: 'engineering-alerts'
+    slack_configs:
+      - channel: '#engineering-alerts'
+        username: 'ProcessAudit AI - Engineering'
+        title: '⚙️ Engineering Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *⚙️ Technical Issue:* {{ .Annotations.summary }}
+          *Details:* {{ .Annotations.description }}
+          {{ if .Annotations.impact }}*Impact:* {{ .Annotations.impact }}{{ end }}
+
+          *Service:* {{ .Labels.service }}
+          *Component:* {{ .Labels.component }}
+          *Severity:* {{ .Labels.severity }}
+
+          {{ if .Annotations.action_required }}*Action Required:* {{ .Annotations.action_required }}{{ end }}
+          {{ if .Annotations.runbook_url }}*🔧 Engineering Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        send_resolved: true
+        color: 'warning'
+
+  # OPERATIONS TEAM
+  - name: 'ops-team'
+    slack_configs:
+      - channel: '#ops-infrastructure'
+        username: 'ProcessAudit AI - Operations'
+        title: '🔧 Infrastructure Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *🔧 Infrastructure Issue:* {{ .Annotations.summary }}
+          *Details:* {{ .Annotations.description }}
+          {{ if .Annotations.impact }}*Impact:* {{ .Annotations.impact }}{{ end }}
+
+          *Infrastructure Component:* {{ .Labels.component }}
+          {{ if .Labels.node }}*Node:* {{ .Labels.node }}{{ end }}
+
+          {{ if .Annotations.action_required }}*Ops Action Required:* {{ .Annotations.action_required }}{{ end }}
+          {{ if .Annotations.runbook_url }}*🔧 Ops Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        send_resolved: true
+        color: 'warning'
+
+  # FINANCE TEAM
+  - name: 'finance-team'
+    slack_configs:
+      - channel: '#finance-alerts'
+        username: 'ProcessAudit AI - Finance'
+        title: '💰 Cost Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *💰 Cost Issue:* {{ .Annotations.summary }}
+          *Details:* {{ .Annotations.description }}
+          {{ if .Annotations.impact }}*Financial Impact:* {{ .Annotations.impact }}{{ end }}
+
+          {{ if .Labels.provider }}*Cost Source:* {{ .Labels.provider }}{{ end }}
+
+          {{ if .Annotations.action_required }}*Finance Action:* {{ .Annotations.action_required }}{{ end }}
+          {{ if .Annotations.runbook_url }}*💰 Finance Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        send_resolved: true
+        color: 'good'
+
+    email_configs:
+      - to: 'finance@processaudit.ai'
+        subject: '💰 Cost Alert: {{ .GroupLabels.alertname }}'
+        body: |
+          ProcessAudit AI Cost Alert
+
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Details: {{ .Annotations.description }}
+          Financial Impact: {{ .Annotations.impact }}
+
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05 MST" }}
+          {{ if .Labels.provider }}Cost Source: {{ .Labels.provider }}{{ end }}
+
+          {{ if .Annotations.runbook_url }}Action Plan: {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+
+# Inhibition rules to prevent alert storms
+inhibit_rules:
+  # Critical alerts suppress warnings for same service
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['service', 'component']
+
+  # System down inhibits all component alerts
+  - source_match:
+      alertname: 'ProcessAuditCompleteOutage'
+    target_match_re:
+      alertname: '.*(Response|Database|AI|Performance).*'
+    equal: ['service']
+
+  # Database connection failure inhibits all database alerts
+  - source_match:
+      alertname: 'DatabaseConnectionCritical'
+    target_match_re:
+      alertname: '.*Database.*'
+    equal: ['service']
+
+  # Security incidents inhibit other security warnings
+  - source_match:
+      component: 'security'
+      severity: 'critical'
+    target_match:
+      component: 'security'
+      severity: 'warning'
+    equal: ['service']
+
+  # Memory exhaustion inhibits performance alerts
+  - source_match:
+      alertname: 'MemoryExhaustionCritical'
+    target_match_re:
+      alertname: '.*(Performance|Response).*'
+    equal: ['service']

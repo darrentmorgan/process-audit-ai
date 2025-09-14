@@ -1,0 +1,362 @@
+groups:
+  # ========================================
+  # CRITICAL SYSTEM ALERTS - IMMEDIATE ESCALATION
+  # ========================================
+  - name: processaudit-critical-system
+    interval: 30s
+    rules:
+      - alert: ProcessAuditCompleteOutage
+        expr: up{job="processaudit-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: processaudit-ai
+          component: system
+          escalation: immediate
+          runbook: api-down
+        annotations:
+          summary: "🚨 CRITICAL: ProcessAudit AI is completely down"
+          description: "ProcessAudit AI API has been unreachable for {{ $value }} minutes. This is a complete service outage affecting all users."
+          impact: "All users unable to access ProcessAudit AI services"
+          action_required: "Immediate investigation and recovery procedures"
+          runbook_url: "https://docs.processaudit.ai/runbooks/complete-outage"
+
+      - alert: DatabaseConnectionCritical
+        expr: processaudit_health_check{component="database"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: processaudit-ai
+          component: database
+          escalation: immediate
+          runbook: database-connection
+        annotations:
+          summary: "🚨 CRITICAL: Database connection lost"
+          description: "Unable to connect to Supabase database for {{ $for }}. All data operations affected."
+          impact: "Complete data layer failure - no user operations possible"
+          action_required: "Database connectivity investigation required immediately"
+          runbook_url: "https://docs.processaudit.ai/runbooks/database-critical"
+
+      - alert: HighErrorRateCritical
+        expr: (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) > 0.10
+        for: 2m
+        labels:
+          severity: critical
+          service: processaudit-ai
+          component: api
+          escalation: immediate
+          runbook: high-error-rate
+        annotations:
+          summary: "🚨 CRITICAL: Extremely high error rate - {{ $value | humanizePercentage }}"
+          description: "Server error rate is {{ $value | humanizePercentage }} for the last 5 minutes, indicating system instability."
+          impact: "Majority of users experiencing service failures"
+          action_required: "Immediate system health investigation and stabilization"
+          runbook_url: "https://docs.processaudit.ai/runbooks/critical-error-rate"
+
+      - alert: MemoryExhaustionCritical
+        expr: (process_resident_memory_bytes / 1024 / 1024) > 1024
+        for: 2m
+        labels:
+          severity: critical
+          service: processaudit-ai
+          component: system
+          escalation: immediate
+          runbook: memory-exhaustion
+        annotations:
+          summary: "🚨 CRITICAL: Memory exhaustion imminent - {{ $value }}MB"
+          description: "Process memory usage is {{ $value }}MB, approaching critical limits."
+          impact: "System instability and potential crash imminent"
+          action_required: "Immediate memory investigation and scaling"
+          runbook_url: "https://docs.processaudit.ai/runbooks/memory-critical"
+
+  # ========================================
+  # SECURITY ALERTS - ZERO TOLERANCE
+  # ========================================
+  - name: processaudit-security-critical
+    interval: 15s
+    rules:
+      - alert: TenantIsolationBreachAttempt
+        expr: increase(processaudit_cross_tenant_access_attempts_total[1m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+          service: processaudit-ai
+          component: security
+          escalation: security_incident
+          runbook: tenant-breach
+        annotations:
+          summary: "🔒 SECURITY BREACH: Tenant isolation violation detected"
+          description: "{{ $value }} cross-tenant access attempts detected in the last minute."
+          impact: "Potential data breach or unauthorized access attempt"
+          action_required: "IMMEDIATE security investigation and incident response"
+          runbook_url: "https://docs.processaudit.ai/runbooks/security-breach"
+
+      - alert: UnauthorizedAdminAccess
+        expr: increase(processaudit_unauthorized_admin_attempts_total[5m]) > 3
+        for: 0s
+        labels:
+          severity: critical
+          service: processaudit-ai
+          component: security
+          escalation: security_incident
+          runbook: unauthorized-admin
+        annotations:
+          summary: "🔒 SECURITY ALERT: Multiple unauthorized admin access attempts"
+          description: "{{ $value }} unauthorized admin access attempts in 5 minutes."
+          impact: "Potential privilege escalation attack in progress"
+          action_required: "Immediate admin access audit and potential lockdown"
+          runbook_url: "https://docs.processaudit.ai/runbooks/admin-breach"
+
+      - alert: SuspiciousAPIActivity
+        expr: rate(http_requests_total{status="401"}[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          service: processaudit-ai
+          component: security
+          escalation: security_team
+          runbook: suspicious-activity
+        annotations:
+          summary: "🔒 SECURITY: High rate of authentication failures"
+          description: "{{ $value }} authentication failures per second over 5 minutes."
+          impact: "Potential brute force attack or credential stuffing"
+          action_required: "Review authentication patterns and consider rate limiting"
+          runbook_url: "https://docs.processaudit.ai/runbooks/auth-anomaly"
+
+  # ========================================
+  # PERFORMANCE & AVAILABILITY WARNINGS
+  # ========================================
+  - name: processaudit-performance-warnings
+    interval: 60s
+    rules:
+      - alert: ResponseTimeElevated
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+          service: processaudit-ai
+          component: performance
+          escalation: engineering_team
+          runbook: response-time
+        annotations:
+          summary: "⚠️ PERFORMANCE: Elevated response times - {{ $value }}s"
+          description: "95th percentile response time is {{ $value }}s, exceeding SLA target of 2s."
+          impact: "User experience degradation, potential SLA breach"
+          action_required: "Performance investigation and optimization"
+          runbook_url: "https://docs.processaudit.ai/runbooks/performance-degradation"
+
+      - alert: ErrorRateElevated
+        expr: (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) > 0.02
+        for: 5m
+        labels:
+          severity: warning
+          service: processaudit-ai
+          component: api
+          escalation: engineering_team
+          runbook: error-rate-warning
+        annotations:
+          summary: "⚠️ WARNING: Elevated error rate - {{ $value | humanizePercentage }}"
+          description: "Error rate is {{ $value | humanizePercentage }}, above normal threshold of 2%."
+          impact: "Increased user frustration and potential churn risk"
+          action_required: "Error analysis and system stability review"
+          runbook_url: "https://docs.processaudit.ai/runbooks/error-rate-elevated"
+
+      - alert: DiskSpaceWarning
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.15
+        for: 10m
+        labels:
+          severity: warning
+          service: processaudit-ai
+          component: system
+          escalation: ops_team
+          runbook: disk-space
+        annotations:
+          summary: "⚠️ SYSTEM: Low disk space - {{ $value | humanizePercentage }} remaining"
+          description: "Root filesystem has only {{ $value | humanizePercentage }} space remaining."
+          impact: "Risk of service disruption if disk fills completely"
+          action_required: "Disk cleanup or capacity expansion required"
+          runbook_url: "https://docs.processaudit.ai/runbooks/disk-space-warning"
+
+  # ========================================
+  # AI & EXTERNAL SERVICES MONITORING
+  # ========================================
+  - name: processaudit-ai-services
+    interval: 60s
+    rules:
+      - alert: AIProviderDown
+        expr: processaudit_health_check{component=~"claude|openai"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          service: processaudit-ai
+          component: ai
+          escalation: engineering_team
+          runbook: ai-provider-down
+        annotations:
+          summary: "🤖 AI SERVICE: Provider {{ $labels.component }} unavailable"
+          description: "AI provider {{ $labels.component }} has been unavailable for {{ $for }}."
+          impact: "AI-powered features disabled, users cannot generate analyses"
+          action_required: "Provider status check and failover consideration"
+          runbook_url: "https://docs.processaudit.ai/runbooks/ai-provider-outage"
+
+      - alert: AIResponseTimeHigh
+        expr: histogram_quantile(0.95, rate(ai_request_duration_seconds_bucket[10m])) > 45
+        for: 10m
+        labels:
+          severity: warning
+          service: processaudit-ai
+          component: ai
+          escalation: engineering_team
+          runbook: ai-performance
+        annotations:
+          summary: "🤖 AI PERFORMANCE: Slow response times - {{ $value }}s"
+          description: "AI provider 95th percentile response time is {{ $value }}s, exceeding 45s threshold."
+          impact: "Degraded user experience during analysis generation"
+          action_required: "AI provider performance investigation"
+          runbook_url: "https://docs.processaudit.ai/runbooks/ai-performance-slow"
+
+      - alert: AICostSpike
+        expr: increase(ai_cost_total[1h]) > 25
+        for: 0m
+        labels:
+          severity: warning
+          service: processaudit-ai
+          component: business
+          escalation: finance_team
+          runbook: ai-cost-spike
+        annotations:
+          summary: "💰 COST ALERT: AI spending spike - ${{ $value }} in 1 hour"
+          description: "AI costs increased by ${{ $value }} in the last hour, indicating unusual usage."
+          impact: "Potential budget overrun or anomalous usage patterns"
+          action_required: "Cost analysis and usage pattern review"
+          runbook_url: "https://docs.processaudit.ai/runbooks/cost-spike-analysis"
+
+  # ========================================
+  # BUSINESS INTELLIGENCE ALERTS
+  # ========================================
+  - name: processaudit-business-health
+    interval: 300s
+    rules:
+      - alert: ConversionRateDrop
+        expr: (rate(processaudit_analysis_completed_total[1h]) / rate(processaudit_analysis_started_total[1h])) < 0.70
+        for: 30m
+        labels:
+          severity: warning
+          service: processaudit-ai
+          component: business
+          escalation: product_team
+          runbook: conversion-drop
+        annotations:
+          summary: "📊 BUSINESS: Low conversion rate - {{ $value | humanizePercentage }}"
+          description: "Analysis completion rate dropped to {{ $value | humanizePercentage }}, below 70% threshold."
+          impact: "Reduced customer value delivery and potential churn risk"
+          action_required: "User experience and technical barrier analysis"
+          runbook_url: "https://docs.processaudit.ai/runbooks/conversion-optimization"
+
+      - alert: CustomerChurnSpike
+        expr: rate(processaudit_user_churn_total[24h]) > 0.08
+        for: 2h
+        labels:
+          severity: warning
+          service: processaudit-ai
+          component: business
+          escalation: customer_success
+          runbook: churn-spike
+        annotations:
+          summary: "📊 BUSINESS: Customer churn spike - {{ $value | humanizePercentage }}"
+          description: "Customer churn rate increased to {{ $value | humanizePercentage }} over 24 hours."
+          impact: "Revenue impact and customer satisfaction concerns"
+          action_required: "Customer success intervention and root cause analysis"
+          runbook_url: "https://docs.processaudit.ai/runbooks/churn-analysis"
+
+      - alert: TrafficAnomalyLow
+        expr: rate(http_requests_total[5m]) < (avg_over_time(rate(http_requests_total[5m])[7d:1h]) * 0.3)
+        for: 20m
+        labels:
+          severity: warning
+          service: processaudit-ai
+          component: business
+          escalation: product_team
+          runbook: traffic-anomaly
+        annotations:
+          summary: "📊 TRAFFIC: Unusual traffic drop - {{ $value }} req/s"
+          description: "Traffic rate {{ $value }} req/s is 70% below 7-day average, indicating potential issues."
+          impact: "Possible service discovery issue or customer experience problem"
+          action_required: "Traffic pattern analysis and user journey investigation"
+          runbook_url: "https://docs.processaudit.ai/runbooks/traffic-anomaly"
+
+  # ========================================
+  # MULTI-TENANT SPECIFIC ALERTS
+  # ========================================
+  - name: processaudit-multitenant
+    interval: 120s
+    rules:
+      - alert: OrganizationQuotaExceeded
+        expr: processaudit_organization_usage_ratio > 1.0
+        for: 5m
+        labels:
+          severity: warning
+          service: processaudit-ai
+          component: multi-tenant
+          escalation: customer_success
+          runbook: quota-exceeded
+        annotations:
+          summary: "🏢 QUOTA: Organization {{ $labels.organization_id }} exceeded limit"
+          description: "Organization {{ $labels.organization_id }} usage is {{ $value | humanizePercentage }} of their quota."
+          impact: "Customer may be unable to use service or require plan upgrade"
+          action_required: "Customer outreach for plan adjustment or usage optimization"
+          runbook_url: "https://docs.processaudit.ai/runbooks/quota-management"
+
+      - alert: OrganizationInactive
+        expr: (time() - processaudit_organization_last_activity_timestamp) > (7 * 24 * 3600)
+        for: 0m
+        labels:
+          severity: info
+          service: processaudit-ai
+          component: business
+          escalation: customer_success
+          runbook: inactive-organization
+        annotations:
+          summary: "🏢 ENGAGEMENT: Organization {{ $labels.organization_id }} inactive for 7+ days"
+          description: "Organization {{ $labels.organization_id }} has been inactive for over 7 days."
+          impact: "Potential churn risk and customer success opportunity"
+          action_required: "Proactive customer engagement and support outreach"
+          runbook_url: "https://docs.processaudit.ai/runbooks/customer-engagement"
+
+  # ========================================
+  # INFRASTRUCTURE HEALTH ALERTS
+  # ========================================
+  - name: processaudit-infrastructure
+    interval: 120s
+    rules:
+      - alert: ContainerRestartLoop
+        expr: increase(container_restarts_total{image=~".*processaudit.*"}[15m]) > 3
+        for: 5m
+        labels:
+          severity: warning
+          service: processaudit-ai
+          component: infrastructure
+          escalation: ops_team
+          runbook: container-restarts
+        annotations:
+          summary: "🐳 CONTAINER: Restart loop detected - {{ $value }} restarts"
+          description: "Container {{ $labels.name }} has restarted {{ $value }} times in 15 minutes."
+          impact: "Service instability and potential data loss risk"
+          action_required: "Container health investigation and log analysis"
+          runbook_url: "https://docs.processaudit.ai/runbooks/container-stability"
+
+      - alert: CertificateExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry{job="blackbox-ssl"} - time() < 30 * 24 * 3600
+        for: 0m
+        labels:
+          severity: warning
+          service: processaudit-ai
+          component: security
+          escalation: ops_team
+          runbook: certificate-renewal
+        annotations:
+          summary: "🔐 SSL: Certificate expiring in {{ $value | humanizeDuration }}"
+          description: "SSL certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}."
+          impact: "Service interruption risk if certificate expires"
+          action_required: "Certificate renewal process initiation"
+          runbook_url: "https://docs.processaudit.ai/runbooks/certificate-management"

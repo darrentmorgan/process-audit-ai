@@ -1,0 +1,233 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'processaudit-production'
+    region: 'us-east-1'
+
+rule_files:
+  - "rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+      timeout: 10s
+      api_version: v2
+
+scrape_configs:
+  # ProcessAudit AI Application Metrics
+  - job_name: 'processaudit-api'
+    metrics_path: '/api/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    honor_labels: false
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'nodejs_.*'
+        target_label: service
+        replacement: 'processaudit-nodejs'
+
+  # Enhanced Health Check Monitoring
+  - job_name: 'processaudit-health'
+    metrics_path: '/api/health'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'processaudit_health_check'
+        target_label: monitoring_type
+        replacement: 'health_check'
+
+  # Deep Health Check for External Dependencies
+  - job_name: 'processaudit-health-deep'
+    metrics_path: '/api/health/deep'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    scrape_interval: 60s
+    scrape_timeout: 20s
+    metric_relabel_configs:
+      - source_labels: [component]
+        regex: '(.*)'
+        target_label: dependency
+        replacement: '${1}'
+
+  # Cloudflare Workers Metrics
+  - job_name: 'processaudit-workers'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['${CLOUDFLARE_WORKER_URL}']
+    scrape_interval: 60s
+    scrape_timeout: 15s
+    scheme: https
+    tls_config:
+      insecure_skip_verify: false
+
+  # Node.js Process Metrics
+  - job_name: 'processaudit-node-process'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    metrics_path: '/api/metrics'
+    scrape_interval: 30s
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'process_.*|nodejs_.*'
+        action: keep
+
+  # Database Health Monitoring (Supabase)
+  - job_name: 'processaudit-database'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 60s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: database
+        replacement: 'supabase'
+
+  # External Service Blackbox Monitoring
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://api.openai.com/v1/models
+          - https://api.anthropic.com/v1/messages
+          - ${NEXT_PUBLIC_SUPABASE_URL}/rest/v1/
+          - ${CLOUDFLARE_WORKER_URL}/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # SSL Certificate Monitoring
+  - job_name: 'blackbox-ssl'
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    static_configs:
+      - targets:
+          - processaudit.ai:443
+          - api.processaudit.ai:443
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Container Metrics
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 30s
+    metric_relabel_configs:
+      - source_labels: [container_label_com_docker_compose_service]
+        regex: '(.*)'
+        target_label: service_name
+        replacement: '${1}'
+
+  # System Metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: node
+        replacement: 'processaudit-host'
+
+  # Redis Metrics (if applicable)
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+
+  # Custom Business Metrics
+  - job_name: 'processaudit-business-metrics'
+    metrics_path: '/api/metrics/business'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    scrape_interval: 60s
+    scrape_timeout: 15s
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'processaudit_(analysis|organization|user|cost)_.*'
+        action: keep
+
+  # Multi-tenant Specific Metrics
+  - job_name: 'processaudit-multitenant'
+    metrics_path: '/api/metrics/tenant'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    scrape_interval: 45s
+    scrape_timeout: 15s
+    metric_relabel_configs:
+      - source_labels: [organization_id]
+        regex: '(.*)'
+        target_label: tenant
+        replacement: '${1}'
+
+  # AI Provider Specific Metrics
+  - job_name: 'processaudit-ai-providers'
+    metrics_path: '/api/metrics/ai'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    metric_relabel_configs:
+      - source_labels: [provider]
+        regex: '(claude|openai|gemini)'
+        target_label: ai_provider
+        replacement: '${1}'
+
+  # PDF Generation Service Metrics
+  - job_name: 'processaudit-pdf-service'
+    metrics_path: '/api/metrics/pdf'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    scrape_interval: 45s
+    scrape_timeout: 20s
+    metric_relabel_configs:
+      - source_labels: [document_type]
+        regex: '(audit_report|executive_summary|sop_document)'
+        target_label: pdf_type
+        replacement: '${1}'
+
+  # Vercel Analytics Integration (webhook-based)
+  - job_name: 'processaudit-vercel-analytics'
+    metrics_path: '/api/webhooks/vercel-analytics'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    scrape_interval: 300s  # 5 minutes
+    scrape_timeout: 30s
+
+  # Sentry Integration Metrics
+  - job_name: 'processaudit-sentry-metrics'
+    metrics_path: '/api/metrics/sentry'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    scrape_interval: 180s  # 3 minutes
+    scrape_timeout: 15s
+
+# Remote Write Configuration (for long-term storage)
+remote_write:
+  - url: "${PROMETHEUS_REMOTE_WRITE_URL}"
+    remote_timeout: 30s
+    queue_config:
+      capacity: 2500
+      max_shards: 200
+      min_shards: 1
+      max_samples_per_send: 500
+      batch_send_deadline: 5s
+      min_backoff: 30ms
+      max_backoff: 100ms
