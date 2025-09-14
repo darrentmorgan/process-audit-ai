@@ -474,14 +474,14 @@ const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
           {/* Mobile: Stacked vertically, Desktop: Side by side */}
           <div className="flex flex-col sm:flex-row items-center sm:justify-between space-y-4 sm:space-y-0 mb-3 sm:mb-4">
             {/* Logo Section */}
-            <div className="flex items-center">
+            <div className="flex items-center space-x-3">
               {brandConfig.logo ? (
                 brandConfig.logoType === 'svg' ? (
-                  <img 
-                    src={brandConfig.logo} 
+                  <img
+                    src={brandConfig.logo}
                     alt={`${brandConfig.name} - Hospitality Operations Platform`}
                     className="hd-logo-mobile transition-transform duration-200 hover:scale-105"
-                    style={{ 
+                    style={{
                       filter: 'brightness(0) invert(1)',
                       imageRendering: '-webkit-optimize-contrast',
                       imageRendering: 'crisp-edges'
@@ -490,10 +490,16 @@ const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
                     decoding="async"
                   />
                 ) : (
-                  <span className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white">{brandConfig.logo}</span>
+                  <>
+                    <Logo className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 text-white transition-transform duration-200 hover:scale-105" color="currentColor" />
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white">{brandConfig.name}</h1>
+                  </>
                 )
               ) : (
-                <Logo className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 text-white transition-transform duration-200 hover:scale-105" color="currentColor" />
+                <>
+                  <Logo className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 text-white transition-transform duration-200 hover:scale-105" color="currentColor" />
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white">{brandConfig.name}</h1>
+                </>
               )}
             </div>
             
