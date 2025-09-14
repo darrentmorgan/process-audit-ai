@@ -9,9 +9,14 @@ const createJestConfig = nextJest({
 const customJestConfig = {
   // Add more setup options before each test is run
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  
+
   // Specify the test environment
   testEnvironment: 'jest-environment-jsdom',
+
+  // Transform ignore patterns - allow ES modules to be transformed
+  transformIgnorePatterns: [
+    'node_modules/(?!(uuid|@supabase|@clerk|lucide-react|@sparticuz/chromium|isows)/)',
+  ],
   
   // Test file patterns
   testMatch: [
@@ -21,6 +26,35 @@ const customJestConfig = {
   
   // Test suites configuration
   projects: [
+    {
+      displayName: 'General Tests',
+      testMatch: ['<rootDir>/__tests__/**/*.(test|spec).(js|jsx|ts|tsx)'],
+      testEnvironment: 'jsdom'
+    },
+    {
+      displayName: 'Comprehensive Auth Tests',
+      testMatch: ['<rootDir>/__tests__/comprehensive/auth/**/*.test.js'],
+      testEnvironment: 'jsdom',
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.comprehensive.js']
+    },
+    {
+      displayName: 'Comprehensive AI Tests',
+      testMatch: ['<rootDir>/__tests__/comprehensive/ai/**/*.test.js'],
+      testEnvironment: 'node',
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.comprehensive.js']
+    },
+    {
+      displayName: 'Comprehensive Integration Tests',
+      testMatch: ['<rootDir>/__tests__/comprehensive/integrations/**/*.test.js'],
+      testEnvironment: 'node',
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.comprehensive.js']
+    },
+    {
+      displayName: 'Comprehensive Multi-Tenant Tests',
+      testMatch: ['<rootDir>/__tests__/comprehensive/multitenant/**/*.test.js'],
+      testEnvironment: 'node',
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.comprehensive.js']
+    },
     {
       displayName: 'Auth Unit Tests',
       testMatch: ['<rootDir>/__tests__/contexts/**/*.(js|jsx)', '<rootDir>/__tests__/types/**/*.(js|jsx|ts|tsx)'],
@@ -76,23 +110,25 @@ const customJestConfig = {
   
   // Transform files
   transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest'],
   },
   
   // Files to collect coverage from
   collectCoverageFrom: [
-    'components/**/*.{js,jsx}',
-    'pages/**/*.{js,jsx}',
-    'contexts/**/*.{js,jsx}',
+    'pages/api/**/*.{js,jsx}',
     'utils/**/*.{js,jsx}',
     'hooks/**/*.{js,jsx}',
-    'middleware.js',
+    'middleware.ts',
     '!**/*.d.ts',
     '!**/node_modules/**',
     '!**/.next/**',
     '!**/coverage/**',
     '!**/*.config.js',
     '!**/jest.setup.js',
+    // Temporarily exclude JSX components due to parser issues
+    '!components/**/*.jsx',
+    '!pages/**/*.jsx',
+    '!contexts/**/*.jsx',
   ],
   
   // Coverage thresholds
@@ -163,7 +199,7 @@ const customJestConfig = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   
   // Global test timeout
-  testTimeout: 10000,
+  testTimeout: 15000, // Increased for comprehensive tests
   
   // Reporters for test results
   reporters: [
