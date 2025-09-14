@@ -7,15 +7,20 @@ import { AlertTriangle, CheckCircle, Clock, X, RefreshCw } from 'lucide-react';
  */
 export default function SystemStatusBanner({
   organization = null,
-  onStatusChange = null
+  onStatusChange = null,
+  isDemoMode = false
 }) {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [dismissed, setDismissed] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
 
+  // Check if demo mode is active (hide banner in demo mode)
+  const isInDemoMode = isDemoMode ||
+    (typeof window !== 'undefined' && window.location.search.includes('access=granted'));
+
   // Determine if we should show the banner
-  const shouldShowBanner = !dismissed && status &&
+  const shouldShowBanner = !dismissed && !isInDemoMode && status &&
     (status.overall !== 'operational' || status.maintenance);
 
   // Fetch system status

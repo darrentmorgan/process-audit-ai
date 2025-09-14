@@ -463,6 +463,7 @@ const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
       {/* System Status Banner */}
       <SystemStatusBanner
         organization={organization}
+        isDemoMode={isDemoMode}
         onStatusChange={(status) => {
           // Could update application state based on system status
           console.log('System status changed:', status.overall);
