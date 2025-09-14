@@ -171,23 +171,36 @@
   color: #FFFFFF !important;
 }
 
-/* Mobile Logo Optimization */
+/* AGGRESSIVE Mobile Logo Size Reduction */
 .hd-logo-mobile {
-  height: 24px;
+  height: 12px; /* Drastically reduced from 24px */
   width: auto;
   filter: brightness(0) invert(1);
   object-fit: contain;
+  max-width: 80px; /* Force smaller footprint */
+  transform: scale(0.75); /* Additional scaling reduction */
+}
+
+@media (min-width: 375px) {
+  .hd-logo-mobile {
+    height: 16px;
+    max-width: 100px;
+    transform: scale(0.9);
+  }
 }
 
 @media (min-width: 640px) {
   .hd-logo-mobile {
-    height: 28px;
+    height: 20px;
+    max-width: 120px;
+    transform: scale(1);
   }
 }
 
 @media (min-width: 1024px) {
   .hd-logo-mobile {
     height: 32px;
+    max-width: none;
   }
 }
 

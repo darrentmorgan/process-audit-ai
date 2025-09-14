@@ -5,6 +5,8 @@ import { ThemeProvider } from '../contexts/ThemeContext'
 import ClerkProviderWrapper from '../components/ClerkProviderWrapper'
 import ThemeManager from '../components/theme/ThemeManager'
 import { useEffect } from 'react'
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 export default function App({ Component, pageProps }) {
   // Fix for Next.js FOUC prevention blocking UI display
@@ -32,6 +34,8 @@ export default function App({ Component, pageProps }) {
             </Head>
             <Component {...pageProps} />
             <ThemeManager />
+            <Analytics />
+            <SpeedInsights />
           </ThemeProvider>
         </UnifiedAuthProvider>
     </ClerkProviderWrapper>

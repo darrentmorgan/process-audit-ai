@@ -78,20 +78,18 @@ const HospoDojoBrandedLanding = ({ onSignUp }) => {
     >
       {/* Hero Section - Mobile Optimized */}
       <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 lg:py-8">
-        {/* Header - Mobile Responsive with Professional Spacing */}
-        <div className="hd-header-gap flex justify-between items-center mb-8 sm:mb-12 lg:mb-16 min-h-[52px] gap-4 sm:gap-6">
-          {/* Logo Container - Mobile Optimized with Better Sizing */}
-          <div className="flex-shrink-0">
-            <img 
-              src="/Hospo-Dojo-Logo.svg" 
-              alt="Hospo Dojo - Hospitality Operations Platform"
-              className="h-4 xs:h-5 sm:h-6 md:h-7 lg:h-8 w-auto object-contain max-w-[120px] xs:max-w-[140px] sm:max-w-[160px] lg:max-w-none"
-              style={{ filter: 'brightness(0) invert(1)' }}
-            />
-          </div>
+        {/* Header - Vertical Stacking on Mobile (Consensus Solution) */}
+        <div className="flex flex-col sm:flex-row sm:justify-between items-center space-y-4 sm:space-y-0 mb-8 sm:mb-12 lg:mb-16">
+          {/* Logo - Centered on mobile, left on desktop */}
+          <img 
+            src="/Hospo-Dojo-Logo.svg" 
+            alt="Hospo Dojo - Hospitality Operations Platform"
+            className="h-8 sm:h-7 lg:h-8 w-auto object-contain max-w-[160px] sm:max-w-none flex-shrink-0"
+            style={{ filter: 'brightness(0) invert(1)' }}
+          />
           
-          {/* Auth Buttons - Mobile Touch Optimized with Progressive Enhancement */}
-          <div className="flex items-center gap-2 xs:gap-3 sm:gap-4 flex-shrink-0">
+          {/* Auth Buttons - Centered on mobile, right on desktop */}
+          <div className="flex items-center gap-3 flex-shrink-0">
             <button
               onClick={handleSignIn}
               className="hd-touch-feedback hd-mobile-button flex items-center px-2 xs:px-3 sm:px-4 py-2 text-white hover:text-yellow-200 transition-all duration-200 text-xs xs:text-sm sm:text-base rounded-lg"

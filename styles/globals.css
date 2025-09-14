@@ -617,6 +617,97 @@
   animation: none !important;
 }
 
+/* MOBILE HEADER FIX - Custom CSS Media Queries */
+.mobile-header-fix {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  min-height: 60px;
+  padding: 0.75rem 0;
+}
+
+/* Mobile header layout - force proper distribution */
+@media (max-width: 640px) {
+  .mobile-header-fix {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0;
+    min-height: 56px;
+    padding: 0.5rem 0;
+  }
+  
+  /* Logo container - centered in grid */
+  .mobile-header-fix .mobile-header-logo {
+    grid-column: 2;
+    justify-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+  
+  /* User menu - positioned to the right */
+  .mobile-header-fix .mobile-header-menu {
+    grid-column: 3;
+    justify-self: end;
+    z-index: 2;
+  }
+  
+  /* Force explicit positioning with CSS calc() */
+  .mobile-header-fix .mobile-header-logo img {
+    max-width: calc(100vw - 120px);
+    height: auto;
+    min-width: 100px;
+  }
+  
+  /* Mobile-specific width constraints */
+  .mobile-header-fix .mobile-header-menu {
+    min-width: 80px;
+    max-width: calc(50vw - 60px);
+  }
+}
+
+/* Ultra-small screens (320px and below) */
+@media (max-width: 375px) {
+  .mobile-header-fix {
+    grid-template-columns: 0.5fr auto 0.5fr;
+    gap: 8px;
+  }
+  
+  .mobile-header-fix .mobile-header-logo img {
+    max-width: calc(100vw - 100px);
+    min-width: 80px;
+  }
+  
+  .mobile-header-fix .mobile-header-menu {
+    min-width: 60px;
+    max-width: calc(40vw - 40px);
+  }
+}
+
+/* Tablet and up - use flexbox layout */
+@media (min-width: 641px) {
+  .mobile-header-fix {
+    display: flex;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .mobile-header-fix .mobile-header-logo {
+    margin-right: auto;
+    margin-left: auto;
+  }
+  
+  .mobile-header-fix .mobile-header-menu {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+  }
+}
+
 /* Mobile-specific touch optimizations */
 @media (hover: none) and (pointer: coarse) {
   /* Mobile touch devices */

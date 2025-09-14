@@ -4,6 +4,7 @@ import StepIndicator from './StepIndicator'
 import ProcessInput from './ProcessInput'
 import UserMenu from './UserMenu'
 import Logo from './Logo'
+import SystemStatusBanner from './SystemStatusBanner'
 import { Zap, Target, BarChart3 } from 'lucide-react'
 import useMobileOptimization from '../hooks/useMobileOptimization'
 import { 
@@ -459,12 +460,21 @@ const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
 
   return (
     <div className="min-h-screen gradient-bg">
+      {/* System Status Banner */}
+      <SystemStatusBanner
+        organization={organization}
+        onStatusChange={(status) => {
+          // Could update application state based on system status
+          console.log('System status changed:', status.overall);
+        }}
+      />
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
-        {/* Header - Mobile Responsive */}
-        <div className="relative mb-6 sm:mb-8 lg:mb-12">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-3 sm:mb-4">
-              {/* Dynamic Logo and Branding - Mobile Touch Optimized */}
+        {/* Header - Mobile Stacked Layout */}
+        <div className="mb-6 sm:mb-8 lg:mb-12">
+          {/* Mobile: Stacked vertically, Desktop: Side by side */}
+          <div className="flex flex-col sm:flex-row items-center sm:justify-between space-y-4 sm:space-y-0 mb-3 sm:mb-4">
+            {/* Logo Section */}
+            <div className="flex items-center">
               {brandConfig.logo ? (
                 brandConfig.logoType === 'svg' ? (
                   <img 
@@ -480,24 +490,28 @@ const ProcessAuditApp = ({ isDemoMode = false, organization = null }) => {
                     decoding="async"
                   />
                 ) : (
-                  <span className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">{brandConfig.logo}</span>
+                  <span className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white">{brandConfig.logo}</span>
                 )
               ) : (
                 <Logo className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 text-white transition-transform duration-200 hover:scale-105" color="currentColor" />
               )}
             </div>
+            
+            {/* User Menu - No overlap, properly spaced */}
+            <div className="flex-shrink-0">
+              <UserMenu 
+                onOpenAuth={openAuthModal} 
+                onOpenSavedReports={openSavedReports}
+                onOpenCleanup={openCleanup}
+              />
+            </div>
+          </div>
+          
+          {/* Tagline - Centered below on all screen sizes */}
+          <div className="text-center">
             <p className="text-sm sm:text-base lg:text-lg text-blue-100 max-w-2xl mx-auto hd-mobile-spacing leading-relaxed font-medium">
               {brandConfig.tagline}
             </p>
-          </div>
-          
-          {/* User Menu - Mobile Responsive Positioning */}
-          <div className="absolute top-0 right-0 sm:right-0">
-            <UserMenu 
-              onOpenAuth={openAuthModal} 
-              onOpenSavedReports={openSavedReports}
-              onOpenCleanup={openCleanup}
-            />
           </div>
         </div>
 
