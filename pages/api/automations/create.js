@@ -91,22 +91,13 @@ export default async function handler(req, res) {
 
     console.log('Job created successfully:', job);
 
-    // Submit job to Cloudflare Worker (required)
-    const workerUrl = process.env.CLOUDFLARE_WORKER_URL || 'https://process-audit-automation.damorgs85.workers.dev';
-    
-    console.log('Worker URL from env:', process.env.CLOUDFLARE_WORKER_URL);
-    console.log('Using worker URL:', workerUrl);
-    console.log('Production deployment timestamp:', new Date().toISOString());
-    
-    if (!workerUrl) {
-      return res.status(500).json({ 
-        error: 'Worker not configured',
-        details: 'CLOUDFLARE_WORKER_URL environment variable is required for automation generation.',
-        jobId: job.id
-      });
-    }
+    // Submit job to backend automation API (migrated from Workers)
+    const backendUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/organizations/${organizationId}/automations/generate`;
 
-    console.log('Submitting to worker at:', workerUrl);
+    console.log('Using backend automation URL:', backendUrl);
+    console.log('Backend deployment timestamp:', new Date().toISOString());
+
+    console.log('Submitting to backend automation at:', backendUrl);
     
     try {
       // Enhanced worker payload with organization context
@@ -136,17 +127,25 @@ export default async function handler(req, res) {
         automationType: workerPayload.automationType
       });
       
-      const workerResponse = await fetch(`${workerUrl}/submit`, {
+      const backendResponse = await fetch(backendUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': req.headers.authorization || '',
+          'x-correlation-id': correlationId
         },
-        body: JSON.stringify(workerPayload),
+        body: JSON.stringify({
+          auditReportId,
+          processData,
+          automationOpportunities,
+          automationType,
+          preferences
+        }),
       });
 
-      if (!workerResponse.ok) {
-        const error = await workerResponse.text();
-        console.error('Worker submission failed:', error);
+      if (!backendResponse.ok) {
+        const error = await backendResponse.text();
+        console.error('Backend automation submission failed:', error);
         
         // Update job status to failed in database
         await supabase
